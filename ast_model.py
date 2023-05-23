@@ -23,7 +23,7 @@ class ASTModel:
     wavenumber: float = 2 * np.pi / 658e-9  # in inverse metres
     pizel_size: float = 10e-6  # in metres
 
-    def process(self, z: float):
+    def process(self, z_val: np.ArrayLike) -> np.ndarray:
         """Process the model for a given z
 
         Args:
@@ -46,13 +46,12 @@ class ASTModel:
         )
 
         # apply helmholtz phase factor
+        helmholtz_phase_factor = np.sqrt(
+            self.wavenumber**2 - 4 * np.pi * (f_x**2 + f_y**2)
+        )
+
         transmission_function_fourier_translated = (
-            transmission_function_fourier
-            * np.exp(
-                1j
-                * z
-                * np.sqrt(self.wavenumber**2 - 4 * np.pi * (f_x**2 + f_y**2))
-            )
+            transmission_function_fourier * np.exp(1j * z_val * helmholtz_phase_factor)
         )
 
         # transform back into real space
@@ -62,3 +61,14 @@ class ASTModel:
 
         # return the intensity
         return np.abs(transmission_function_translated) ** 2
+
+    def process_range(self, z_range: np.ArrayLike) -> np.ndarray:
+        """Process the model for a range of z values
+
+        Args:
+            z_range (np.ArrayLike): The range of z values to process.
+
+        Returns:
+            np.ndarray: The intensity of the image at z.
+        """
+        return np.array([self.process(z) for z in z_range])
