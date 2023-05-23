@@ -33,10 +33,22 @@ ax1.set_xlabel("x")
 ax1.set_ylabel("y")
 
 ## Plot the diffracted intensity on second axis
-ax2.imshow(intensity, norm=intensity_norm, cmap="BrBG_r")
+a = ax2.imshow(intensity, norm=intensity_norm, cmap="BrBG_r")
 ax2.set_title(f"Intensity at z = {z*1000}mm")
 ax2.set_xlabel("x")
 ax2.set_ylabel("y")
+
+ax3 = fig.add_subplot(8, 1, 8)
+fig.colorbar(a, cax=ax3, orientation="horizontal")
+ax3.set_title("Intensity / $I_0$")
+
 plt.tight_layout()
 
 plt.show()
+
+# %%
+z_values = np.arange(-100, 101, 2)  # in millimetres
+a = model.process_range(z_values * 1e-3)
+plt.plot(z_values, [(arr < 0.5).sum() for arr in a])
+
+# TODO: Remove high frequency components using a low pass filter.
