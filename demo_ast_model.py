@@ -8,13 +8,12 @@ from matplotlib.colors import TwoSlopeNorm
 # Local imports
 from ast_model import ASTModel
 
-
 # define the object
 image = np.zeros((16, 16))
 image[7:9, 7:9] = 1
 
 # create the model
-model = ASTModel(opaque_shape=object)
+model = ASTModel(opaque_shape=image)
 
 # calculate the intensity at different z values
 z = 2e-3  # in metres
