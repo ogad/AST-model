@@ -23,7 +23,7 @@ class ASTModel:
     wavenumber: float = 2 * np.pi / 658e-9  # in inverse metres
     pizel_size: float = 10e-6  # in metres
 
-    def process(self, z_val: np.ArrayLike) -> np.ndarray:
+    def process(self, z_val: int) -> np.ndarray:
         """Process the model for a given z
 
         Args:
@@ -62,11 +62,11 @@ class ASTModel:
         # return the intensity
         return np.abs(transmission_function_translated) ** 2
 
-    def process_range(self, z_range: np.ArrayLike) -> np.ndarray:
+    def process_range(self, z_range: np.ndarray) -> np.ndarray:
         """Process the model for a range of z values
 
         Args:
-            z_range (np.ArrayLike): The range of z values to process.
+            z_range (np.ndarray): The range of z values to process.
 
         Returns:
             np.ndarray: The intensity of the image at z.
