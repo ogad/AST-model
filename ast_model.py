@@ -2,8 +2,10 @@
 # Authour: Oliver Driver
 # Date: 22/05/2023
 
+# Standard library imports
 from dataclasses import dataclass
 
+# Package imports
 import numpy as np
 
 
@@ -22,7 +24,7 @@ class ASTModel:
     pizel_size: float = 10e-6  # in metres
 
     def process(self, z: float):
-        """Process the model
+        """Process the model for a given z
 
         Args:
             z (float): The distance of the the opaque_shape from the object plane.
@@ -60,36 +62,3 @@ class ASTModel:
 
         # return the intensity
         return np.abs(transmission_function_translated) ** 2
-
-
-if __name__ == "__main__":
-    # test the model
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import TwoSlopeNorm
-
-    # define the object
-    image = np.zeros((16, 16))
-    image[7:9, 7:9] = 1
-
-    # create the model
-    model = ASTModel(opaque_shape=object)
-
-    # calculate the intensity at different z values
-    z = 2e-3  # in metres
-    intensity = model.process(z)
-
-    # plot the intensity
-    intensity_norm = TwoSlopeNorm(vmin=0, vcenter=1, vmax=2)
-
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    ax1.imshow(1 - image, norm=intensity_norm, cmap="BrBG_r")
-    ax1.set_title("Object at z = 0mm")
-    ax1.set_xlabel("x")
-    ax1.set_ylabel("y")
-    ax2.imshow(intensity, norm=intensity_norm, cmap="BrBG_r")
-    ax2.set_title(f"Intensity at z = {z*1000}mm")
-    ax2.set_xlabel("x")
-    ax2.set_ylabel("y")
-    plt.tight_layout()
-
-    plt.show()
