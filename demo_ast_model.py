@@ -62,7 +62,8 @@ intensity_unextended = intensity[
     start_image_x : start_image_x + image_shape[0],
     start_image_y : start_image_y + image_shape[1],
 ]
-a = ax2.imshow(intensity_unextended, norm=intensity_norm, cmap="BrBG_r")
+# a = ax2.imshow(intensity_unextended, norm=intensity_norm, cmap="BrBG_r")
+a = intensity_unextended.plot(ax=ax2, norm=intensity_norm, cmap="BrBG_r")
 ax2.set_title(f"Intensity at z = {z*1000}mm")
 ax2.set_xlabel("x/10µm")
 ax2.set_ylabel("y/10µm")
@@ -76,19 +77,16 @@ plt.tight_layout()
 plt.show()
 
 # %%
-z_values = np.arange(-150, 151, 1)  # in millimetres
-a = model.process_range(z_values * 1e-3)
-plt.plot(z_values, [(arr < 0.5).sum() for arr in a])
-
-# TODO: Remove high frequency components using a low pass filter.
-
-# %%
 z_values = np.arange(-150, 151, 0.2)  # in millimetres
 zd_values = 2 * 658e-9 * z_values * 1e-3 / (radius * 10e-6) ** 2
 a = model.process_range(z_values * 1e-3)
 plt.plot(
     zd_values,
-    [(((arr < 0.75) & (arr > 0.5)).sum()) / ((arr < 0.75).sum()) for arr in a],
+    [
+        arr.n_pixels_depletion_range(0.25, 0.5)
+        / arr.n_pixels_depletion_range(0.25, 1.0)
+        for arr in a
+    ],
 )
 
 # %%

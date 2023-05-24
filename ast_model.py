@@ -9,6 +9,41 @@ from dataclasses import dataclass
 import numpy as np
 
 
+class IntensityField(np.ndarray):
+    """A class to represent an intensity field
+
+    Args:
+        np.ndarray: The intensity field
+    """
+
+    def plot(self, ax, **kwargs):
+        """Plot the intensity field
+
+        Args:
+            ax (matplotlib.axes.Axes): The axis to plot on.
+        """
+        ax.imshow(self, **kwargs)
+
+    def n_pixels_depletion_range(self, min_dep, max_dep):
+        """Calculate the number of pixels in the depletion range
+
+        Args:
+            min_dep (float): The minimum depletion value.
+            max_dep (float): The maximum depletion value.
+
+        Returns:
+            int: The number of pixels in the depletion range.
+        """
+        min_intensity_counted = 1 - max_dep
+        max_intensity_counted = 1 - min_dep
+
+        n_pixels = np.sum(
+            (self <= max_intensity_counted) & (self > min_intensity_counted)
+        )
+
+        return n_pixels
+
+
 @dataclass
 class ASTModel:
     """Angular Spectrum Theory model
@@ -26,14 +61,14 @@ class ASTModel:
     def __post_init__(self):
         self.intenisties = {}  # z: intenisty grid
 
-    def process(self, z_val: int) -> np.ndarray:
+    def process(self, z_val: int) -> IntensityField:
         """Process the model for a given z
 
         Args:
             z (float): The distance of the the opaque_shape from the object plane.
 
         Returns:
-            np.ndarray: The intensity of the image at z.
+            IntensityField: The intensity of the image at z.
         """
 
         # check if the intensity has already been calculated
@@ -68,11 +103,13 @@ class ASTModel:
 
         intensity_translated = np.abs(transmission_function_translated) ** 2
 
+        intensity_translated_as_field = intensity_translated.view(IntensityField)
+
         # store the intensity
-        self.intenisties[z_val] = intensity_translated
+        self.intenisties[z_val] = intensity_translated_as_field
 
         # return the intensity
-        return intensity_translated
+        return intensity_translated_as_field
 
     def process_range(self, z_range: np.ndarray) -> np.ndarray:
         """Process the model for a range of z values
@@ -83,4 +120,4 @@ class ASTModel:
         Returns:
             np.ndarray: The intensity of the image at z.
         """
-        return np.array([self.process(z) for z in z_range])
+        return [self.process(z) for z in z_range]
