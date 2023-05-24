@@ -54,14 +54,14 @@ intensity_norm = TwoSlopeNorm(vmin=0, vcenter=1, vmax=2)
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
 ## Plot the object on first axis
-image.plot(ax=ax1, diameter_px=25, norm=intensity_norm, cmap="BrBG_r")
+image.plot(ax=ax1, diameter=300, norm=intensity_norm, cmap="BrBG_r")
 ax1.set_title("Object at z = 0mm")
 ax1.set_xlabel("x/10µm")
 ax1.set_ylabel("y/10µm")
 
 ## Plot the diffracted intensity on second axis
 # a = ax2.imshow(intensity_unextended, norm=intensity_norm, cmap="BrBG_r")
-a = intensity.plot(ax=ax2, diameter_px=25, norm=intensity_norm, cmap="BrBG_r")
+a = intensity.plot(ax=ax2, diameter=300, norm=intensity_norm, cmap="BrBG_r")
 ax2.set_title(f"Intensity at z = {z*1000}mm")
 ax2.set_xlabel("x/10µm")
 ax2.set_ylabel("y/10µm")

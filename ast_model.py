@@ -17,20 +17,34 @@ class IntensityField(np.ndarray):
         np.ndarray: The intensity field
     """
 
-    def plot(self, ax=None, diameter_px=None, **kwargs):
+    def __new__(cls, input_array, pixel_size=None):
+        obj = np.asarray(input_array).view(cls)
+        obj.pixel_size = pixel_size
+        return obj
+
+    def __array_finalize__(self, obj):
+        if obj is None:
+            return
+        self.pixel_size = getattr(obj, "pixel_size", None)
+
+    def plot(self, ax=None, axis_length=None, **kwargs):
         """Plot the intensity field
 
         Args:
             ax (matplotlib.axes.Axes): The axis to plot on.
-            diameter(float): The diameter of the object in micrometres.
+            axis_length(float): The axis_length of the object in micrometres.
         """
         if ax is None:
             fig, ax = plt.subplots()
-        if diameter_px is not None:
-            # diameter_px = diameter * 1e-6 / pixel_size
+        if axis_length is not None:
+            axis_length_px = axis_length * 1e-6 // self.pixel_size
             to_plot = self[
-                (self.shape[0] - diameter_px) // 2 : (self.shape[0] + diameter_px) // 2,
-                (self.shape[1] - diameter_px) // 2 : (self.shape[1] + diameter_px) // 2,
+                int((self.shape[0] - axis_length_px) // 2) : int(
+                    (self.shape[0] + axis_length_px) // 2
+                ),
+                int((self.shape[1] - axis_length_px) // 2) : int(
+                    (self.shape[1] + axis_length_px) // 2
+                ),
             ]
         else:
             to_plot = self
@@ -73,6 +87,13 @@ class ASTModel:
 
     def __post_init__(self):
         self.intenisties = {}  # z: intenisty grid
+
+        # trim opaque shape of zero-valued rows and columns
+        nonzero_x = np.arange(self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
+        nonzero_y = np.arange(self.opaque_shape.shape[1])[self.opaque_shape.any(axis=0)]
+        self.opaque_shape = self.opaque_shape[
+            nonzero_x.min() : nonzero_x.max() + 1, nonzero_y.min() : nonzero_y.max() + 1
+        ]
 
     @classmethod
     def from_diameter(cls, diameter, wavenumber=None, pixel_size=None):
@@ -117,8 +138,15 @@ class ASTModel:
         if z_val in self.intenisties:
             return self.intenisties[z_val]
 
+        object_plane = np.pad(
+            self.opaque_shape,
+            max(self.opaque_shape.shape) * 10,
+            "constant",
+            constant_values=(0, 0),
+        )
+
         # calculate the transmission function (1 outside the shape, 0 inside)
-        transmission_function = np.where(self.opaque_shape, 0, 1)
+        transmission_function = np.where(object_plane, 0, 1)
 
         # transform into fourier space
         transmission_function_fourier = np.fft.fft2(transmission_function)
@@ -145,7 +173,9 @@ class ASTModel:
 
         intensity_translated = np.abs(transmission_function_translated) ** 2
 
-        intensity_translated_as_field = intensity_translated.view(IntensityField)
+        intensity_translated_as_field = IntensityField(
+            intensity_translated, pixel_size=self.pixel_size
+        )
 
         # store the intensity
         self.intenisties[z_val] = intensity_translated_as_field
