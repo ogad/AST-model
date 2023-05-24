@@ -20,8 +20,11 @@ class ASTModel:
     """
 
     opaque_shape: np.ndarray
-    wavenumber: float = 2 * np.pi / 658e-9  # in inverse metres
+    wavenumber: float = np.pi / 658e-9  # in inverse metres
     pizel_size: float = 10e-6  # in metres
+
+    def __post_init__(self):
+        self.intenisties = {}  # z: intenisty grid
 
     def process(self, z_val: int) -> np.ndarray:
         """Process the model for a given z
@@ -32,6 +35,10 @@ class ASTModel:
         Returns:
             np.ndarray: The intensity of the image at z.
         """
+
+        # check if the intensity has already been calculated
+        if z_val in self.intenisties:
+            return self.intenisties[z_val]
 
         # calculate the transmission function (1 outside the shape, 0 inside)
         transmission_function = np.where(self.opaque_shape, 0, 1)
@@ -47,7 +54,7 @@ class ASTModel:
 
         # apply helmholtz phase factor
         helmholtz_phase_factor = np.sqrt(
-            self.wavenumber**2 - 4 * np.pi * (f_x**2 + f_y**2)
+            self.wavenumber**2 - 4 * np.pi**2 * (f_x**2 + f_y**2)
         )
 
         transmission_function_fourier_translated = (
@@ -59,8 +66,13 @@ class ASTModel:
             transmission_function_fourier_translated
         )
 
+        intensity_translated = np.abs(transmission_function_translated) ** 2
+
+        # store the intensity
+        self.intenisties[z_val] = intensity_translated
+
         # return the intensity
-        return np.abs(transmission_function_translated) ** 2
+        return intensity_translated
 
     def process_range(self, z_range: np.ndarray) -> np.ndarray:
         """Process the model for a range of z values
