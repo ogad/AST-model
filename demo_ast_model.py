@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
-from imageio import imread
+from imageio.v3 import imread
 
 # Local imports
 from ast_model import ASTModel
@@ -12,39 +12,19 @@ from ast_model import ASTModel
 # define the object
 
 ## square object
-# image = np.zeros((16, 16))
+# image = np.ones((8, 8))
 # image[7:9, 7:9] = 1
 
 ## basic rosette image
 # im = imread("rosette_basic.png")
 # image = np.where(im.max(axis=2), 1, 0)
 
-# ## circle object
-radius = 60  # in 10s of microns
-# image = np.zeros((16, 16))
-# for xx in range(16):
-#     for yy in range(16):
-#         if (xx - 8) ** 2 + (yy - 8) ** 2 < radius**2:
-#             image[xx, yy] = 1
-# image_shape = image.shape
-
-# expanded_image = np.zeros((512, 512))
-# # place image in the centre of the expanded image
-# start_image_x = 256 - image_shape[0] // 2
-# start_image_y = 256 - image_shape[1] // 2
-# expanded_image[
-#     start_image_x : start_image_x + image_shape[0],
-#     start_image_y : start_image_y + image_shape[1],
-# ] = image
-
 # # create the model
-# model = ASTModel(opaque_shape=expanded_image)
-model = ASTModel.from_diameter(radius * 2)
+# model = ASTModel(opaque_shape=image)
+model = ASTModel.from_diameter(150, pixel_size=5e-6)
 
 # calculate the intensity at different z values
-z = 2e-3  # in metres
-image = model.process(0)
-intensity = model.process(z)
+z = 20e-3  # in metres
 
 # Plotting
 ## Define colourmap normalisation
@@ -54,17 +34,13 @@ intensity_norm = TwoSlopeNorm(vmin=0, vcenter=1, vmax=2)
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
 ## Plot the object on first axis
-image.plot(ax=ax1, diameter=300, norm=intensity_norm, cmap="BrBG_r")
+model.plot_intensity(0, ax=ax1, axis_length=300, norm=intensity_norm, cmap="BrBG_r")
 ax1.set_title("Object at z = 0mm")
-ax1.set_xlabel("x/10µm")
-ax1.set_ylabel("y/10µm")
 
 ## Plot the diffracted intensity on second axis
 # a = ax2.imshow(intensity_unextended, norm=intensity_norm, cmap="BrBG_r")
-a = intensity.plot(ax=ax2, diameter=300, norm=intensity_norm, cmap="BrBG_r")
+a = model.plot_intensity(z, ax=ax2, axis_length=300, norm=intensity_norm, cmap="BrBG_r")
 ax2.set_title(f"Intensity at z = {z*1000}mm")
-ax2.set_xlabel("x/10µm")
-ax2.set_ylabel("y/10µm")
 
 ax3 = fig.add_subplot(8, 1, 8)
 fig.colorbar(a, cax=ax3, orientation="horizontal")
@@ -74,17 +50,45 @@ plt.tight_layout()
 
 plt.show()
 
-# %%
-z_values = np.arange(-150, 151, 0.2)  # in millimetres
-zd_values = 2 * 658e-9 * z_values * 1e-3 / (radius * 10e-6) ** 2
-a = model.process_range(z_values * 1e-3)
-plt.plot(
-    zd_values,
-    [
-        arr.n_pixels_depletion_range(0.25, 0.5)
-        / arr.n_pixels_depletion_range(0.25, 1.0)
-        for arr in a
-    ],
-)
+
+# %% Reproducing ratio functions (O'Shea 2019, Figure 7)
+def plot_grayscale_ratio(range1, range2, ax):
+    z_values = np.arange(-0.150, 0.151, 0.001)  # in m
+    zd_values = model.get_zd(z_values, "true")
+    a = model.process_range(z_values)
+    ax.plot(
+        zd_values,
+        # z_values * 1e3,
+        [
+            arr.n_pixels_depletion_range(*range1)
+            / arr.n_pixels_depletion_range(*range2)
+            for arr in a
+        ],
+    )
+
+    ax.set_xlabel("z (mm)")
+    # ax.set_xlabel("$z_d$")
+    ax.set_ylabel(
+        f"$A_{{{int(100*range1[0])}-{int(100*range1[1])}}}/A_{{{int(100*range2[0])}-{int(100*range2[1])}}}$"
+    )
+
+    ax.grid(True)
+    ax.set_xlim(-10, 10)
+    # ax.set_ylim(0, 1)
+    # ax.set_xlim(-500, 500)
+
+
+ratios = [
+    ((0.25, 0.5), (0.25, 1.0)),
+    ((0.75, 1.0), (0.5, 0.75)),
+    ((0.5, 0.75), (0.25, 1.0)),
+    ((0.5, 0.75), (0.25, 0.5)),
+    ((0.75, 1.0), (0.25, 1.0)),
+    ((0.75, 1.0), (0.25, 0.5)),
+]
+
+fig, axs = plt.subplots(3, 2, figsize=(8, 10))
+for i, ratio in enumerate(ratios):
+    plot_grayscale_ratio(*ratio, axs.reshape(-1)[i])
 
 # %%
