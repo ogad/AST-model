@@ -27,15 +27,17 @@ class IntensityField(np.ndarray):
             return
         self.pixel_size = getattr(obj, "pixel_size", None)
 
-    def plot(self, ax=None, axis_length=None, **kwargs):
+    def plot(self, ax=None, axis_length=None, grayscale_bounds=None, **kwargs):
         """Plot the intensity field
 
         Args:
             ax (matplotlib.axes.Axes): The axis to plot on.
             axis_length(float): The axis_length of the object in micrometres.
+            grayscale_bounds (list): The list of bounds for grayscale bands. When None, the intensity is plotted.
         """
         if ax is None:
             fig, ax = plt.subplots()
+
         if axis_length is not None:
             axis_length_px = axis_length * 1e-6 // self.pixel_size
             to_plot = self[
@@ -48,6 +50,15 @@ class IntensityField(np.ndarray):
             ]
         else:
             to_plot = self
+
+        if grayscale_bounds is not None:
+            # Replace pixel values to the next-highest grayscale bound
+            bounded = np.zeros_like(to_plot)
+            for i, bound in enumerate(sorted(grayscale_bounds)):
+                current_bound = (to_plot < bound) & (bounded == 0)
+                to_plot = np.where(current_bound, i, to_plot)
+                bounded = np.where(current_bound, 1, bounded)
+            to_plot = np.where((bounded == 0), len(grayscale_bounds), to_plot)
 
         ax_image = ax.imshow(to_plot, **kwargs)
         xticks = ax.get_xticks()

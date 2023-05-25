@@ -16,15 +16,15 @@ from ast_model import ASTModel
 # image[7:9, 7:9] = 1
 
 ## basic rosette image
-# im = imread("rosette_basic.png")
-# image = np.where(im.max(axis=2), 1, 0)
+im = imread("rosette_basic.png")
+image = np.where(im.max(axis=2), 1, 0)
 
 # # create the model
-# model = ASTModel(opaque_shape=image)
-model = ASTModel.from_diameter(150, pixel_size=5e-6)
+model = ASTModel(opaque_shape=image)
+# model = ASTModel.from_diameter(150, pixel_size=5e-6)
 
 # calculate the intensity at different z values
-z = 20e-3  # in metres
+z = 5e-3  # in metres
 
 # Plotting
 ## Define colourmap normalisation
@@ -34,12 +34,15 @@ intensity_norm = TwoSlopeNorm(vmin=0, vcenter=1, vmax=2)
 fig, (ax1, ax2) = plt.subplots(1, 2)
 
 ## Plot the object on first axis
-model.plot_intensity(0, ax=ax1, axis_length=300, norm=intensity_norm, cmap="BrBG_r")
+model.plot_intensity(0, ax=ax1, axis_length=400, norm=intensity_norm, cmap="BrBG_r")
 ax1.set_title("Object at z = 0mm")
 
 ## Plot the diffracted intensity on second axis
 # a = ax2.imshow(intensity_unextended, norm=intensity_norm, cmap="BrBG_r")
-a = model.plot_intensity(z, ax=ax2, axis_length=300, norm=intensity_norm, cmap="BrBG_r")
+# a = model.plot_intensity(z, ax=ax2, axis_length=300, norm=intensity_norm, cmap="BrBG_r")
+a = model.plot_intensity(
+    z, ax=ax2, axis_length=400, grayscale_bounds=[0.25, 0.5, 0.75, 1]
+)
 ax2.set_title(f"Intensity at z = {z*1000}mm")
 
 ax3 = fig.add_subplot(8, 1, 8)
@@ -66,8 +69,8 @@ def plot_grayscale_ratio(range1, range2, ax):
         ],
     )
 
-    ax.set_xlabel("z (mm)")
-    # ax.set_xlabel("$z_d$")
+    # ax.set_xlabel("z (mm)")
+    ax.set_xlabel("$z_d$")
     ax.set_ylabel(
         f"$A_{{{int(100*range1[0])}-{int(100*range1[1])}}}/A_{{{int(100*range2[0])}-{int(100*range2[1])}}}$"
     )
@@ -90,5 +93,8 @@ ratios = [
 fig, axs = plt.subplots(3, 2, figsize=(8, 10))
 for i, ratio in enumerate(ratios):
     plot_grayscale_ratio(*ratio, axs.reshape(-1)[i])
+
+plt.tight_layout()
+plt.show()
 
 # %%
