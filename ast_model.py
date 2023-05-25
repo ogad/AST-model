@@ -49,7 +49,15 @@ class IntensityField(np.ndarray):
         else:
             to_plot = self
 
-        return ax.imshow(to_plot, **kwargs)
+        ax_image = ax.imshow(to_plot, **kwargs)
+        xticks = ax.get_xticks()
+        yticks = ax.get_yticks()
+        ax.set_xticklabels((xticks * self.pixel_size * 1e6).round(1))
+        ax.set_yticklabels((yticks * self.pixel_size * 1e6).round(1))
+        ax.set_xlabel("x/µm")
+        ax.set_ylabel("y/µm")
+
+        return ax_image
 
     def n_pixels_depletion_range(self, min_dep, max_dep):
         """Calculate the number of pixels in the depletion range
@@ -82,11 +90,12 @@ class ASTModel:
     """
 
     opaque_shape: np.ndarray
-    wavenumber: float = np.pi / 658e-9  # in inverse metres
+    wavenumber: float = 2 * np.pi / 658e-9  # in inverse metres
     pixel_size: float = 10e-6  # in metres
 
     def __post_init__(self):
         self.intenisties = {}  # z: intenisty grid
+        self.diameters = {}
 
         # trim opaque shape of zero-valued rows and columns
         nonzero_x = np.arange(self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
@@ -122,7 +131,10 @@ class ASTModel:
         opaque_shape = np.where(xx**2 + yy**2 <= radius_px**2, 1, 0)
 
         # create the model
-        return cls(opaque_shape, wavenumber, pixel_size)
+        model = cls(opaque_shape, wavenumber, pixel_size)
+        model.diameters["true"] = diameter * 1e-6
+
+        return model
 
     def process(self, z_val: int) -> IntensityField:
         """Process the model for a given z
@@ -140,7 +152,8 @@ class ASTModel:
 
         object_plane = np.pad(
             self.opaque_shape,
-            max(self.opaque_shape.shape) * 10,
+            max(self.opaque_shape.shape)
+            * 10,  # arbitrarily 10 times the size of the object
             "constant",
             constant_values=(0, 0),
         )
@@ -152,8 +165,8 @@ class ASTModel:
         transmission_function_fourier = np.fft.fft2(transmission_function)
 
         # calculate the fourier space coordinates
-        f_x = np.fft.fftfreq(transmission_function.shape[0], self.pixel_size)
-        f_y = np.fft.fftfreq(transmission_function.shape[1], self.pixel_size).reshape(
+        f_x = np.fft.fftfreq(transmission_function.shape[1], self.pixel_size)
+        f_y = np.fft.fftfreq(transmission_function.shape[0], self.pixel_size).reshape(
             -1, 1
         )
 
@@ -161,7 +174,6 @@ class ASTModel:
         helmholtz_phase_factor = np.sqrt(
             self.wavenumber**2 - 4 * np.pi**2 * (f_x**2 + f_y**2)
         )
-
         transmission_function_fourier_translated = (
             transmission_function_fourier * np.exp(1j * z_val * helmholtz_phase_factor)
         )
@@ -171,16 +183,14 @@ class ASTModel:
             transmission_function_fourier_translated
         )
 
+        # calculate the intensity
         intensity_translated = np.abs(transmission_function_translated) ** 2
-
         intensity_translated_as_field = IntensityField(
             intensity_translated, pixel_size=self.pixel_size
         )
 
-        # store the intensity
+        # cache and return the intensity
         self.intenisties[z_val] = intensity_translated_as_field
-
-        # return the intensity
         return intensity_translated_as_field
 
     def process_range(self, z_range: np.ndarray) -> np.ndarray:
@@ -194,7 +204,7 @@ class ASTModel:
         """
         return [self.process(z) for z in z_range]
 
-    def plot_intensity(self, z_val: int):
+    def plot_intensity(self, z_val: int, **kwargs):
         """Plot the intensity at a given z
 
         Args:
@@ -202,4 +212,25 @@ class ASTModel:
         """
         intensity = self.process(z_val)
 
-        intensity.plot()
+        return intensity.plot(**kwargs)
+
+    def xy_diameter(self):
+        """Calculate the xy diameter of the opaque_shape, defined to be the mean of the maximum nonzero extent of the opaque shape in the x and y directions."""
+        if self.diameters.get("xy"):
+            return self.diameters["xy"]
+
+        nonzero_x = np.arange(self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
+        nonzero_y = np.arange(self.opaque_shape.shape[1])[self.opaque_shape.any(axis=0)]
+
+        self.diameters["xy"] = (
+            np.mean(
+                [nonzero_x.max() - nonzero_x.min(), nonzero_y.max() - nonzero_y.min()]
+            )
+            * self.pixel_size
+        )
+        return self.diameters["xy"]
+
+    def get_zd(self, z_val, diameter_type):
+        """Calculate the dimensionless diffraction z distance."""
+        wavelength = 2 * np.pi / self.wavenumber
+        return 4 * wavelength * z_val / self.diameters[diameter_type] ** 2
