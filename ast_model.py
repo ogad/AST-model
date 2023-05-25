@@ -147,7 +147,7 @@ class ASTModel:
 
         return model
 
-    def process(self, z_val: int) -> IntensityField:
+    def process(self, z_val: int, low_pass=1.0) -> IntensityField:
         """Process the model for a given z
 
         Args:
@@ -180,6 +180,14 @@ class ASTModel:
         f_y = np.fft.fftfreq(transmission_function.shape[0], self.pixel_size).reshape(
             -1, 1
         )
+
+        # low pass filter
+        # f_xy = np.meshgrid(f_x, f_y)
+        # transmission_function_fourier = np.where(
+        #     f_xy[0] ** 2 + f_xy[1] ** 2 <= f_x.max() * low_pass,
+        #     transmission_function_fourier,
+        #     0,
+        # )
 
         # apply helmholtz phase factor
         helmholtz_phase_factor = np.sqrt(
