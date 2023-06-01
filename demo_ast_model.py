@@ -140,13 +140,14 @@ def plot_grayscale_ratio_rosette(range1, range2=None, ax=None):
         fig, ax = plt.subplots()
 
     z_values = np.arange(-0.150, 0.151, 0.001)  # in m
-    # zd_values = model.get_zd(z_values, "true")
+    model.diameters["true"] = 118e-6
+    zd_values = model.get_zd(z_values, "true")
     a = model.process_range(z_values)
 
     if range2:
         ax.plot(
-            # zd_values,
-            z_values * 1e3,
+            zd_values,
+            # z_values * 1e3,
             [
                 arr.n_pixels_depletion_range(*range1)
                 / arr.n_pixels_depletion_range(*range2)
@@ -158,9 +159,9 @@ def plot_grayscale_ratio_rosette(range1, range2=None, ax=None):
         )
     else:
         ax.plot(
-            # zd_values,
-            z_values * 1e3,
-            [arr.n_pixels_depletion_range(*range1) for arr in a],
+            zd_values,
+            # z_values * 1e3,
+            [arr.n_pixels_depletion_range(*range1) * (10 / 15) ** 2 for arr in a],
         )
         ax.set_ylabel(f"$A_{{{int(100*range1[0])}-{int(100*range1[1])}}}$")
 
@@ -168,7 +169,7 @@ def plot_grayscale_ratio_rosette(range1, range2=None, ax=None):
     # ax.set_xlabel("$z_d$")
 
     ax.grid(True)
-    ax.set_xlim(-150, 150)
+    ax.set_xlim(-50, 50)
 
 
 ratios = [
