@@ -73,7 +73,7 @@ class IntensityField(np.ndarray):
 
     def measure_xy_diameter(self):
         # threshold the image at 50% of the initial intensity
-        thresholded_image = self > 0.5
+        thresholded_image = self < 0.5
 
         # isolate only the largest conncted region
         labeled_image, n_labels = ndimage.label(thresholded_image)
