@@ -8,6 +8,7 @@ from dataclasses import dataclass
 # Package imports
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy import ndimage
 
 
 class IntensityField(np.ndarray):
@@ -70,6 +71,23 @@ class IntensityField(np.ndarray):
 
         return ax_image
 
+    def measure_xy_diameter(self):
+        # threshold the image at 50% of the initial intensity
+        thresholded_image = self > 0.5
+
+        # isolate only the largest conncted region
+        labeled_image, n_labels = ndimage.label(thresholded_image)
+        label_counts = np.bincount(labeled_image.ravel())
+        largest_label = np.argmax(label_counts[1:]) + 1
+        largest_region = labeled_image == largest_label
+
+        # find the maximum extent in the x and y directions
+        x_extent = np.sum(largest_region, axis=0).max()
+        y_extent = np.sum(largest_region, axis=1).max()
+
+        # return the average of the two extents in micrometres
+        return (x_extent + y_extent) / 2 * self.pixel_size * 1e6
+
     def n_pixels_depletion_range(self, min_dep, max_dep):
         """Calculate the number of pixels in the depletion range
 
@@ -111,9 +129,14 @@ class ASTModel:
         # trim opaque shape of zero-valued rows and columns
         nonzero_x = np.arange(self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
         nonzero_y = np.arange(self.opaque_shape.shape[1])[self.opaque_shape.any(axis=0)]
-        self.opaque_shape = self.opaque_shape[
-            nonzero_x.min() : nonzero_x.max() + 1, nonzero_y.min() : nonzero_y.max() + 1
-        ]
+        if nonzero_x.size > 0:
+            self.opaque_shape = self.opaque_shape[
+                nonzero_x.min() : nonzero_x.max() + 1, :
+            ]
+        if nonzero_y.size > 0:
+            self.opaque_shape = self.opaque_shape[
+                :, nonzero_y.min() : nonzero_y.max() + 1
+            ]
 
     @classmethod
     def from_diameter(cls, diameter, wavenumber=None, pixel_size=None):
@@ -147,7 +170,7 @@ class ASTModel:
 
         return model
 
-    def process(self, z_val: int, low_pass=1.0) -> IntensityField:
+    def process(self, z_val: float, low_pass=1.0) -> IntensityField:
         """Process the model for a given z
 
         Args:
@@ -182,12 +205,13 @@ class ASTModel:
         )
 
         # low pass filter
-        # f_xy = np.meshgrid(f_x, f_y)
-        # transmission_function_fourier = np.where(
-        #     f_xy[0] ** 2 + f_xy[1] ** 2 <= f_x.max() * low_pass,
-        #     transmission_function_fourier,
-        #     0,
-        # )
+        f_xy = np.meshgrid(f_x, f_y)
+        transmission_function_fourier = np.where(
+            f_xy[0] ** 2 + f_xy[1] ** 2
+            <= (f_xy[0] ** 2 + f_xy[1] ** 2).max() * low_pass,
+            transmission_function_fourier,
+            0,
+        )
 
         # apply helmholtz phase factor
         helmholtz_phase_factor = np.sqrt(
