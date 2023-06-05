@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>psd_ast_model module &mdash; TBS Project: Angular Spectrum Theory  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ast_model module" href="ast_model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            TBS Project: Angular Spectrum Theory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ast_model.html">ast_model module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">psd_ast_model module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#psd_ast_model.GammaPSD"><code class="docutils literal notranslate"><span class="pre">GammaPSD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#psd_ast_model.GammaPSD.binned_distribution"><code class="docutils literal notranslate"><span class="pre">GammaPSD.binned_distribution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#psd_ast_model.GammaPSD.psd_value"><code class="docutils literal notranslate"><span class="pre">GammaPSD.psd_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#psd_ast_model.PSDModel"><code class="docutils literal notranslate"><span class="pre">PSDModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#psd_ast_model.PSDModel.generate"><code class="docutils literal notranslate"><span class="pre">PSDModel.generate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#psd_ast_model.PSDModel.simulate_distribution"><code class="docutils literal notranslate"><span class="pre">PSDModel.simulate_distribution()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#psd_ast_model.rejection_sampler"><code class="docutils literal notranslate"><span class="pre">rejection_sampler()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">TBS Project: Angular Spectrum Theory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">psd_ast_model module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/psd_ast_model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-psd_ast_model">
+<span id="psd-ast-model-module"></span><h1>psd_ast_model module<a class="headerlink" href="#module-psd_ast_model" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="psd_ast_model.GammaPSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">psd_ast_model.</span></span><span class="sig-name descname"><span class="pre">GammaPSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intercept</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([1.00000000e-07,</span> <span class="pre">1.09749877e-07,</span> <span class="pre">1.20450354e-07,</span> <span class="pre">1.32194115e-07,</span> <span class="pre">1.45082878e-07,</span> <span class="pre">1.59228279e-07,</span> <span class="pre">1.74752840e-07,</span> <span class="pre">1.91791026e-07,</span> <span class="pre">2.10490414e-07,</span> <span class="pre">2.31012970e-07,</span> <span class="pre">2.53536449e-07,</span> <span class="pre">2.78255940e-07,</span> <span class="pre">3.05385551e-07,</span> <span class="pre">3.35160265e-07,</span> <span class="pre">3.67837977e-07,</span> <span class="pre">4.03701726e-07,</span> <span class="pre">4.43062146e-07,</span> <span class="pre">4.86260158e-07,</span> <span class="pre">5.33669923e-07,</span> <span class="pre">5.85702082e-07,</span> <span class="pre">6.42807312e-07,</span> <span class="pre">7.05480231e-07,</span> <span class="pre">7.74263683e-07,</span> <span class="pre">8.49753436e-07,</span> <span class="pre">9.32603347e-07,</span> <span class="pre">1.02353102e-06,</span> <span class="pre">1.12332403e-06,</span> <span class="pre">1.23284674e-06,</span> <span class="pre">1.35304777e-06,</span> <span class="pre">1.48496826e-06,</span> <span class="pre">1.62975083e-06,</span> <span class="pre">1.78864953e-06,</span> <span class="pre">1.96304065e-06,</span> <span class="pre">2.15443469e-06,</span> <span class="pre">2.36448941e-06,</span> <span class="pre">2.59502421e-06,</span> <span class="pre">2.84803587e-06,</span> <span class="pre">3.12571585e-06,</span> <span class="pre">3.43046929e-06,</span> <span class="pre">3.76493581e-06,</span> <span class="pre">4.13201240e-06,</span> <span class="pre">4.53487851e-06,</span> <span class="pre">4.97702356e-06,</span> <span class="pre">5.46227722e-06,</span> <span class="pre">5.99484250e-06,</span> <span class="pre">6.57933225e-06,</span> <span class="pre">7.22080902e-06,</span> <span class="pre">7.92482898e-06,</span> <span class="pre">8.69749003e-06,</span> <span class="pre">9.54548457e-06,</span> <span class="pre">1.04761575e-05,</span> <span class="pre">1.14975700e-05,</span> <span class="pre">1.26185688e-05,</span> <span class="pre">1.38488637e-05,</span> <span class="pre">1.51991108e-05,</span> <span class="pre">1.66810054e-05,</span> <span class="pre">1.83073828e-05,</span> <span class="pre">2.00923300e-05,</span> <span class="pre">2.20513074e-05,</span> <span class="pre">2.42012826e-05,</span> <span class="pre">2.65608778e-05,</span> <span class="pre">2.91505306e-05,</span> <span class="pre">3.19926714e-05,</span> <span class="pre">3.51119173e-05,</span> <span class="pre">3.85352859e-05,</span> <span class="pre">4.22924287e-05,</span> <span class="pre">4.64158883e-05,</span> <span class="pre">5.09413801e-05,</span> <span class="pre">5.59081018e-05,</span> <span class="pre">6.13590727e-05,</span> <span class="pre">6.73415066e-05,</span> <span class="pre">7.39072203e-05,</span> <span class="pre">8.11130831e-05,</span> <span class="pre">8.90215085e-05,</span> <span class="pre">9.77009957e-05,</span> <span class="pre">1.07226722e-04,</span> <span class="pre">1.17681195e-04,</span> <span class="pre">1.29154967e-04,</span> <span class="pre">1.41747416e-04,</span> <span class="pre">1.55567614e-04,</span> <span class="pre">1.70735265e-04,</span> <span class="pre">1.87381742e-04,</span> <span class="pre">2.05651231e-04,</span> <span class="pre">2.25701972e-04,</span> <span class="pre">2.47707636e-04,</span> <span class="pre">2.71858824e-04,</span> <span class="pre">2.98364724e-04,</span> <span class="pre">3.27454916e-04,</span> <span class="pre">3.59381366e-04,</span> <span class="pre">3.94420606e-04,</span> <span class="pre">4.32876128e-04,</span> <span class="pre">4.75081016e-04,</span> <span class="pre">5.21400829e-04,</span> <span class="pre">5.72236766e-04,</span> <span class="pre">6.28029144e-04,</span> <span class="pre">6.89261210e-04,</span> <span class="pre">7.56463328e-04,</span> <span class="pre">8.30217568e-04,</span> <span class="pre">9.11162756e-04,</span> <span class="pre">1.00000000e-03])</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psd_ast_model.html#GammaPSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#psd_ast_model.GammaPSD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Gamma particle size distribution $$n_N(r) = N_0 (r/     ext{1 m})^mu e^{-Gamma r}.$$</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>intercept</strong> (<em>float</em>) – N_0 in m^-3.</p></li>
+<li><p><strong>slope</strong> (<em>float</em>) – Gamma in m^-1.</p></li>
+<li><p><strong>shape</strong> (<em>float</em>) – mu.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="psd_ast_model.GammaPSD.binned_distribution">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">binned_distribution</span></span><a class="headerlink" href="#psd_ast_model.GammaPSD.binned_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the binned particle size distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number of particles in each bin.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="psd_ast_model.GammaPSD.psd_value">
+<span class="sig-name descname"><span class="pre">psd_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psd_ast_model.html#GammaPSD.psd_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#psd_ast_model.GammaPSD.psd_value" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the particle size distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>r</strong> (<em>float</em>) – The particle radius in metres.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="psd_ast_model.PSDModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">psd_ast_model.</span></span><span class="sig-name descname"><span class="pre">PSDModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psd_ast_model.html#PSDModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#psd_ast_model.PSDModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Particle size distribution model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ast_model</strong> (<a class="reference internal" href="ast_model.html#ast_model.ASTModel" title="ast_model.ASTModel"><em>ASTModel</em></a>) – The AST model to use.</p></li>
+<li><p><strong>psd</strong> (<em>PSD</em>) – The particle size distribution function, dN/dr in m^-1.</p></li>
+<li><p><strong>z_dist</strong> (<em>callable</em><em>, </em><em>optional</em><em>, </em><em>unimplimented</em>) – The probability distribution of particles along the z-axis, normalised to 1 when integrated wrt z, in m^-1. Defaults to uniform across array.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="psd_ast_model.PSDModel.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_particles</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psd_ast_model.html#PSDModel.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#psd_ast_model.PSDModel.generate" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a particle size distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_particles</strong> (<em>int</em>) – The number of particles to generate.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The particle sizes in metres.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="psd_ast_model.PSDModel.simulate_distribution">
+<span class="sig-name descname"><span class="pre">simulate_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_particles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_particle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psd_ast_model.html#PSDModel.simulate_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#psd_ast_model.PSDModel.simulate_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>“Generate a measured distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psd_ast_model.rejection_sampler">
+<span class="sig-prename descclassname"><span class="pre">psd_ast_model.</span></span><span class="sig-name descname"><span class="pre">rejection_sampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xbounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psd_ast_model.html#rejection_sampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#psd_ast_model.rejection_sampler" title="Permalink to this definition"></a></dt>
+<dd><p>Rejection sampler for a bounded probability distribution.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ast_model.html" class="btn btn-neutral float-left" title="ast_model module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

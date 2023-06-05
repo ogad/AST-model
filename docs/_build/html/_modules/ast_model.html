@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ast_model &mdash; TBS Project: Angular Spectrum Theory  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TBS Project: Angular Spectrum Theory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ast_model.html">ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../psd_ast_model.html">psd_ast_model module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TBS Project: Angular Spectrum Theory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ast_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ast_model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Angular Spectrum Theory model</span>
+<span class="c1"># Authour: Oliver Driver</span>
+<span class="c1"># Date: 22/05/2023</span>
+
+<span class="c1"># Standard library imports</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="c1"># Package imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+
+
+<div class="viewcode-block" id="IntensityField"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField">[docs]</a><span class="k">class</span> <span class="nc">IntensityField</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent an intensity field</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        np.ndarray: The intensity field</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">input_array</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">input_array</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="n">pixel_size</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="nf">__array_finalize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;pixel_size&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IntensityField.plot"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grayscale_bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity field</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ax (matplotlib.axes.Axes): The axis to plot on.</span>
+<span class="sd">            axis_length(float): The axis_length of the object in micrometres.</span>
+<span class="sd">            grayscale_bounds (list): The list of bounds for grayscale bands. When None, the intensity is plotted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">axis_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axis_length_px</span> <span class="o">=</span> <span class="n">axis_length</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span>
+            <span class="n">to_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span>
+                <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">axis_length_px</span><span class="p">)</span> <span class="o">//</span>
+                    <span class="mi">2</span><span class="p">):</span><span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">axis_length_px</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">axis_length_px</span><span class="p">)</span> <span class="o">//</span>
+                    <span class="mi">2</span><span class="p">):</span><span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">axis_length_px</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">to_plot</span> <span class="o">=</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="n">grayscale_bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Replace pixel values to the next-highest grayscale bound</span>
+            <span class="n">bounded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">to_plot</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bound</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">grayscale_bounds</span><span class="p">)):</span>
+                <span class="n">current_bound</span> <span class="o">=</span> <span class="p">(</span><span class="n">to_plot</span> <span class="o">&lt;</span> <span class="n">bound</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">bounded</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">to_plot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">current_bound</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">to_plot</span><span class="p">)</span>
+                <span class="n">bounded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">current_bound</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bounded</span><span class="p">)</span>
+            <span class="n">to_plot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">bounded</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">grayscale_bounds</span><span class="p">),</span> <span class="n">to_plot</span><span class="p">)</span>
+
+        <span class="n">ax_image</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">to_plot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">xticks</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xticks</span><span class="p">()</span>
+        <span class="n">yticks</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_yticks</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">((</span><span class="n">xticks</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">((</span><span class="n">yticks</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x/µm&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;y/µm&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ax_image</span></div>
+
+<div class="viewcode-block" id="IntensityField.measure_xy_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.measure_xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">measure_xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># threshold the image at 50% of the initial intensity</span>
+        <span class="n">thresholded_image</span> <span class="o">=</span> <span class="bp">self</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
+
+        <span class="c1"># isolate only the largest conncted region</span>
+        <span class="n">labeled_image</span><span class="p">,</span> <span class="n">n_labels</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">thresholded_image</span><span class="p">)</span>
+        <span class="n">label_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">labeled_image</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">largest_label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">label_counts</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">largest_region</span> <span class="o">=</span> <span class="n">labeled_image</span> <span class="o">==</span> <span class="n">largest_label</span>
+
+        <span class="c1"># find the maximum extent in the x and y directions</span>
+        <span class="n">x_extent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">largest_region</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">y_extent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">largest_region</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="c1"># return the average of the two extents in micrometres</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x_extent</span> <span class="o">+</span> <span class="n">y_extent</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="mf">1e6</span></div>
+
+<div class="viewcode-block" id="IntensityField.measure_xy_diameters"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.measure_xy_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_xy_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># threshold the image at 50% of the initial intensity</span>
+        <span class="n">thresholded_image</span> <span class="o">=</span> <span class="bp">self</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
+
+        <span class="c1"># iterate over connected regions</span>
+        <span class="n">labeled_image</span><span class="p">,</span> <span class="n">n_labels</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">thresholded_image</span><span class="p">)</span>
+
+        <span class="n">diameters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_labels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">labeled_image</span> <span class="o">==</span> <span class="n">label</span>
+
+            <span class="c1"># find the maximum extent in the x and y directions</span>
+            <span class="n">x_extent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">y_extent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+            <span class="n">diameters</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x_extent</span> <span class="o">+</span> <span class="n">y_extent</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span>
+
+        <span class="c1"># return list of diameters in micrometres</span>
+        <span class="k">return</span> <span class="n">diameters</span></div>
+
+<div class="viewcode-block" id="IntensityField.n_pixels_depletion_range"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.n_pixels_depletion_range">[docs]</a>    <span class="k">def</span> <span class="nf">n_pixels_depletion_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_dep</span><span class="p">,</span> <span class="n">max_dep</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number of pixels in the depletion range</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            min_dep (float): The minimum depletion value.</span>
+<span class="sd">            max_dep (float): The maximum depletion value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: The number of pixels in the depletion range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">min_intensity_counted</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">max_dep</span>
+        <span class="n">max_intensity_counted</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">min_dep</span>
+
+        <span class="n">n_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span> <span class="o">&lt;=</span> <span class="n">max_intensity_counted</span><span class="p">)</span>
+                          <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span> <span class="o">&gt;</span> <span class="n">min_intensity_counted</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">n_pixels</span></div></div>
+
+
+<div class="viewcode-block" id="ASTModel"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ASTModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Angular Spectrum Theory model</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        opaque_shape (np.ndarray): The shape of the opaque object in the z=0 plane.</span>
+<span class="sd">        wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</span>
+<span class="sd">        pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">opaque_shape</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">wavenumber</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">658e-9</span>  <span class="c1"># in inverse metres</span>
+    <span class="n">pixel_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10e-6</span>  <span class="c1"># in metres</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intenisties</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># z: intenisty grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># trim opaque shape of zero-valued rows and columns</span>
+        <span class="n">nonzero_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">nonzero_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">nonzero_x</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">[</span>
+                <span class="n">nonzero_x</span><span class="o">.</span><span class="n">min</span><span class="p">():</span><span class="n">nonzero_x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">if</span> <span class="n">nonzero_y</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">[:,</span>
+                                                  <span class="n">nonzero_y</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+                                                  <span class="p">):</span><span class="n">nonzero_y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ASTModel.from_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.from_diameter">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_diameter</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">,</span> <span class="n">wavenumber</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a model for a circular opaque object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diameter (float): The diameter of the opaque object in micrometres.</span>
+<span class="sd">            wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</span>
+<span class="sd">            pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ASTModel: The model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set defaults</span>
+        <span class="k">if</span> <span class="n">wavenumber</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wavenumber</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">wavenumber</span>
+        <span class="k">if</span> <span class="n">pixel_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pixel_size</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">pixel_size</span>
+
+        <span class="c1"># create the opaque shape</span>
+        <span class="n">radius_m</span> <span class="o">=</span> <span class="n">diameter</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">radius_px</span> <span class="o">=</span> <span class="n">radius_m</span> <span class="o">/</span> <span class="n">pixel_size</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">radius_px</span><span class="p">,</span> <span class="n">radius_px</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">radius_px</span><span class="p">,</span> <span class="n">radius_px</span><span class="p">)</span>
+        <span class="n">x_val_grid</span><span class="p">,</span> <span class="n">y_val_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">opaque_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x_val_grid</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y_val_grid</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">radius_px</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># create the model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">opaque_shape</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">diameter</span> <span class="o">*</span> <span class="mf">1e-6</span>
+
+        <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="ASTModel.process"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">low_pass</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntensityField</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model for a given z</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            z (float): The distance of the the opaque_shape from the object plane.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IntensityField: The intensity of the image at z.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check if the intensity has already been calculated</span>
+        <span class="k">if</span> <span class="n">z_val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">intenisties</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">intenisties</span><span class="p">[</span><span class="n">z_val</span><span class="p">]</span>
+
+        <span class="n">object_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">,</span>
+            <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span>
+            <span class="mi">10</span><span class="p">,</span>  <span class="c1"># arbitrarily 10 times the size of the object</span>
+            <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+            <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># calculate the transmission function (1 outside the shape, 0 inside)</span>
+        <span class="n">transmission_function</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">object_plane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># transform into fourier space</span>
+        <span class="n">transmission_function_fourier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">transmission_function</span><span class="p">)</span>
+
+        <span class="c1"># calculate the fourier space coordinates</span>
+        <span class="n">f_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">transmission_function</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+        <span class="n">f_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">transmission_function</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># low pass filter</span>
+        <span class="n">f_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">f_x</span><span class="p">,</span> <span class="n">f_y</span><span class="p">)</span>
+        <span class="n">transmission_function_fourier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">f_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">f_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+            <span class="o">&lt;=</span> <span class="p">(</span><span class="n">f_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">f_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="n">low_pass</span><span class="p">,</span>
+            <span class="n">transmission_function_fourier</span><span class="p">,</span>
+            <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># apply helmholtz phase factor</span>
+        <span class="n">helmholtz_phase_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
+                                         <span class="p">(</span><span class="n">f_x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">f_y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                                         <span class="p">)</span>
+        <span class="n">transmission_function_fourier_translated</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">transmission_function_fourier</span> <span class="o">*</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">z_val</span> <span class="o">*</span> <span class="n">helmholtz_phase_factor</span><span class="p">))</span>
+
+        <span class="c1"># transform back into real space</span>
+        <span class="n">transmission_function_translated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft2</span><span class="p">(</span>
+            <span class="n">transmission_function_fourier_translated</span><span class="p">)</span>
+
+        <span class="c1"># calculate the intensity</span>
+        <span class="n">intensity_translated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">transmission_function_translated</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">intensity_translated_as_field</span> <span class="o">=</span> <span class="n">IntensityField</span><span class="p">(</span>
+            <span class="n">intensity_translated</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+
+        <span class="c1"># cache and return the intensity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intenisties</span><span class="p">[</span><span class="n">z_val</span><span class="p">]</span> <span class="o">=</span> <span class="n">intensity_translated_as_field</span>
+        <span class="k">return</span> <span class="n">intensity_translated_as_field</span></div>
+
+<div class="viewcode-block" id="ASTModel.process_range"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.process_range">[docs]</a>    <span class="k">def</span> <span class="nf">process_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_range</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model for a range of z values</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            z_range (np.ndarray): The range of z values to process.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The intensity of the image at z.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">z_range</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ASTModel.plot_intensity"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.plot_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">plot_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity at a given z</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            z (float): The distance of the the opaque_shape from the object plane.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">intensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z_val</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">intensity</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ASTModel.xy_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the xy diameter of the opaque_shape, defined to be the mean of the maximum nonzero extent of the opaque shape in the x and y directions.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;xy&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span>
+
+        <span class="n">nonzero_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">nonzero_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span>
+            <span class="n">nonzero_x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">nonzero_x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+            <span class="n">nonzero_y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">nonzero_y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ASTModel.get_zd"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.get_zd">[docs]</a>    <span class="k">def</span> <span class="nf">get_zd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">,</span> <span class="n">diameter_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the dimensionless diffraction z distance.&quot;&quot;&quot;</span>
+        <span class="n">wavelength</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span>
+        <span class="k">return</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="n">z_val</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="n">diameter_type</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

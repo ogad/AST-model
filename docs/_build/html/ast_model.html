@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ast_model module &mdash; TBS Project: Angular Spectrum Theory  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="psd_ast_model module" href="psd_ast_model.html" />
+    <link rel="prev" title="Welcome to TBS Project: Angular Spectrum Theory’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            TBS Project: Angular Spectrum Theory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ast_model module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ast_model.ASTModel"><code class="docutils literal notranslate"><span class="pre">ASTModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.from_diameter"><code class="docutils literal notranslate"><span class="pre">ASTModel.from_diameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.get_zd"><code class="docutils literal notranslate"><span class="pre">ASTModel.get_zd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.opaque_shape"><code class="docutils literal notranslate"><span class="pre">ASTModel.opaque_shape</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.pixel_size"><code class="docutils literal notranslate"><span class="pre">ASTModel.pixel_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.plot_intensity"><code class="docutils literal notranslate"><span class="pre">ASTModel.plot_intensity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.process"><code class="docutils literal notranslate"><span class="pre">ASTModel.process()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.process_range"><code class="docutils literal notranslate"><span class="pre">ASTModel.process_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.wavenumber"><code class="docutils literal notranslate"><span class="pre">ASTModel.wavenumber</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.xy_diameter"><code class="docutils literal notranslate"><span class="pre">ASTModel.xy_diameter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ast_model.IntensityField"><code class="docutils literal notranslate"><span class="pre">IntensityField</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.measure_xy_diameter"><code class="docutils literal notranslate"><span class="pre">IntensityField.measure_xy_diameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.measure_xy_diameters"><code class="docutils literal notranslate"><span class="pre">IntensityField.measure_xy_diameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.n_pixels_depletion_range"><code class="docutils literal notranslate"><span class="pre">IntensityField.n_pixels_depletion_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.plot"><code class="docutils literal notranslate"><span class="pre">IntensityField.plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="psd_ast_model.html">psd_ast_model module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">TBS Project: Angular Spectrum Theory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ast_model module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ast_model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ast_model">
+<span id="ast-model-module"></span><h1>ast_model module<a class="headerlink" href="#module-ast_model" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ast_model.ASTModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast_model.</span></span><span class="sig-name descname"><span class="pre">ASTModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opaque_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavenumber</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">9548913.84069846</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Angular Spectrum Theory model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opaque_shape</strong> (<em>np.ndarray</em>) – The shape of the opaque object in the z=0 plane.</p></li>
+<li><p><strong>wavenumber</strong> (<em>float</em><em>, </em><em>optional</em>) – The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</p></li>
+<li><p><strong>pixel_size</strong> (<em>float</em><em>, </em><em>optional</em>) – The size of the pixels in the opaque_shape. Defaults to 10 µm.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.from_diameter">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_diameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavenumber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.from_diameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.from_diameter" title="Permalink to this definition"></a></dt>
+<dd><p>Create a model for a circular opaque object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>diameter</strong> (<em>float</em>) – The diameter of the opaque object in micrometres.</p></li>
+<li><p><strong>wavenumber</strong> (<em>float</em><em>, </em><em>optional</em>) – The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</p></li>
+<li><p><strong>pixel_size</strong> (<em>float</em><em>, </em><em>optional</em>) – The size of the pixels in the opaque_shape. Defaults to 10 µm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The model.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ast_model.ASTModel" title="ast_model.ASTModel">ASTModel</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.get_zd">
+<span class="sig-name descname"><span class="pre">get_zd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diameter_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.get_zd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.get_zd" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the dimensionless diffraction z distance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast_model.ASTModel.opaque_shape">
+<span class="sig-name descname"><span class="pre">opaque_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#ast_model.ASTModel.opaque_shape" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast_model.ASTModel.pixel_size">
+<span class="sig-name descname"><span class="pre">pixel_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#ast_model.ASTModel.pixel_size" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.plot_intensity">
+<span class="sig-name descname"><span class="pre">plot_intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.plot_intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.plot_intensity" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the intensity at a given z</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>float</em>) – The distance of the the opaque_shape from the object plane.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ast_model.IntensityField" title="ast_model.IntensityField"><span class="pre">IntensityField</span></a></span></span><a class="reference internal" href="_modules/ast_model.html#ASTModel.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.process" title="Permalink to this definition"></a></dt>
+<dd><p>Process the model for a given z</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>z</strong> (<em>float</em>) – The distance of the the opaque_shape from the object plane.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The intensity of the image at z.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ast_model.IntensityField" title="ast_model.IntensityField">IntensityField</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.process_range">
+<span class="sig-name descname"><span class="pre">process_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/ast_model.html#ASTModel.process_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.process_range" title="Permalink to this definition"></a></dt>
+<dd><p>Process the model for a range of z values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>z_range</strong> (<em>np.ndarray</em>) – The range of z values to process.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The intensity of the image at z.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast_model.ASTModel.wavenumber">
+<span class="sig-name descname"><span class="pre">wavenumber</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9548913.84069846</span></em><a class="headerlink" href="#ast_model.ASTModel.wavenumber" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.xy_diameter">
+<span class="sig-name descname"><span class="pre">xy_diameter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.xy_diameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.xy_diameter" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the xy diameter of the opaque_shape, defined to be the mean of the maximum nonzero extent of the opaque shape in the x and y directions.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast_model.IntensityField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast_model.</span></span><span class="sig-name descname"><span class="pre">IntensityField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#IntensityField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+<p>A class to represent an intensity field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>np.ndarray</strong> – The intensity field</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.IntensityField.measure_xy_diameter">
+<span class="sig-name descname"><span class="pre">measure_xy_diameter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#IntensityField.measure_xy_diameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.measure_xy_diameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.IntensityField.measure_xy_diameters">
+<span class="sig-name descname"><span class="pre">measure_xy_diameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#IntensityField.measure_xy_diameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.measure_xy_diameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.IntensityField.n_pixels_depletion_range">
+<span class="sig-name descname"><span class="pre">n_pixels_depletion_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_dep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dep</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#IntensityField.n_pixels_depletion_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.n_pixels_depletion_range" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the number of pixels in the depletion range</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_dep</strong> (<em>float</em>) – The minimum depletion value.</p></li>
+<li><p><strong>max_dep</strong> (<em>float</em>) – The maximum depletion value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of pixels in the depletion range.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.IntensityField.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grayscale_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#IntensityField.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the intensity field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The axis to plot on.</p></li>
+<li><p><strong>axis_length</strong> (<em>float</em>) – The axis_length of the object in micrometres.</p></li>
+<li><p><strong>grayscale_bounds</strong> (<em>list</em>) – The list of bounds for grayscale bands. When None, the intensity is plotted.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to TBS Project: Angular Spectrum Theory’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="psd_ast_model.html" class="btn btn-neutral float-right" title="psd_ast_model module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
