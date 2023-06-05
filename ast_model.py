@@ -42,12 +42,10 @@ class IntensityField(np.ndarray):
         if axis_length is not None:
             axis_length_px = axis_length * 1e-6 // self.pixel_size
             to_plot = self[
-                int((self.shape[0] - axis_length_px) // 2) : int(
-                    (self.shape[0] + axis_length_px) // 2
-                ),
-                int((self.shape[1] - axis_length_px) // 2) : int(
-                    (self.shape[1] + axis_length_px) // 2
-                ),
+                int((self.shape[0] - axis_length_px) //
+                    2):int((self.shape[0] + axis_length_px) // 2),
+                int((self.shape[1] - axis_length_px) //
+                    2):int((self.shape[1] + axis_length_px) // 2),
             ]
         else:
             to_plot = self
@@ -88,6 +86,26 @@ class IntensityField(np.ndarray):
         # return the average of the two extents in micrometres
         return (x_extent + y_extent) / 2 * self.pixel_size * 1e6
 
+    def measure_xy_diameters(self):
+        # threshold the image at 50% of the initial intensity
+        thresholded_image = self < 0.5
+
+        # iterate over connected regions
+        labeled_image, n_labels = ndimage.label(thresholded_image)
+
+        diameters = []
+        for label in range(1, n_labels + 1):
+            region = labeled_image == label
+
+            # find the maximum extent in the x and y directions
+            x_extent = np.sum(region, axis=0).max()
+            y_extent = np.sum(region, axis=1).max()
+
+            diameters.append((x_extent + y_extent) / 2 * self.pixel_size * 1e6)
+
+        # return list of diameters in micrometres
+        return diameters
+
     def n_pixels_depletion_range(self, min_dep, max_dep):
         """Calculate the number of pixels in the depletion range
 
@@ -101,9 +119,8 @@ class IntensityField(np.ndarray):
         min_intensity_counted = 1 - max_dep
         max_intensity_counted = 1 - min_dep
 
-        n_pixels = np.sum(
-            (self <= max_intensity_counted) & (self > min_intensity_counted)
-        )
+        n_pixels = np.sum((self <= max_intensity_counted)
+                          & (self > min_intensity_counted))
 
         return n_pixels
 
@@ -127,16 +144,17 @@ class ASTModel:
         self.diameters = {}
 
         # trim opaque shape of zero-valued rows and columns
-        nonzero_x = np.arange(self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
-        nonzero_y = np.arange(self.opaque_shape.shape[1])[self.opaque_shape.any(axis=0)]
+        nonzero_x = np.arange(
+            self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
+        nonzero_y = np.arange(
+            self.opaque_shape.shape[1])[self.opaque_shape.any(axis=0)]
         if nonzero_x.size > 0:
             self.opaque_shape = self.opaque_shape[
-                nonzero_x.min() : nonzero_x.max() + 1, :
-            ]
+                nonzero_x.min():nonzero_x.max() + 1, :]
         if nonzero_y.size > 0:
-            self.opaque_shape = self.opaque_shape[
-                :, nonzero_y.min() : nonzero_y.max() + 1
-            ]
+            self.opaque_shape = self.opaque_shape[:,
+                                                  nonzero_y.min(
+                                                  ):nonzero_y.max() + 1]
 
     @classmethod
     def from_diameter(cls, diameter, wavenumber=None, pixel_size=None):
@@ -161,8 +179,8 @@ class ASTModel:
         radius_px = radius_m / pixel_size
         x = np.arange(-radius_px, radius_px)
         y = np.arange(-radius_px, radius_px)
-        xx, yy = np.meshgrid(x, y)
-        opaque_shape = np.where(xx**2 + yy**2 <= radius_px**2, 1, 0)
+        x_val_grid, y_val_grid = np.meshgrid(x, y)
+        opaque_shape = np.where(x_val_grid**2 + y_val_grid**2 <= radius_px**2, 1, 0)
 
         # create the model
         model = cls(opaque_shape, wavenumber, pixel_size)
@@ -186,8 +204,8 @@ class ASTModel:
 
         object_plane = np.pad(
             self.opaque_shape,
-            max(self.opaque_shape.shape)
-            * 10,  # arbitrarily 10 times the size of the object
+            max(self.opaque_shape.shape) *
+            10,  # arbitrarily 10 times the size of the object
             "constant",
             constant_values=(0, 0),
         )
@@ -200,37 +218,34 @@ class ASTModel:
 
         # calculate the fourier space coordinates
         f_x = np.fft.fftfreq(transmission_function.shape[1], self.pixel_size)
-        f_y = np.fft.fftfreq(transmission_function.shape[0], self.pixel_size).reshape(
-            -1, 1
-        )
+        f_y = np.fft.fftfreq(transmission_function.shape[0],
+                             self.pixel_size).reshape(-1, 1)
 
         # low pass filter
         f_xy = np.meshgrid(f_x, f_y)
         transmission_function_fourier = np.where(
-            f_xy[0] ** 2 + f_xy[1] ** 2
-            <= (f_xy[0] ** 2 + f_xy[1] ** 2).max() * low_pass,
+            f_xy[0]**2 + f_xy[1]**2
+            <= (f_xy[0]**2 + f_xy[1]**2).max() * low_pass,
             transmission_function_fourier,
             0,
         )
 
         # apply helmholtz phase factor
-        helmholtz_phase_factor = np.sqrt(
-            self.wavenumber**2 - 4 * np.pi**2 * (f_x**2 + f_y**2)
-        )
+        helmholtz_phase_factor = np.sqrt(self.wavenumber**2 - 4 * np.pi**2 *
+                                         (f_x**2 + f_y**2)
+                                         )
         transmission_function_fourier_translated = (
-            transmission_function_fourier * np.exp(1j * z_val * helmholtz_phase_factor)
-        )
+            transmission_function_fourier *
+            np.exp(1j * z_val * helmholtz_phase_factor))
 
         # transform back into real space
         transmission_function_translated = np.fft.ifft2(
-            transmission_function_fourier_translated
-        )
+            transmission_function_fourier_translated)
 
         # calculate the intensity
-        intensity_translated = np.abs(transmission_function_translated) ** 2
+        intensity_translated = np.abs(transmission_function_translated)**2
         intensity_translated_as_field = IntensityField(
-            intensity_translated, pixel_size=self.pixel_size
-        )
+            intensity_translated, pixel_size=self.pixel_size)
 
         # cache and return the intensity
         self.intenisties[z_val] = intensity_translated_as_field
@@ -262,18 +277,18 @@ class ASTModel:
         if self.diameters.get("xy"):
             return self.diameters["xy"]
 
-        nonzero_x = np.arange(self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
-        nonzero_y = np.arange(self.opaque_shape.shape[1])[self.opaque_shape.any(axis=0)]
+        nonzero_x = np.arange(
+            self.opaque_shape.shape[0])[self.opaque_shape.any(axis=1)]
+        nonzero_y = np.arange(
+            self.opaque_shape.shape[1])[self.opaque_shape.any(axis=0)]
 
-        self.diameters["xy"] = (
-            np.mean(
-                [nonzero_x.max() - nonzero_x.min(), nonzero_y.max() - nonzero_y.min()]
-            )
-            * self.pixel_size
-        )
+        self.diameters["xy"] = (np.mean([
+            nonzero_x.max() - nonzero_x.min(),
+            nonzero_y.max() - nonzero_y.min()
+        ]) * self.pixel_size)
         return self.diameters["xy"]
 
     def get_zd(self, z_val, diameter_type):
         """Calculate the dimensionless diffraction z distance."""
         wavelength = 2 * np.pi / self.wavenumber
-        return 4 * wavelength * z_val / self.diameters[diameter_type] ** 2
+        return 4 * wavelength * z_val / self.diameters[diameter_type]**2

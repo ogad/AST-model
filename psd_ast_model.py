@@ -1,3 +1,7 @@
+# Particle size distribution model
+# Authour: Oliver Driver
+# Date: 01/06/2023
+
 from random import choices
 import numpy as np
 
@@ -30,6 +34,11 @@ class GammaPSD:
         self.bins = bins
 
     def psd_value(self, r):
+        """Calculate the particle size distribution.
+
+        Args:
+            r (float): The particle radius in metres.
+        """
         return self.intercept * r**self.shape * np.exp(-1 * self.slope * r)
 
     @property
@@ -65,7 +74,8 @@ class PSDModel:
             inlet_length = 7.35e-3  # m
             self.z_pmax = 1 / inlet_length
             self.zbounds = [-inlet_length / 2, inlet_length / 2]
-            self.z_dist = lambda z: self.z_pmax if abs(z) < self.zbounds[1] else 0
+            self.z_dist = lambda z: self.z_pmax if abs(
+                z) < self.zbounds[1] else 0
 
     def generate(self, n_particles):
         """Generate a particle size distribution.
@@ -82,22 +92,28 @@ class PSDModel:
             particles[i, 0] = choices(
                 self.psd.bins[1:], weights=self.psd.binned_distribution
             )[0]
-            particles[i, 1] = rejection_sampler(self.z_dist, self.zbounds, self.z_pmax)
+            particles[i, 1] = rejection_sampler(
+                self.z_dist, self.zbounds, self.z_pmax)
 
         return particles
 
-    def simulate_distribution(self, n_particles):
+    def simulate_distribution(self, n_particles, single_particle=False):
         """ "Generate a measured distribution."""
         particles = self.generate(n_particles)
-        diameters_measured = np.zeros(n_particles)
+        diameters_measured = []
         for i in range(particles.shape[0]):
             radius = particles[i, 0]
             z_value = particles[i, 1]
 
             if radius not in self.ast_models:
-                self.ast_models[radius] = ASTModel.from_diameter(radius * 2 / 1e-6)
+                self.ast_models[radius] = ASTModel.from_diameter(
+                    radius * 2 / 1e-6)
             intensity = self.ast_models[radius].process(z_val=z_value)
 
-            diameter = intensity.measure_xy_diameter()
-            diameters_measured[i] = diameter
-        return diameters_measured
+            if single_particle:
+                diameters = [intensity.measure_xy_diameter().tolist()]
+            else:
+                diameters = intensity.measure_xy_diameters()
+
+            diameters_measured += diameters
+        return np.array(diameters_measured)
