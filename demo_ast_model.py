@@ -194,4 +194,27 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.show()
 
-    # %%
+# %%
+from copy import deepcopy
+if __name__ == "__main__":
+    rescaled_model = model.rescale(0.6)
+    regridded_rescaled_model = deepcopy(rescaled_model)
+    regridded_rescaled_model.regrid()
+
+    fig, (ax0, ax1, ax2) = plt.subplots(1, 3, figsize=(15, 5))
+    model.plot_intensity(0, ax=ax0, axis_length=400)
+    rescaled_model.plot_intensity(0, ax=ax1, axis_length=400)
+    regridded_rescaled_model.plot_intensity(0, ax=ax2, axis_length=400)
+
+    fig2, (ax3, ax4, ax5) = plt.subplots(1, 3, figsize=(15, 5))
+    z_unsc, int_unsc = list(model.intensities.items())[0]
+    z_sc, int_sc = list(rescaled_model.intensities.items())[0]
+    z_sc_rg, int_sc_rg = list(regridded_rescaled_model.intensities.items())[0]
+    int_unsc.plot(ax=ax3, axis_length=400)
+    ax3.set_title(f"Unscaled {z_unsc*1e3:.2f} mm")
+    int_sc.plot(ax=ax4, axis_length=400)
+    ax4.set_title(f"Scaled {z_sc*1e3:.2f} mm")
+    int_sc_rg.plot(ax=ax5, axis_length=400)
+    ax5.set_title(f"Scaled and regridded {z_sc_rg*1e3:.2f} mm")
+
+# %%

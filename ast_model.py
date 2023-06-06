@@ -10,7 +10,7 @@ from copy import deepcopy
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy import ndimage
-
+from skimage.transform import rescale
 
 class IntensityField(np.ndarray):
     """A class to represent an intensity field
@@ -326,3 +326,17 @@ class ASTModel:
 
         # return the new ASTModel object
         return scaled_model
+    
+    def regrid(self, pixel_size= 10e-6):
+        """Set the pixel size of the model.
+        
+        Args:
+            pixel_size (float): The pixel size to set the model to.
+        """
+        scale_factor = pixel_size / self.pixel_size
+
+        self.opaque_shape = rescale(self.opaque_shape, 1/scale_factor)
+        self.pixel_size = pixel_size
+
+        for z_val, intensity_profile in self.intensities.items():
+            self.intensities[z_val] = IntensityField(rescale(intensity_profile, 1/scale_factor), pixel_size=pixel_size)
