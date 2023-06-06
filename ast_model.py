@@ -4,6 +4,7 @@
 
 # Standard library imports
 from dataclasses import dataclass
+from copy import deepcopy
 
 # Package imports
 import numpy as np
@@ -140,7 +141,7 @@ class ASTModel:
     pixel_size: float = 10e-6  # in metres
 
     def __post_init__(self):
-        self.intenisties = {}  # z: intenisty grid
+        self.intensities = {}  # z: intenisty grid
         self.diameters = {}
 
         # trim opaque shape of zero-valued rows and columns
@@ -199,8 +200,8 @@ class ASTModel:
         """
 
         # check if the intensity has already been calculated
-        if z_val in self.intenisties:
-            return self.intenisties[z_val]
+        if z_val in self.intensities:
+            return self.intensities[z_val]
 
         object_plane = np.pad(
             self.opaque_shape,
