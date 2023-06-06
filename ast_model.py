@@ -141,7 +141,7 @@ class ASTModel:
     pixel_size: float = 10e-6  # in metres
 
     def __post_init__(self):
-        self.intensities = {}  # z: intenisty grid
+        self.intensities = {}  # z: intensity grid
         self.diameters = {}
 
         # trim opaque shape of zero-valued rows and columns
@@ -249,7 +249,7 @@ class ASTModel:
             intensity_translated, pixel_size=self.pixel_size)
 
         # cache and return the intensity
-        self.intenisties[z_val] = intensity_translated_as_field
+        self.intensities[z_val] = intensity_translated_as_field
         return intensity_translated_as_field
 
     def process_range(self, z_range: np.ndarray) -> np.ndarray:
