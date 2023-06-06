@@ -312,7 +312,7 @@ class ASTModel:
 
         # scale existing diameters 
         for diameter_type, value in scaled_model.diameters.items():
-            scaled_model.diameters[diameter_type] = self.diameters[diameter_type] * diameter_scale_factor
+            scaled_model.diameters[diameter_type] = value * diameter_scale_factor
         # TODO: Store diameters as pixel units so that this is not required.
 
         # scale the z value at which the diffraction patterns occur
@@ -321,7 +321,7 @@ class ASTModel:
         for z_val, intensity_profile in self.intensities.items():
             scaled_z_val = z_val * diameter_scale_factor**0.5 
             # TODO: make sure cached z values here have a specified precision, so they're actually reused.
-            scaled_model.intensities[scaled_z_val] = intensity_profile
+            scaled_model.intensities[scaled_z_val] = deepcopy(intensity_profile)
             scaled_model.intensities[scaled_z_val].pixel_size = scaled_model.pixel_size
 
         # return the new ASTModel object
