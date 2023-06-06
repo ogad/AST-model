@@ -292,3 +292,36 @@ class ASTModel:
         """Calculate the dimensionless diffraction z distance."""
         wavelength = 2 * np.pi / self.wavenumber
         return 4 * wavelength * z_val / self.diameters[diameter_type]**2
+    
+    def rescale(self, diameter_scale_factor):
+        """Produce a new AST model for similar object at a different scale.
+
+        Args:
+            diameter_scale_factor (float): The factor by which to scale the object's diameter.
+
+        Returns:
+            ASTModel: The new AST model object.
+        """
+        # create a copy of the original object
+        scaled_model = deepcopy(self)
+
+        # scale the object by altering the pixel size
+        # TODO: Enable resampling of the pixel size to match detector
+        scaled_model.pixel_size = self.pixel_size * diameter_scale_factor
+
+        # scale existing diameters 
+        for diameter_type, value in scaled_model.diameters.items():
+            scaled_model.diameters[diameter_type] = self.diameters[diameter_type] * diameter_scale_factor
+        # TODO: Store diameters as pixel units so that this is not required.
+
+        # scale the z value at which the diffraction patterns occur
+        # z is proportional to D^1/2
+        scaled_model.diameters = {}
+        for z_val, intensity_profile in self.intensities:
+            scaled_z_val = z_val * diameter_scale_factor**0.5 
+            # TODO: make sure cached z values here have a specified precision, so they're actually reused.
+            scaled_model.diameters[scaled_z_val] = intensity_profile
+            scaled_model.diameters[scaled_z_val].pixel_size = scaled_model.pixel_size
+
+        # return the new ASTModel object
+        return scaled_model
