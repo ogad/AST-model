@@ -3,7 +3,7 @@
 # Date: 01/06/2023
 
 from random import choices
-import numpy as np
+import numpy as np 
 
 from ast_model import ASTModel
 
@@ -57,7 +57,9 @@ class PSDModel:
     Args:
         ast_model (ASTModel): The AST model to use.
         psd (PSD): The particle size distribution function, dN/dr in m^-1.
-        z_dist (callable, optional, unimplimented): The probability distribution of particles along the z-axis, normalised to 1 when integrated wrt z, in m^-1. Defaults to uniform across array.
+        z_dist (callable, optional, unimplimented): The probability 
+            distribution of particles along the z-axis, normalised to 1 when 
+            integrated wrt z, in m^-1. Defaults to uniform across array.
     """
 
     def __init__(self, psd, z_dist=None):
@@ -117,3 +119,28 @@ class PSDModel:
 
             diameters_measured += diameters
         return np.array(diameters_measured)
+
+
+    def simulate_distribution_from_scaling(self, n_particles, single_particle=False):
+            """ "Generate a measured distribution."""
+            base_model = ASTModel.from_diameter(1000)
+
+            
+            particles = self.generate(n_particles)
+            diameters_measured = {}
+            for i in range(particles.shape[0]):
+                radius = particles[i, 0]
+                z_value = particles[i, 1]
+
+                if radius not in self.ast_models:
+                    self.ast_models[radius] = base_model.rescale(
+                        (radius * 2 / 1e-6)/1e3)
+                intensity = self.ast_models[radius].process(z_val=z_value)
+
+                if single_particle:
+                    diameters = [intensity.measure_xy_diameter().tolist()]
+                else:
+                    diameters = intensity.measure_xy_diameters()
+
+                diameters_measured[(radius, z_value)] = diameters
+            return np.array(sum(diameters_measured.values(), []))
