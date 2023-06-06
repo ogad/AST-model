@@ -75,7 +75,7 @@ class IntensityField(np.ndarray):
         thresholded_image = self < 0.5
 
         # isolate only the largest conncted region
-        labeled_image, n_labels = ndimage.label(thresholded_image)
+        labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
         label_counts = np.bincount(labeled_image.ravel())
         largest_label = np.argmax(label_counts[1:]) + 1
         largest_region = labeled_image == largest_label
