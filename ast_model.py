@@ -317,12 +317,12 @@ class ASTModel:
 
         # scale the z value at which the diffraction patterns occur
         # z is proportional to D^1/2
-        scaled_model.diameters = {}
+        scaled_model.intensities = {}
         for z_val, intensity_profile in self.intensities:
             scaled_z_val = z_val * diameter_scale_factor**0.5 
             # TODO: make sure cached z values here have a specified precision, so they're actually reused.
-            scaled_model.diameters[scaled_z_val] = intensity_profile
-            scaled_model.diameters[scaled_z_val].pixel_size = scaled_model.pixel_size
+            scaled_model.intensities[scaled_z_val] = intensity_profile
+            scaled_model.intensities[scaled_z_val].pixel_size = scaled_model.pixel_size
 
         # return the new ASTModel object
         return scaled_model
