@@ -60,9 +60,10 @@ class PSDModel:
         z_dist (callable, optional, unimplimented): The probability 
             distribution of particles along the z-axis, normalised to 1 when 
             integrated wrt z, in m^-1. Defaults to uniform across array.
+        inlet_length (float, optional): The length of the inlet in metres.
     """
 
-    def __init__(self, psd, z_dist=None):
+    def __init__(self, psd, z_dist=None, inlet_length=7.35e-3):
         self.ast_models = {}
         self.psd = psd
 
@@ -73,7 +74,6 @@ class PSDModel:
             self.zbounds = [-1, 1]
             self.z_pmax = 1
         else:
-            inlet_length = 7.35e-3  # m
             self.z_pmax = 1 / inlet_length
             self.zbounds = [-inlet_length / 2, inlet_length / 2]
             self.z_dist = lambda z: self.z_pmax if abs(
@@ -121,10 +121,12 @@ class PSDModel:
         return np.array(diameters_measured)
 
 
-    def simulate_distribution_from_scaling(self, n_particles, single_particle=False):
+    def simulate_distribution_from_scaling(self, n_particles, single_particle=False, base_model=None):
             """ "Generate a measured distribution."""
-            base_model = ASTModel.from_diameter(1000)
+            if base_model is None:
+                base_model = ASTModel.from_diameter(1000)
 
+            base_diameter = base_model.process(0).measure_xy_diameter()
             
             particles = self.generate(n_particles)
             diameters_measured = {}
@@ -134,7 +136,8 @@ class PSDModel:
 
                 if radius not in self.ast_models:
                     self.ast_models[radius] = base_model.rescale(
-                        (radius * 2 / 1e-6)/1e3)
+                        (radius * 2 / 1e-6)/base_diameter)
+                    self.ast_models[radius].regrid()
                 intensity = self.ast_models[radius].process(z_val=z_value)
 
                 if single_particle:
