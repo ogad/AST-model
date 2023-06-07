@@ -189,6 +189,7 @@ class ASTModel:
 
         return model
     
+    @classmethod
     def from_rectangle(cls, width, height, angle=0, wavenumber=None, pixel_size=None):
         """Create a model for a rectangular opaque object.
         
