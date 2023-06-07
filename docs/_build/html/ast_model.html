@@ -48,12 +48,15 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ast_model module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ast_model.ASTModel"><code class="docutils literal notranslate"><span class="pre">ASTModel</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.from_diameter"><code class="docutils literal notranslate"><span class="pre">ASTModel.from_diameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.from_rectangle"><code class="docutils literal notranslate"><span class="pre">ASTModel.from_rectangle()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.get_zd"><code class="docutils literal notranslate"><span class="pre">ASTModel.get_zd()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.opaque_shape"><code class="docutils literal notranslate"><span class="pre">ASTModel.opaque_shape</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.pixel_size"><code class="docutils literal notranslate"><span class="pre">ASTModel.pixel_size</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.plot_intensity"><code class="docutils literal notranslate"><span class="pre">ASTModel.plot_intensity()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.process"><code class="docutils literal notranslate"><span class="pre">ASTModel.process()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.process_range"><code class="docutils literal notranslate"><span class="pre">ASTModel.process_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.regrid"><code class="docutils literal notranslate"><span class="pre">ASTModel.regrid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.rescale"><code class="docutils literal notranslate"><span class="pre">ASTModel.rescale()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.wavenumber"><code class="docutils literal notranslate"><span class="pre">ASTModel.wavenumber</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.xy_diameter"><code class="docutils literal notranslate"><span class="pre">ASTModel.xy_diameter()</span></code></a></li>
 </ul>
@@ -132,6 +135,23 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.from_rectangle">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavenumber</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.from_rectangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.from_rectangle" title="Permalink to this definition"></a></dt>
+<dd><p>Create a model for a rectangular opaque object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>width</strong> (<em>float</em>) – The width of the opaque object in micrometres.</p></li>
+<li><p><strong>height</strong> (<em>float</em>) – The height of the opaque object in micrometres.</p></li>
+<li><p><strong>angle</strong> (<em>float</em>) – The angle of the opaque object in degrees.</p></li>
+<li><p><strong>wavenumber</strong> (<em>float</em><em>, </em><em>optional</em>) – The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</p></li>
+<li><p><strong>pixel_size</strong> (<em>float</em><em>, </em><em>optional</em>) – The size of the pixels in the opaque_shape. Defaults to 10 µm.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ast_model.ASTModel.get_zd">
 <span class="sig-name descname"><span class="pre">get_zd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diameter_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.get_zd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.get_zd" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate the dimensionless diffraction z distance.</p>
@@ -188,6 +208,34 @@
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.regrid">
+<span class="sig-name descname"><span class="pre">regrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.regrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.regrid" title="Permalink to this definition"></a></dt>
+<dd><p>Set the pixel size of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pixel_size</strong> (<em>float</em>) – The pixel size to set the model to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.rescale">
+<span class="sig-name descname"><span class="pre">rescale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter_scale_factor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.rescale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.rescale" title="Permalink to this definition"></a></dt>
+<dd><p>Produce a new AST model for similar object at a different scale.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>diameter_scale_factor</strong> (<em>float</em>) – The factor by which to scale the object’s diameter.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The new AST model object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ast_model.ASTModel" title="ast_model.ASTModel">ASTModel</a></p>
 </dd>
 </dl>
 </dd></dl>

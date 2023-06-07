@@ -18,11 +18,15 @@ def rejection_sampler(p, xbounds, pmax):
 
 
 class GammaPSD:
-    """Gamma particle size distribution $$n_N(r) = N_0 (r/\text{1 m})^\mu e^{-\Gamma r}.$$
+    r"""Gamma particle size distribution.
+
+    .. math::
+    
+        n_N(r) = N_0 (r/\text{1 m})^\mu e^{-\Lambda r}.
 
     Args:
         intercept (float): N_0 in m^-3.
-        slope (float): Gamma in m^-1.
+        slope (float): Lambda in m^-1.
         shape (float): mu.
     """
 
