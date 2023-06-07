@@ -92,7 +92,7 @@ class IntensityField(np.ndarray):
         thresholded_image = self < 0.5
 
         # iterate over connected regions
-        labeled_image, n_labels = ndimage.label(thresholded_image)
+        labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
 
         diameters = []
         for label in range(1, n_labels + 1):
@@ -188,6 +188,38 @@ class ASTModel:
         model.diameters["true"] = diameter * 1e-6
 
         return model
+    
+    def from_rectangle(cls, width, height, angle=0, wavenumber=None, pixel_size=None):
+        """Create a model for a rectangular opaque object.
+        
+        Args:
+            width (float): The width of the opaque object in micrometres.
+            height (float): The height of the opaque object in micrometres.
+            angle (float): The angle of the opaque object in degrees.
+            wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).
+            pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm."""
+        
+        # set defaults
+        if wavenumber is None:
+            wavenumber = cls.wavenumber
+        if pixel_size is None:
+            pixel_size = cls.pixel_size
+        
+        # create the opaque shape
+        height_px = height * 1e-6 / pixel_size
+        width_px = width * 1e-6 / pixel_size
+        opaque_shape = np.ones((height_px, width_px))
+        
+        # rotate the opaque shape
+        opaque_shape = ndimage.rotate(opaque_shape, angle)
+        
+        # create the model
+        model = cls(opaque_shape, wavenumber, pixel_size)
+        model.diameters["true"] = width * 1e-6
+        
+        return model
+
+
 
     def process(self, z_val: float, low_pass=1.0) -> IntensityField:
         """Process the model for a given z
