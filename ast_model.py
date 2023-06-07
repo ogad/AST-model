@@ -207,8 +207,8 @@ class ASTModel:
             pixel_size = cls.pixel_size
         
         # create the opaque shape
-        height_px = height * 1e-6 / pixel_size
-        width_px = width * 1e-6 / pixel_size
+        height_px = int(height * 1e-6 // pixel_size)
+        width_px = int(width * 1e-6 // pixel_size)
         opaque_shape = np.ones((height_px, width_px))
         
         # rotate the opaque shape
