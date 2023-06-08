@@ -34,16 +34,16 @@ class GammaPSD:
 
     .. math::
 
-        n_N(r) = N_0 (r/\text{1 m})^\mu e^{-\Lambda r}.
+        n_N(r) = N_0 \left(\frac{r}{\text{1 m}}\right)^\mu \mathrm{e}^{-\Lambda r}.
 
     Args:
-        intercept (float): :math:`N_0` in m^-3.
-        slope (float): :math:`\Lambda` in m^-1.
+        intercept (float): :math:`N_0` in :math:`\mathrm{m^{-3}}`.
+        slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
         shape (float): :math:`\mu`.
-        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between 1e-7 and 1e-3.
+        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.
     """
 
-    def __init__(self, intercept: float, slope: float, shape: float, bins: ArrayLike[np.float64] = None):
+    def __init__(self, intercept: float, slope: float, shape: float, bins: list[float] = None):
         self.intercept = intercept
         self.slope = slope
         self.shape = shape
@@ -53,7 +53,7 @@ class GammaPSD:
         else:
             self.bins = bins
 
-    def psd_value(self, r: ArrayLike[np.float64]):
+    def psd_value(self, r: ArrayLike) -> np.ndarray:
         """Calculate the particle size distribution value given radii.
         """
         return self.intercept * r**self.shape * np.exp(-1 * self.slope * r)
@@ -77,7 +77,7 @@ class PSDModel:
     along the inlet.
 
     Args:
-        psd (PSD): The particle size distribution function, dN/dr in m^-1.
+        psd (PSD): The particle size distribution function, dN/dr in :math:`\mathrm{m^{-3}}`.
         z_dist (callable, optional, unimplimented): The probability 
             distribution of particles along the z-axis, normalised to 1 when 
             integrated wrt z, in m^-1. Defaults to uniform across array.
@@ -120,7 +120,7 @@ class PSDModel:
 
         return particles
 
-    def simulate_distribution(self, n_particles: int, single_particle: bool = False) -> np.ndarray:
+    def simulate_distribution(self, n_particles: int, single_particle: bool = False, keep_models=False) -> np.ndarray:
         """Simulate the observation of spherical particles.
 
         Generates a sample of spherical particles and then simulates the
@@ -130,6 +130,9 @@ class PSDModel:
             n_particles (int): The number of particles to generate.
             single_particle (bool, optional): Whether to consider only the
                 largest particle in each diffraction pattern. Defaults to False.
+            keep_models (bool, optional): Whether to keep the AST models after
+                simulation. Warning: this will use a lot of memory. Defaults to 
+                False.
 
         Returns:
             np.ndarray: The measured particle diameters.
@@ -151,9 +154,12 @@ class PSDModel:
                 diameters = intensity.measure_xy_diameters()
 
             diameters_measured += diameters
+
+            if not keep_models:
+                del self.ast_models[radius]
         return np.array(diameters_measured)
 
-    def simulate_distribution_from_scaling(self, n_particles: int, single_particle: bool = False, base_model: ASTModel = None):
+    def simulate_distribution_from_scaling(self, n_particles: int, single_particle: bool = False, base_model: ASTModel = None, keep_models=False) -> np.ndarray:
         """Simulate the observation of similar particles.
 
         Generates a sample of particles, produces new AST models by scaling
@@ -166,6 +172,9 @@ class PSDModel:
             base_model (ASTModel, optional): The base model to scale. Should
                 have a high resolution relative to typical particle sizes. Defaults
                 to a 1000 nm diameter particle.
+            keep_models (bool, optional): Whether to keep the AST models after
+                simulation. Warning: this will use a lot of memory. Defaults to 
+                False.
 
         Returns:
             np.ndarray: The measured particle diameters.
@@ -193,4 +202,7 @@ class PSDModel:
                 diameters = intensity.measure_xy_diameters()
 
             diameters_measured[(radius, z_value)] = diameters
+
+            if not keep_models:
+                del self.ast_models[radius]
         return np.array(sum(diameters_measured.values(), []))
