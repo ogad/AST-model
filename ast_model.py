@@ -8,12 +8,16 @@ from copy import deepcopy
 
 # Package imports
 import numpy as np
+from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt
 from scipy import ndimage
 from skimage.transform import rescale
 
 class IntensityField(np.ndarray):
-    """A class to represent an intensity field
+    """A class to represent an intensity field.
+
+    Uses the numpy array as a base class, adding the pixel size attribute, plotting
+    methods, and measurement methods.
 
     Args:
         np.ndarray: The intensity field
@@ -29,13 +33,16 @@ class IntensityField(np.ndarray):
             return
         self.pixel_size = getattr(obj, "pixel_size", None)
 
-    def plot(self, ax=None, axis_length=None, grayscale_bounds=None, **kwargs):
-        """Plot the intensity field
+    def plot(self, ax:plt.Axes=None, axis_length:float=None, grayscale_bounds:ArrayLike[np.float64]=None, **kwargs) -> plt.Axes:
+        """Plot the intensity field.
 
         Args:
             ax (matplotlib.axes.Axes): The axis to plot on.
             axis_length(float): The axis_length of the object in micrometres.
             grayscale_bounds (list): The list of bounds for grayscale bands. When None, the intensity is plotted.
+
+        Returns:
+            matplotlib.image.Axes: The plotted image.
         """
         if ax is None:
             fig, ax = plt.subplots()
@@ -70,7 +77,11 @@ class IntensityField(np.ndarray):
 
         return ax_image
 
-    def measure_xy_diameter(self):
+    def measure_xy_diameter(self) --> float:
+        """Measure the diameter of the largest connected region in the image.
+        
+        Returns:
+            float: The diameter in micrometres."""
         # threshold the image at 50% of the initial intensity
         thresholded_image = self < 0.5
 
@@ -87,7 +98,12 @@ class IntensityField(np.ndarray):
         # return the average of the two extents in micrometres
         return (x_extent + y_extent) / 2 * self.pixel_size * 1e6
 
-    def measure_xy_diameters(self):
+    def measure_xy_diameters(self) -> list:
+        """Measure the diameters of all connected regions in the image.
+        
+        Returns:
+            list: The list of diameters in micrometres.
+        """
         # threshold the image at 50% of the initial intensity
         thresholded_image = self < 0.5
 
@@ -107,7 +123,7 @@ class IntensityField(np.ndarray):
         # return list of diameters in micrometres
         return diameters
 
-    def n_pixels_depletion_range(self, min_dep, max_dep):
+    def n_pixels_depletion_range(self, min_dep:float, max_dep:float) -> int:
         """Calculate the number of pixels in the depletion range
 
         Args:
@@ -128,7 +144,11 @@ class IntensityField(np.ndarray):
 
 @dataclass
 class ASTModel:
-    """Angular Spectrum Theory model
+    """Angular Spectrum Theory model.
+
+    A model to contain the diffraction behaviour of a single opaque object,
+    exposed to a plane wave of light at a specific wavelength, and imaged
+    using a specific pixel size.
 
     Args:
         opaque_shape (np.ndarray): The shape of the opaque object in the z=0 plane.
@@ -158,7 +178,7 @@ class ASTModel:
                                                   ):nonzero_y.max() + 1]
 
     @classmethod
-    def from_diameter(cls, diameter, wavenumber=None, pixel_size=None):
+    def from_diameter(cls, diameter: float, wavenumber:float=None, pixel_size:float=None):
         """Create a model for a circular opaque object.
 
         Args:
@@ -190,7 +210,7 @@ class ASTModel:
         return model
     
     @classmethod
-    def from_rectangle(cls, width, height, angle=0, wavenumber=None, pixel_size=None):
+    def from_rectangle(cls, width: float, height: float, angle: float=0, wavenumber: float=None, pixel_size: float=None):
         """Create a model for a rectangular opaque object.
         
         Args:
@@ -223,10 +243,11 @@ class ASTModel:
 
 
     def process(self, z_val: float, low_pass=1.0) -> IntensityField:
-        """Process the model for a given z
+        """Process the model, calculating the intensity given the opaque shape is at z.
 
         Args:
-            z (float): The distance of the the opaque_shape from the object plane.
+            z_val (float): The distance of the the opaque_shape from the object plane.
+            low_pass (float, optional): The low pass filter to apply to the intensity. Defaults to 1.0.
 
         Returns:
             IntensityField: The intensity of the image at z.
@@ -256,6 +277,7 @@ class ASTModel:
                              self.pixel_size).reshape(-1, 1)
 
         # low pass filter
+        # FIXME: I have no idea if this works/is the right vibe.
         f_xy = np.meshgrid(f_x, f_y)
         transmission_function_fourier = np.where(
             f_xy[0]**2 + f_xy[1]**2
@@ -286,7 +308,7 @@ class ASTModel:
         return intensity_translated_as_field
 
     def process_range(self, z_range: np.ndarray) -> np.ndarray:
-        """Process the model for a range of z values
+        """Process the model for offsetting the object at range of z values.
 
         Args:
             z_range (np.ndarray): The range of z values to process.
@@ -296,7 +318,7 @@ class ASTModel:
         """
         return [self.process(z) for z in z_range]
 
-    def plot_intensity(self, z_val: int, **kwargs):
+    def plot_intensity(self, z_val: int, **kwargs) -> plt.Axes:
         """Plot the intensity at a given z
 
         Args:
@@ -306,8 +328,8 @@ class ASTModel:
 
         return intensity.plot(**kwargs)
 
-    def xy_diameter(self):
-        """Calculate the xy diameter of the opaque_shape, defined to be the mean of the maximum nonzero extent of the opaque shape in the x and y directions."""
+    def xy_diameter(self) -> float:
+        """Calculate the xy diameter of the opaque_shape."""
         if self.diameters.get("xy"):
             return self.diameters["xy"]
 
@@ -322,13 +344,27 @@ class ASTModel:
         ]) * self.pixel_size)
         return self.diameters["xy"]
 
-    def get_zd(self, z_val, diameter_type):
-        """Calculate the dimensionless diffraction z distance."""
+    def get_zd(self, z_val: float, diameter_type: str) -> float:
+        r"""Calculate the dimensionless diffraction z distance.
+
+        The diffraction pattern for a particle (sized relative to the true diameter)
+        is a function of the dimensionless diffraction z distance, 
+        .. math :: z_\text{D} = \frac{4 \pi z}{D^2}.
+        
+        Args:
+            z_val (float): The distance of the the opaque_shape from the object plane.
+            diameter_type (str): The type of diameter to use.
+            
+        Returns:
+            float: The dimensionless diffraction z distance."""
         wavelength = 2 * np.pi / self.wavenumber
         return 4 * wavelength * z_val / self.diameters[diameter_type]**2
     
     def rescale(self, diameter_scale_factor):
         """Produce a new AST model for similar object at a different scale.
+
+        Scales the object, and any already-measured diameters or processed intensity 
+        profiles by a given factor.
 
         Args:
             diameter_scale_factor (float): The factor by which to scale the object's diameter.
@@ -361,10 +397,13 @@ class ASTModel:
         return scaled_model
     
     def regrid(self, pixel_size= 10e-6):
-        """Set the pixel size of the model.
+        """Regrid the model to a new pixel size.
+
+        Resamples the opaque object and any already-measured intensity profiles 
+        to a new pixel size, such as one that matches the real detector.
         
         Args:
-            pixel_size (float): The pixel size to set the model to.
+            pixel_size (float): The pixel size to move to.
         """
         scale_factor = pixel_size / self.pixel_size
 
