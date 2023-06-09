@@ -84,7 +84,7 @@ class GammaPSD:
         return self.psd_value(self.bins[1:]) * np.diff(self.bins)
 
 
-class PSDModel:
+class SamplingModel:
     """Particle size distribution model.
 
     A modelling class that contains a PSD object, and simulates particle

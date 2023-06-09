@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
     r_vals = np.logspace(-8, -3, 100)
 
-    psd = PSDModel(GammaPSD(1e10, 2e4, 2.5, bins=np.logspace(-8, -3, 10000)))
+    psd = SamplingModel(GammaPSD(1e10, 2e4, 2.5, bins=np.logspace(-8, -3, 10000)))
 
     fig, ax = plt.subplots()
     ax.plot(r_vals, psd.psd.psd_value(r_vals))
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     # base_ast_model = ASTModel.from_rectangle(500, 900, 60)
     base_ast_model = ASTModel.from_diameter(1000)
 
-    psd_doubleobs = PSDModel(GammaPSD(1e10, 2e4, 2.5, bins=np.logspace(-8, -3, 10000)), inlet_length=7.35e-3)
+    psd_doubleobs = SamplingModel(GammaPSD(1e10, 2e4, 2.5, bins=np.logspace(-8, -3, 10000)), inlet_length=7.35e-3)
 
     hist_bins = np.linspace(0, 1e-3, 50)
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
 # %%
 if __name__ == "__main__":
-    psd_singleobs = PSDModel(GammaPSD(1e10, 2e4, 2.5, bins=np.logspace(-8, -3, 10000)), inlet_length=10e-2)
+    psd_singleobs = SamplingModel(GammaPSD(1e10, 2e4, 2.5, bins=np.logspace(-8, -3, 10000)), inlet_length=10e-2)
 
     hist_bins = np.linspace(0, 1e-3, 50)
 
