@@ -81,12 +81,16 @@
 
 <span class="c1"># Package imports</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">ArrayLike</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
 <span class="kn">from</span> <span class="nn">skimage.transform</span> <span class="kn">import</span> <span class="n">rescale</span>
 
 <div class="viewcode-block" id="IntensityField"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField">[docs]</a><span class="k">class</span> <span class="nc">IntensityField</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent an intensity field</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent an intensity field.</span>
+
+<span class="sd">    Uses the numpy array as a base class, adding the pixel size attribute, plotting</span>
+<span class="sd">    methods, and measurement methods.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        np.ndarray: The intensity field</span>
@@ -102,13 +106,16 @@
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;pixel_size&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-<div class="viewcode-block" id="IntensityField.plot"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grayscale_bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity field</span>
+<div class="viewcode-block" id="IntensityField.plot"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis_length</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grayscale_bounds</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity field.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ax (matplotlib.axes.Axes): The axis to plot on.</span>
 <span class="sd">            axis_length(float): The axis_length of the object in micrometres.</span>
 <span class="sd">            grayscale_bounds (list): The list of bounds for grayscale bands. When None, the intensity is plotted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            matplotlib.image.Axes: The plotted image.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
@@ -143,7 +150,11 @@
 
         <span class="k">return</span> <span class="n">ax_image</span></div>
 
-<div class="viewcode-block" id="IntensityField.measure_xy_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.measure_xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">measure_xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IntensityField.measure_xy_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.measure_xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">measure_xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Measure the diameter of the largest connected region in the image.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The diameter in micrometres.&quot;&quot;&quot;</span>
         <span class="c1"># threshold the image at 50% of the initial intensity</span>
         <span class="n">thresholded_image</span> <span class="o">=</span> <span class="bp">self</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
 
@@ -160,7 +171,12 @@
         <span class="c1"># return the average of the two extents in micrometres</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">x_extent</span> <span class="o">+</span> <span class="n">y_extent</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="mf">1e6</span></div>
 
-<div class="viewcode-block" id="IntensityField.measure_xy_diameters"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.measure_xy_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_xy_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IntensityField.measure_xy_diameters"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.measure_xy_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_xy_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Measure the diameters of all connected regions in the image.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: The list of diameters in micrometres.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># threshold the image at 50% of the initial intensity</span>
         <span class="n">thresholded_image</span> <span class="o">=</span> <span class="bp">self</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
 
@@ -180,7 +196,7 @@
         <span class="c1"># return list of diameters in micrometres</span>
         <span class="k">return</span> <span class="n">diameters</span></div>
 
-<div class="viewcode-block" id="IntensityField.n_pixels_depletion_range"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.n_pixels_depletion_range">[docs]</a>    <span class="k">def</span> <span class="nf">n_pixels_depletion_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_dep</span><span class="p">,</span> <span class="n">max_dep</span><span class="p">):</span>
+<div class="viewcode-block" id="IntensityField.n_pixels_depletion_range"><a class="viewcode-back" href="../ast_model.html#ast_model.IntensityField.n_pixels_depletion_range">[docs]</a>    <span class="k">def</span> <span class="nf">n_pixels_depletion_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_dep</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">max_dep</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number of pixels in the depletion range</span>
 
 <span class="sd">        Args:</span>
@@ -201,11 +217,15 @@
 
 <div class="viewcode-block" id="ASTModel"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ASTModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Angular Spectrum Theory model</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Angular Spectrum Theory model.</span>
+
+<span class="sd">    A model to contain the diffraction behaviour of a single opaque object,</span>
+<span class="sd">    exposed to a plane wave of light at a specific wavelength, and imaged</span>
+<span class="sd">    using a specific pixel size.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        opaque_shape (np.ndarray): The shape of the opaque object in the z=0 plane.</span>
-<span class="sd">        wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</span>
+<span class="sd">        wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.</span>
 <span class="sd">        pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -231,12 +251,12 @@
                                                   <span class="p">):</span><span class="n">nonzero_y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
 <div class="viewcode-block" id="ASTModel.from_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.from_diameter">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_diameter</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">,</span> <span class="n">wavenumber</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a model for a circular opaque object.</span>
+    <span class="k">def</span> <span class="nf">from_diameter</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a model for a circular opaque object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            diameter (float): The diameter of the opaque object in micrometres.</span>
-<span class="sd">            wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</span>
+<span class="sd">            wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.</span>
 <span class="sd">            pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.</span>
 
 <span class="sd">        Returns:</span>
@@ -263,14 +283,14 @@
         <span class="k">return</span> <span class="n">model</span></div>
     
 <div class="viewcode-block" id="ASTModel.from_rectangle"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.from_rectangle">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_rectangle</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wavenumber</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a model for a rectangular opaque object.</span>
+    <span class="k">def</span> <span class="nf">from_rectangle</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a model for a rectangular opaque object.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            width (float): The width of the opaque object in micrometres.</span>
 <span class="sd">            height (float): The height of the opaque object in micrometres.</span>
 <span class="sd">            angle (float): The angle of the opaque object in degrees.</span>
-<span class="sd">            wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).</span>
+<span class="sd">            wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.</span>
 <span class="sd">            pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.&quot;&quot;&quot;</span>
         
         <span class="c1"># set defaults</span>
@@ -296,10 +316,11 @@
 
 
 <div class="viewcode-block" id="ASTModel.process"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">low_pass</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IntensityField</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model for a given z</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model, calculating the intensity given the opaque shape is at z.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            z (float): The distance of the the opaque_shape from the object plane.</span>
+<span class="sd">            z_val (float): The distance of the the opaque_shape from the object plane.</span>
+<span class="sd">            low_pass (float, optional): The low pass filter to apply to the intensity. Defaults to 1.0.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            IntensityField: The intensity of the image at z.</span>
@@ -329,6 +350,7 @@
                              <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># low pass filter</span>
+        <span class="c1"># FIXME: I have no idea if this works/is the right vibe.</span>
         <span class="n">f_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">f_x</span><span class="p">,</span> <span class="n">f_y</span><span class="p">)</span>
         <span class="n">transmission_function_fourier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
             <span class="n">f_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">f_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
@@ -359,7 +381,7 @@
         <span class="k">return</span> <span class="n">intensity_translated_as_field</span></div>
 
 <div class="viewcode-block" id="ASTModel.process_range"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.process_range">[docs]</a>    <span class="k">def</span> <span class="nf">process_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_range</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model for a range of z values</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model for offsetting the object at range of z values.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            z_range (np.ndarray): The range of z values to process.</span>
@@ -369,7 +391,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">z_range</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ASTModel.plot_intensity"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.plot_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">plot_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ASTModel.plot_intensity"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.plot_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">plot_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity at a given z</span>
 
 <span class="sd">        Args:</span>
@@ -379,8 +401,8 @@
 
         <span class="k">return</span> <span class="n">intensity</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ASTModel.xy_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the xy diameter of the opaque_shape, defined to be the mean of the maximum nonzero extent of the opaque shape in the x and y directions.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ASTModel.xy_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the xy diameter of the opaque_shape.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;xy&quot;</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span>
 
@@ -395,13 +417,30 @@
         <span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ASTModel.get_zd"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.get_zd">[docs]</a>    <span class="k">def</span> <span class="nf">get_zd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">,</span> <span class="n">diameter_type</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the dimensionless diffraction z distance.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ASTModel.get_zd"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.get_zd">[docs]</a>    <span class="k">def</span> <span class="nf">get_zd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">diameter_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the dimensionless diffraction z distance.</span>
+
+<span class="sd">        The diffraction pattern for a particle (sized relative to the true diameter)</span>
+<span class="sd">        is a function of the dimensionless diffraction z distance, </span>
+
+<span class="sd">        .. math :: </span>
+
+<span class="sd">            z_\text{D} = \frac{4 \pi z}{D^2}.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            z_val (float): The distance of the the opaque_shape from the object plane.</span>
+<span class="sd">            diameter_type (str): The type of diameter to use.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The dimensionless diffraction z distance.&quot;&quot;&quot;</span>
         <span class="n">wavelength</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span>
         <span class="k">return</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="n">z_val</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="n">diameter_type</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span></div>
     
 <div class="viewcode-block" id="ASTModel.rescale"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.rescale">[docs]</a>    <span class="k">def</span> <span class="nf">rescale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diameter_scale_factor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Produce a new AST model for similar object at a different scale.</span>
+
+<span class="sd">        Scales the object, and any already-measured diameters or processed intensity </span>
+<span class="sd">        profiles by a given factor.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            diameter_scale_factor (float): The factor by which to scale the object&#39;s diameter.</span>
@@ -434,10 +473,13 @@
         <span class="k">return</span> <span class="n">scaled_model</span></div>
     
 <div class="viewcode-block" id="ASTModel.regrid"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.regrid">[docs]</a>    <span class="k">def</span> <span class="nf">regrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span> <span class="mf">10e-6</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the pixel size of the model.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Regrid the model to a new pixel size.</span>
+
+<span class="sd">        Resamples the opaque object and any already-measured intensity profiles </span>
+<span class="sd">        to a new pixel size, such as one that matches the real detector.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            pixel_size (float): The pixel size to set the model to.</span>
+<span class="sd">            pixel_size (float): The pixel size to move to.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">pixel_size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span>
 

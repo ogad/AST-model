@@ -76,45 +76,58 @@
 <span class="c1"># Date: 01/06/2023</span>
 
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choices</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">ArrayLike</span>
+
 
 <span class="kn">from</span> <span class="nn">ast_model</span> <span class="kn">import</span> <span class="n">ASTModel</span>
 
 
 <div class="viewcode-block" id="rejection_sampler"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.rejection_sampler">[docs]</a><span class="k">def</span> <span class="nf">rejection_sampler</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">xbounds</span><span class="p">,</span> <span class="n">pmax</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rejection sampler for a bounded probability distribution.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a value sampled from a bounded probability distribution.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        p (callable): The probability distribution function.</span>
+<span class="sd">        xbounds (list): The bounds of the distribution.</span>
+<span class="sd">        pmax (float): The maximum value of the probability distribution.&quot;&quot;&quot;</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Generate a random x and y value</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xbounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">xbounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">pmax</span>
+
+        <span class="c1"># If the y value is below the probability distribution, return the x value</span>
         <span class="k">if</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">x</span></div>
 
 
 <div class="viewcode-block" id="GammaPSD"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.GammaPSD">[docs]</a><span class="k">class</span> <span class="nc">GammaPSD</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gamma particle size distribution.</span>
-<span class="sd">    </span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gamma particle size distribution object.</span>
+
+<span class="sd">    Contains the distribution parameters, and binning information.</span>
+
 <span class="sd">    .. math::</span>
-<span class="sd">    </span>
-<span class="sd">        n_N(r) = N_0 (r/\text{1 m})^\mu e^{-\Gamma r}.</span>
+
+<span class="sd">        n_N(r) = N_0 \left(\frac{r}{\text{1 m}}\right)^\mu \mathrm{e}^{-\Lambda r}.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        intercept (float): N_0 in m^-3.</span>
-<span class="sd">        slope (float): Gamma in m^-1.</span>
-<span class="sd">        shape (float): mu.</span>
+<span class="sd">        intercept (float): :math:`N_0` in :math:`\mathrm{m^{-3}}`.</span>
+<span class="sd">        slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.</span>
+<span class="sd">        shape (float): :math:`\mu`.</span>
+<span class="sd">        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">100</span><span class="p">)):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intercept</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">slope</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="n">slope</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span>
+        <span class="k">if</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span>
 
-<div class="viewcode-block" id="GammaPSD.psd_value"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.GammaPSD.psd_value">[docs]</a>    <span class="k">def</span> <span class="nf">psd_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            r (float): The particle radius in metres.</span>
+<div class="viewcode-block" id="GammaPSD.psd_value"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.GammaPSD.psd_value">[docs]</a>    <span class="k">def</span> <span class="nf">psd_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given radii.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">*</span> <span class="n">r</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">r</span><span class="p">)</span></div>
 
@@ -129,18 +142,22 @@
 
 
 <div class="viewcode-block" id="PSDModel"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.PSDModel">[docs]</a><span class="k">class</span> <span class="nc">PSDModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Particle size distribution model</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Particle size distribution model.</span>
+
+<span class="sd">    A modelling class that contains a PSD object, and simulates particle</span>
+<span class="sd">    measurement from it. Particles are assumed to be distributed uniformly</span>
+<span class="sd">    across the inlet. Particle size is assumed to be independent of position</span>
+<span class="sd">    along the inlet.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        ast_model (ASTModel): The AST model to use.</span>
-<span class="sd">        psd (PSD): The particle size distribution function, dN/dr in m^-1.</span>
+<span class="sd">        psd (PSD): The particle size distribution function, dN/dr in :math:`\mathrm{m^{-3}}`.</span>
 <span class="sd">        z_dist (callable, optional, unimplimented): The probability </span>
 <span class="sd">            distribution of particles along the z-axis, normalised to 1 when </span>
 <span class="sd">            integrated wrt z, in m^-1. Defaults to uniform across array.</span>
 <span class="sd">        inlet_length (float, optional): The length of the inlet in metres.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psd</span><span class="p">,</span> <span class="n">z_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inlet_length</span><span class="o">=</span><span class="mf">7.35e-3</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psd</span><span class="p">:</span> <span class="n">GammaPSD</span><span class="p">,</span> <span class="n">z_dist</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inlet_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">7.35e-3</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">psd</span> <span class="o">=</span> <span class="n">psd</span>
 
@@ -156,14 +173,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">z_dist</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_pmax</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span>
                 <span class="n">z</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">zbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="PSDModel.generate"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.PSDModel.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">):</span>
+<div class="viewcode-block" id="PSDModel.generate"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.PSDModel.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a particle size distribution.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            n_particles (int): The number of particles to generate.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: The particle sizes in metres.</span>
+<span class="sd">            np.ndarray: The particles represented by tuples of (radius, z).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># generate particle size and z positions</span>
         <span class="n">particles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_particles</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
@@ -176,8 +193,23 @@
 
         <span class="k">return</span> <span class="n">particles</span></div>
 
-<div class="viewcode-block" id="PSDModel.simulate_distribution"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.PSDModel.simulate_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">,</span> <span class="n">single_particle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;Generate a measured distribution.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PSDModel.simulate_distribution"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.PSDModel.simulate_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">single_particle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">keep_models</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate the observation of spherical particles.</span>
+
+<span class="sd">        Generates a sample of spherical particles and then simulates the</span>
+<span class="sd">        observation of the particles by producing new AST models.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_particles (int): The number of particles to generate.</span>
+<span class="sd">            single_particle (bool, optional): Whether to consider only the</span>
+<span class="sd">                largest particle in each diffraction pattern. Defaults to False.</span>
+<span class="sd">            keep_models (bool, optional): Whether to keep the AST models after</span>
+<span class="sd">                simulation. Warning: this will use a lot of memory. Defaults to </span>
+<span class="sd">                False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The measured particle diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">n_particles</span><span class="p">)</span>
         <span class="n">diameters_measured</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
@@ -195,35 +227,58 @@
                 <span class="n">diameters</span> <span class="o">=</span> <span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameters</span><span class="p">()</span>
 
             <span class="n">diameters_measured</span> <span class="o">+=</span> <span class="n">diameters</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_models</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">diameters_measured</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="PSDModel.simulate_distribution_from_scaling"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.PSDModel.simulate_distribution_from_scaling">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution_from_scaling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">single_particle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">base_model</span><span class="p">:</span> <span class="n">ASTModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keep_models</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate the observation of similar particles.</span>
 
-<div class="viewcode-block" id="PSDModel.simulate_distribution_from_scaling"><a class="viewcode-back" href="../psd_ast_model.html#psd_ast_model.PSDModel.simulate_distribution_from_scaling">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution_from_scaling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">,</span> <span class="n">single_particle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">base_model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot; &quot;Generate a measured distribution.&quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="n">base_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">base_model</span> <span class="o">=</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<span class="sd">        Generates a sample of particles, produces new AST models by scaling</span>
+<span class="sd">        a base model, and then simulates the observation of the particles.</span>
 
-            <span class="n">base_diameter</span> <span class="o">=</span> <span class="n">base_model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">measure_xy_diameter</span><span class="p">()</span>
-            
-            <span class="n">particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">n_particles</span><span class="p">)</span>
-            <span class="n">diameters_measured</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-                <span class="n">radius</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-                <span class="n">z_value</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="sd">        Args:</span>
+<span class="sd">            n_particles (int): The number of particles to generate.</span>
+<span class="sd">            single_particle (bool, optional): Whether to consider only the</span>
+<span class="sd">                largest particle in each diffraction pattern. Defaults to False.</span>
+<span class="sd">            base_model (ASTModel, optional): The base model to scale. Should</span>
+<span class="sd">                have a high resolution relative to typical particle sizes. Defaults</span>
+<span class="sd">                to a 1000 nm diameter particle.</span>
+<span class="sd">            keep_models (bool, optional): Whether to keep the AST models after</span>
+<span class="sd">                simulation. Warning: this will use a lot of memory. Defaults to </span>
+<span class="sd">                False.</span>
 
-                <span class="k">if</span> <span class="n">radius</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_model</span><span class="o">.</span><span class="n">rescale</span><span class="p">(</span>
-                        <span class="p">(</span><span class="n">radius</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">/</span> <span class="mf">1e-6</span><span class="p">)</span><span class="o">/</span><span class="n">base_diameter</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span><span class="o">.</span><span class="n">regrid</span><span class="p">()</span>
-                <span class="n">intensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z_val</span><span class="o">=</span><span class="n">z_value</span><span class="p">)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The measured particle diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">base_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_model</span> <span class="o">=</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="n">single_particle</span><span class="p">:</span>
-                    <span class="n">diameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameter</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">diameters</span> <span class="o">=</span> <span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameters</span><span class="p">()</span>
+        <span class="n">base_diameter</span> <span class="o">=</span> <span class="n">base_model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">measure_xy_diameter</span><span class="p">()</span>
 
-                <span class="n">diameters_measured</span><span class="p">[(</span><span class="n">radius</span><span class="p">,</span> <span class="n">z_value</span><span class="p">)]</span> <span class="o">=</span> <span class="n">diameters</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">diameters_measured</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="p">[]))</span></div></div>
+        <span class="n">particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">n_particles</span><span class="p">)</span>
+        <span class="n">diameters_measured</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">radius</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">z_value</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">radius</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_model</span><span class="o">.</span><span class="n">rescale</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">radius</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">/</span> <span class="mf">1e-6</span><span class="p">)</span><span class="o">/</span><span class="n">base_diameter</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span><span class="o">.</span><span class="n">regrid</span><span class="p">()</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z_val</span><span class="o">=</span><span class="n">z_value</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">single_particle</span><span class="p">:</span>
+                <span class="n">diameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameter</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">diameters</span> <span class="o">=</span> <span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameters</span><span class="p">()</span>
+
+            <span class="n">diameters_measured</span><span class="p">[(</span><span class="n">radius</span><span class="p">,</span> <span class="n">z_value</span><span class="p">)]</span> <span class="o">=</span> <span class="n">diameters</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_models</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">radius</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">diameters_measured</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="p">[]))</span></div></div>
 </pre></div>
 
            </div>

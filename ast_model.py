@@ -33,7 +33,7 @@ class IntensityField(np.ndarray):
             return
         self.pixel_size = getattr(obj, "pixel_size", None)
 
-    def plot(self, ax:plt.Axes=None, axis_length:float=None, grayscale_bounds:ArrayLike[np.float64]=None, **kwargs) -> plt.Axes:
+    def plot(self, ax:plt.Axes=None, axis_length:float=None, grayscale_bounds:list[float]=None, **kwargs) -> plt.Axes:
         """Plot the intensity field.
 
         Args:
@@ -77,7 +77,7 @@ class IntensityField(np.ndarray):
 
         return ax_image
 
-    def measure_xy_diameter(self) --> float:
+    def measure_xy_diameter(self) -> float:
         """Measure the diameter of the largest connected region in the image.
         
         Returns:
@@ -144,7 +144,7 @@ class IntensityField(np.ndarray):
 
 @dataclass
 class ASTModel:
-    """Angular Spectrum Theory model.
+    r"""Angular Spectrum Theory model.
 
     A model to contain the diffraction behaviour of a single opaque object,
     exposed to a plane wave of light at a specific wavelength, and imaged
@@ -152,7 +152,7 @@ class ASTModel:
 
     Args:
         opaque_shape (np.ndarray): The shape of the opaque object in the z=0 plane.
-        wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).
+        wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.
         pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.
     """
 
@@ -179,11 +179,11 @@ class ASTModel:
 
     @classmethod
     def from_diameter(cls, diameter: float, wavenumber:float=None, pixel_size:float=None):
-        """Create a model for a circular opaque object.
+        r"""Create a model for a circular opaque object.
 
         Args:
             diameter (float): The diameter of the opaque object in micrometres.
-            wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).
+            wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.
             pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.
 
         Returns:
@@ -211,13 +211,13 @@ class ASTModel:
     
     @classmethod
     def from_rectangle(cls, width: float, height: float, angle: float=0, wavenumber: float=None, pixel_size: float=None):
-        """Create a model for a rectangular opaque object.
+        r"""Create a model for a rectangular opaque object.
         
         Args:
             width (float): The width of the opaque object in micrometres.
             height (float): The height of the opaque object in micrometres.
             angle (float): The angle of the opaque object in degrees.
-            wavenumber (float, optional): The wavenumber of the light. Defaults to 2 * np.pi / (658 nm).
+            wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.
             pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm."""
         
         # set defaults
@@ -349,7 +349,10 @@ class ASTModel:
 
         The diffraction pattern for a particle (sized relative to the true diameter)
         is a function of the dimensionless diffraction z distance, 
-        .. math :: z_\text{D} = \frac{4 \pi z}{D^2}.
+
+        .. math :: 
+
+            z_\text{D} = \frac{4 \pi z}{D^2}.
         
         Args:
             z_val (float): The distance of the the opaque_shape from the object plane.
