@@ -5,6 +5,7 @@
 from random import choices
 import numpy as np
 from numpy.typing import ArrayLike
+from scipy.optimize import curve_fit
 
 
 from ast_model import ASTModel
@@ -43,20 +44,35 @@ class GammaPSD:
         bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.
     """
 
+    @staticmethod
+    def n_gamma(r:ArrayLike, intercept:float, slope:float, shape:float):
+        """The gamma distribution probability distribution function.
+
+        Args:
+            r (ArrayLike): The radii in metres.
+            intercept (float): :math:`N_0` in :math:`\mathrm{m^{-3}}`.
+            slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
+            shape (float): :math:`\mu`.
+
+        Returns:
+            callable: The gamma distribution probability distribution function.
+        """
+        return intercept * r**shape * np.exp(-1 * slope * r)
+
     def __init__(self, intercept: float, slope: float, shape: float, bins: list[float] = None):
         self.intercept = intercept
         self.slope = slope
         self.shape = shape
 
         if bins is None:
-            self.bins = np.logspace(-7, -3, 100)
+            self.bins = np.logspace(-7, -3, 1000)
         else:
             self.bins = bins
 
     def psd_value(self, r: ArrayLike) -> np.ndarray:
         """Calculate the particle size distribution value given radii.
         """
-        return self.intercept * r**self.shape * np.exp(-1 * self.slope * r)
+        return self.n_gamma(r, self.intercept, self.slope, self.shape)
 
     @property
     def binned_distribution(self):
@@ -205,4 +221,23 @@ class PSDModel:
 
             if not keep_models:
                 del self.ast_models[radius]
-        return np.array(sum(diameters_measured.values(), []))
+        # summing with an empty list flattens the list of lists
+        return np.array(sum(diameters_measured.values(), [])) 
+    
+def fit_gamma_distribution(radii, bins):
+    """Fit a gamma distribution to a set of radii.
+
+    Args:
+        diameters (np.ndarray): The diameters to fit.
+        bins (np.ndarray): The bins to fit over.
+
+    Returns:
+        np.ndarray: The fitted gamma distribution.
+    """
+    counts, _ = np.histogram(radii, bins=bins)
+    dN_dr = counts / (bins[1:] - bins[:-1]) # Need to divide by sample volume.... but we don't know what it is.
+    bins = bins[:-1]
+    bins = bins[counts > 0]
+    dn_dr = dn_dr[dn_dr > 0]
+    popt, pcov = curve_fit(lambda r, intercept, slope: GammaPSD.n_gamma(r, intercept, slope, 2.5), bins, dN_dr,p0=[1e10, 1e4])
+    return popt, pcov
