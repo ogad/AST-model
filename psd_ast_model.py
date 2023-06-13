@@ -105,7 +105,7 @@ class SamplingModel:
         self.psd = psd
 
         if z_dist is not None:
-            # not implimented
+            # not implemented
             # TODO: work out xbounds and pmax
             self.z_dist = z_dist
             self.zbounds = [-1, 1]
@@ -117,7 +117,7 @@ class SamplingModel:
                 z) < self.zbounds[1] else 0
 
     def generate(self, n_particles: int) -> np.ndarray:
-        """Generate a particle size distribution.
+        """Generate a sample of particles from the PSD, at random z positions.
 
         Args:
             n_particles (int): The number of particles to generate.
@@ -175,7 +175,10 @@ class SamplingModel:
                 del self.ast_models[radius]
         return np.array(diameters_measured)
 
-    def simulate_distribution_from_scaling(self, n_particles: int, single_particle: bool = False, base_model: ASTModel = None, keep_models=False) -> np.ndarray:
+    def simulate_distribution_from_scaling(
+            self, n_particles: int, single_particle: bool = False, 
+            base_model: ASTModel = None, keep_models=False
+            ) -> np.ndarray:
         """Simulate the observation of similar particles.
 
         Generates a sample of particles, produces new AST models by scaling
@@ -235,9 +238,11 @@ def fit_gamma_distribution(radii, bins):
         np.ndarray: The fitted gamma distribution.
     """
     counts, _ = np.histogram(radii, bins=bins)
-    dN_dr = counts / (bins[1:] - bins[:-1]) # Need to divide by sample volume.... but we don't know what it is.
+    dN_dr = counts / (bins[1:] - bins[:-1]) # TODO: Need to divide by sample volume.... but we don't know what it is.
     bins = bins[:-1]
     bins = bins[counts > 0]
-    dn_dr = dn_dr[dn_dr > 0]
-    popt, pcov = curve_fit(lambda r, intercept, slope: GammaPSD.n_gamma(r, intercept, slope, 2.5), bins, dN_dr,p0=[1e10, 1e4])
+    dN_dr = dN_dr[counts > 0]
+    popt, pcov = curve_fit(
+        lambda r, intercept, slope: GammaPSD.n_gamma(r, intercept, slope, 2.5), 
+        bins, dN_dr,p0=[1e10, 1e4])
     return popt, pcov
