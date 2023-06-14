@@ -1,5 +1,5 @@
 # Particle size distribution model
-# Authour: Oliver Driver
+# Author: Oliver Driver
 # Date: 01/06/2023
 
 from random import choices
@@ -82,7 +82,19 @@ class GammaPSD:
             np.ndarray: The number of particles in each bin.
         """
         return self.psd_value(self.bins[1:]) * np.diff(self.bins)
-
+    
+    def generate_diameter(self) -> float:
+        """Generate a particle diameter from the PSD."""
+        radius = choices(
+                self.bins[1:], weights=self.binned_distribution
+            )[0]
+        return radius * 2
+    
+    @property
+    def total_number_density(self) -> float:
+        """Calculate the total number density of particles."""
+        # Uses the analytical expression for the integral of the gamma distribution
+        return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1)
 
 class SamplingModel:
     """Particle size distribution model.
