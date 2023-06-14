@@ -379,13 +379,12 @@ class ASTModel:
         scaled_model = deepcopy(self)
 
         # scale the object by altering the pixel size
-        # TODO: Enable resampling of the pixel size to match detector
         scaled_model.pixel_size = self.pixel_size * diameter_scale_factor
 
         # scale existing diameters 
         for diameter_type, value in scaled_model.diameters.items():
             scaled_model.diameters[diameter_type] = value * diameter_scale_factor
-        # TODO: Store diameters as pixel units so that this is not required.
+        # TODO: Store diameters as pixel units so that this is not required?
 
         # scale the z value at which the diffraction patterns occur
         # z is proportional to D^1/2
