@@ -10,6 +10,7 @@ import numpy as np
 from tqdm import tqdm
 
 from psd_ast_model import GammaPSD
+from ast_model import ASTModel
 
 @dataclass
 class CloudVolume:
@@ -48,6 +49,41 @@ class CloudVolume:
     def volume(self):
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
     
+    def slice(self, z_value: float):
+        """Return a slice of the cloud volume at a given z value."""
+        if z_value < 0 or z_value > self.dimensions[2]:
+            raise ValueError("z value must be within the cloud volume.")
+        
+        # get the intensity profile at the given z value for each particle
+        total_intensity = np.zeros((int(self.dimensions[0] / 1e-6), int(self.dimensions[1] / 1e-6)))
+        logging.info(f"Calculating intensity profile at z = {z_value} m")
+        for particle in tqdm(self.particles.itertuples()):
+            ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
+            intensity_at_particle_xy = ast_model.process(particle.position[2] - z_value)
+
+            # embed the intensity in the total intensity array
+            x_index = int(particle.position[0] / 1e-6)
+            y_index = int(particle.position[1] / 1e-6)
+            intensity_shape = intensity_at_particle_xy.shape
+            x_min = max(0, x_index - int(intensity_shape[0]/2))
+            x_max = min(total_intensity.shape[0], x_index - int(intensity_shape[0]/2) + intensity_shape[0])
+            y_min = max(0, y_index - int(intensity_shape[1]/2))
+            y_max = min(total_intensity.shape[1], y_index - int(intensity_shape[1]/2) + intensity_shape[1])
+            
+            intensity_to_embed = intensity_at_particle_xy[
+                max(0, int(intensity_shape[0]/2) - x_index):min(intensity_shape[0], total_intensity.shape[0] - x_index + int(intensity_shape[0]/2)),
+                max(0, int(intensity_shape[1]/2) - y_index):min(intensity_shape[1], total_intensity.shape[1] - y_index + int(intensity_shape[1]/2))
+            ]
+
+            total_intensity[x_min:x_max, y_min:y_max] += intensity_to_embed
+        return Slice(z_value, total_intensity)
+
+
+
+@dataclass
+class Slice:
+    z_value: float # in m
+    intensity: np.ndarray # in W/m^2
 
 @dataclass
 class Particle:
