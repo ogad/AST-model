@@ -3,7 +3,7 @@
 # Date: 13/06/2023
 
 from dataclasses import dataclass
-from random import choices
+from random import choices, seed
 import pandas as pd
 import logging
 import numpy as np
@@ -11,6 +11,9 @@ from tqdm import tqdm
 
 from psd_ast_model import GammaPSD
 from ast_model import ASTModel, IntensityField
+
+# seed(42)
+# np.random.seed(42)
 
 @dataclass
 class CloudVolume:
@@ -50,7 +53,6 @@ class CloudVolume:
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
     
     def slice(self, z_value: float):
-        # FIXME: this doesnt work. Intensities add but with a default of 1, so you get overlapping squares.
         """Return a slice of the cloud volume at a given z value."""
         if z_value < 0 or z_value > self.dimensions[2]:
             raise ValueError("z value must be within the cloud volume.")
@@ -67,14 +69,22 @@ class CloudVolume:
             total_intensity = embed_intensity(intensity_at_particle_xy, total_intensity, particle)
         return Slice(z_value, total_intensity)
     
-    def take_image(self,  detector_position: np.ndarray, arm_separation: float=10e-2):
-        """Take a single array measurement."""
+    def take_image(self,  detector_position: np.ndarray, arm_separation: float=10e-2, distance:float=10e-6):
+        """Take an image using repeated detections along the y-axis.
+
+        Detector is aligned with x-axis, and the y-axis is the direction of travel.
+        The z-axis is the focal axis.
+        The detector position is the position of the detector centre during the final detection.
+        
+        """
+
+        n_images = int(distance / 10e-6)
 
         # check which particles are somewhat within within the illuminated region
         # Illuminated region is defined as the 8mm x 2mm x arm_separation region aligned with the orthogonal vector pointing towards the detector
         # TODO: These need to also detect particles whose centres are outside the illuminated region, but whos edges are inside it.
-        is_in_illuminated_region_x = lambda particle: np.dot(particle.position - detector_position, np.array([1,0,0])) < 4e-3 and np.dot(particle.position - detector_position, np.array([1,0,0])) > -4e-3 
-        is_in_illuminated_region_y = lambda particle: np.dot(particle.position - detector_position, np.array([0,1,0])) < 1e-3 and np.dot(particle.position - detector_position, np.array([0,1,0])) > -1e-3
+        is_in_illuminated_region_x = lambda particle: abs(np.dot(particle.position - detector_position, np.array([1,0,0]))) < 4e-3
+        is_in_illuminated_region_y = lambda particle: np.dot(particle.position - detector_position, np.array([0,1,0])) < 1e-3 and np.dot(particle.position - detector_position, np.array([0,1,0])) > (-1e-3 - n_images * 10e-6)
         is_in_illuminated_region_z = lambda particle: np.dot(particle.position - detector_position, np.array([0,0,1])) < arm_separation and np.dot(particle.position - detector_position, np.array([0,0,1])) > 0 
 
         in_illuminated_region = self.particles.apply(
@@ -83,12 +93,13 @@ class CloudVolume:
         )
 
         # get the intensity profile at the given z value for each illuminated particle
-        total_intensity = IntensityField(np.ones((128,1)), pixel_size=10e-6)
+        total_intensity = IntensityField(np.ones((128,n_images)), pixel_size=10e-6)
         for particle in self.particles[in_illuminated_region].itertuples():
             ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
             intensity_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - arm_separation/2)
 
             total_intensity = embed_intensity(intensity_at_particle_xy, total_intensity, particle, detector_position)
+            # FIXME: The patterns should be combined as a phase, not as an intensity.
 
         return ImagedRegion(detector_position, total_intensity)
 
@@ -145,11 +156,6 @@ def embed_intensity(single_particle_intensity, total_intensity, particle, detect
 
     total_intensity[total_x_min:total_x_max, total_y_min:total_y_max] += single_particle_intensity[single_x_min:single_x_max, single_y_min:single_y_max] -1
     return total_intensity
-
-
-
-
-
 
 @dataclass
 class Slice:
