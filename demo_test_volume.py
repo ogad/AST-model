@@ -28,7 +28,8 @@ detector_location = pcle.position - np.array([-800e-6, - 0.8* pcle.diameter, 4e-
 # images = [cloud.take_image(detector_location + np.array([0, y, 0])) for y in tqdm(np.arange(0, 2.2*pcle.diameter, 10e-6))]
 # interesting_images = [img for img in images if (img.intensity != 1).any()]
 # image = np.concatenate([img.intensity for img in images], axis=1)
-image = cloud.take_image(detector_location, distance=2.2*pcle.diameter).intensity
+image = cloud.take_image(detector_location, distance=2.2*pcle.diameter).amplitude.intensity
 plt.imshow(image)
+plt.colorbar()
 
 # %%

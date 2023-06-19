@@ -96,8 +96,8 @@ if __name__ == "__main__":
         ax.plot(
             zd_values,
             [
-                arr.n_pixels_depletion_range(*range1)
-                / arr.n_pixels_depletion_range(*range2)
+                arr.intensity.n_pixels_depletion_range(*range1)
+                / arr.intensity.n_pixels_depletion_range(*range2)
                 for arr in a
             ],
         )
@@ -151,8 +151,8 @@ if __name__ == "__main__":
                 zd_values,
                 # z_values * 1e3,
                 [
-                    arr.n_pixels_depletion_range(*range1)
-                    / arr.n_pixels_depletion_range(*range2)
+                    arr.intensity.n_pixels_depletion_range(*range1)
+                    / arr.intensity.n_pixels_depletion_range(*range2)
                     for arr in a
                 ],
             )
@@ -163,7 +163,7 @@ if __name__ == "__main__":
             ax.plot(
                 zd_values,
                 # z_values * 1e3,
-                [arr.n_pixels_depletion_range(*range1) * (10 / 15) ** 2 for arr in a],
+                [arr.intensity.n_pixels_depletion_range(*range1) * (10 / 15) ** 2 for arr in a],
             )
             ax.set_ylabel(f"$A_{{{int(100*range1[0])}-{int(100*range1[1])}}}$")
 
@@ -207,14 +207,14 @@ if __name__ == "__main__":
     regridded_rescaled_model.plot_intensity(0, ax=ax2, axis_length=400)
 
     fig2, (ax3, ax4, ax5) = plt.subplots(1, 3, figsize=(15, 5))
-    z_unsc, int_unsc = list(model.intensities.items())[0]
-    z_sc, int_sc = list(rescaled_model.intensities.items())[0]
-    z_sc_rg, int_sc_rg = list(regridded_rescaled_model.intensities.items())[0]
-    int_unsc.plot(ax=ax3, axis_length=400)
+    z_unsc, amp_unsc = list(model.amplitudes.items())[0]
+    z_sc, amp_sc = list(rescaled_model.amplitudes.items())[0]
+    z_sc_rg, amp_sc_rg = list(regridded_rescaled_model.amplitudes.items())[0]
+    amp_unsc.intensity.plot(ax=ax3, axis_length=400)
     ax3.set_title(f"Unscaled {z_unsc*1e3:.2f} mm")
-    int_sc.plot(ax=ax4, axis_length=400)
+    amp_sc.intensity.plot(ax=ax4, axis_length=400)
     ax4.set_title(f"Scaled {z_sc*1e3:.2f} mm")
-    int_sc_rg.plot(ax=ax5, axis_length=400)
+    amp_sc_rg.intensity.plot(ax=ax5, axis_length=400)
     ax5.set_title(f"Scaled and regridded {z_sc_rg*1e3:.2f} mm")
 
 # %%

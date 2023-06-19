@@ -174,7 +174,7 @@ class SamplingModel:
             if radius not in self.ast_models:
                 self.ast_models[radius] = ASTModel.from_diameter(
                     radius * 2 / 1e-6)
-            intensity = self.ast_models[radius].process(z_val=z_value)
+            intensity = self.ast_models[radius].process(z_val=z_value).intensity
 
             if single_particle:
                 diameters = [intensity.measure_xy_diameter().tolist()]
@@ -225,7 +225,7 @@ class SamplingModel:
                 self.ast_models[radius] = base_model.rescale(
                     (radius * 2 / 1e-6)/base_diameter)
                 self.ast_models[radius].regrid()
-            intensity = self.ast_models[radius].process(z_val=z_value)
+            intensity = self.ast_models[radius].process(z_val=z_value).intensity
 
             if single_particle:
                 diameters = [intensity.measure_xy_diameter().tolist()]

@@ -10,7 +10,7 @@ import numpy as np
 from tqdm import tqdm
 
 from psd_ast_model import GammaPSD
-from ast_model import ASTModel, IntensityField
+from ast_model import ASTModel, IntensityField, AmplitudeField
 
 # seed(42)
 # np.random.seed(42)
@@ -58,16 +58,16 @@ class CloudVolume:
             raise ValueError("z value must be within the cloud volume.")
         
         # get the intensity profile at the given z value for each particle
-        total_intensity = np.zeros((int(self.dimensions[0] / 1e-6), int(self.dimensions[1] / 1e-6)))
+        total_amplitude = np.zeros((int(self.dimensions[0] / 1e-6), int(self.dimensions[1] / 1e-6)))
         logging.info(f"Calculating intensity profile at z = {z_value} m")
         for particle in tqdm(self.particles.itertuples()):
             ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
-            intensity_at_particle_xy = ast_model.process(particle.position[2] - z_value)
+            amplitude_at_particle_xy = ast_model.process(particle.position[2] - z_value)
 
-            # embed the intensity in the total intensity array
+            # embed the amplitude in the total intensity array
             
-            total_intensity = embed_intensity(intensity_at_particle_xy, total_intensity, particle)
-        return Slice(z_value, total_intensity)
+            total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle)
+        return Slice(z_value, total_amplitude)
     
     def take_image(self,  detector_position: np.ndarray, arm_separation: float=10e-2, distance:float=10e-6):
         """Take an image using repeated detections along the y-axis.
@@ -93,81 +93,89 @@ class CloudVolume:
         )
 
         # get the intensity profile at the given z value for each illuminated particle
-        total_intensity = IntensityField(np.ones((128,n_images)), pixel_size=10e-6)
+        total_amplitude = AmplitudeField(np.ones((128,n_images), dtype=np.complex128), pixel_size=10e-6)
         for particle in self.particles[in_illuminated_region].itertuples():
             ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
-            intensity_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - arm_separation/2)
+            amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - arm_separation/2)
 
-            total_intensity = embed_intensity(intensity_at_particle_xy, total_intensity, particle, detector_position)
+            total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle, detector_position)
             # FIXME: The patterns should be combined as a phase, not as an intensity.
 
-        return ImagedRegion(detector_position, total_intensity)
+        return ImagedRegion(detector_position, total_amplitude)
 
 
-def embed_intensity(single_particle_intensity, total_intensity, particle, detector_position):
+def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detector_position):
     """Embed the intensity profile of a particle into the total intensity array."""
     # vector from particle to detector
     pcle_from_detector = particle.position - detector_position
     # index of particle centre in total_intensity
-    x_index = int(pcle_from_detector[0] / total_intensity.pixel_size) + int(total_intensity.shape[0]/2)
-    y_index = int(pcle_from_detector[1] / total_intensity.pixel_size) + int(total_intensity.shape[1]/2)
+    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size) + int(total_amplitude.shape[0]/2)
+    y_index = int(pcle_from_detector[1] / total_amplitude.pixel_size) + int(total_amplitude.shape[1]/2)
 
-    intensity_shape = single_particle_intensity.shape
+    amplitude_shape = single_particle_amplitude.shape
 
     # Check pixel sizes are consistent
-    if single_particle_intensity.pixel_size != total_intensity.pixel_size:
-        raise ValueError(f"Pixel sizes of single_particle_intensity and total_intensity must be the same.\nSingle particle: {single_particle_intensity.pixel_size} m, Total: {total_intensity.pixel_size} m")
+    if single_particle_amplitude.pixel_size != total_amplitude.pixel_size:
+        raise ValueError(f"Pixel sizes of single_particle_amplitude and total_amplitude must be the same.\nSingle particle: {single_particle_amplitude.pixel_size} m, Total: {total_amplitude.pixel_size} m")
 
     # determine the bounds of the total intensity array to embed the particle intensity in
     # "do it to the edge, but not over the edge"
-    if x_index < int(intensity_shape[0]/2):
+    if x_index < int(amplitude_shape[0]/2):
         # would be out of bounds at x=0
         # go to edge of total_intensity and trim single_particle_intensity
         total_x_min = 0
-        single_x_min = int(intensity_shape[0]/2) - x_index
+        single_x_min = int(amplitude_shape[0]/2) - x_index
     else:
-        total_x_min = x_index - int(intensity_shape[0]/2)
+        total_x_min = x_index - int(amplitude_shape[0]/2)
         single_x_min = 0
     
-    if y_index < int(intensity_shape[1]/2):
+    if y_index < int(amplitude_shape[1]/2):
         # would be out of bounds at y=0
         total_y_min = 0
-        single_y_min = int(intensity_shape[1]/2) - y_index
+        single_y_min = int(amplitude_shape[1]/2) - y_index
     else:
-        total_y_min = y_index - int(intensity_shape[1]/2)
+        total_y_min = y_index - int(amplitude_shape[1]/2)
         single_y_min = 0
     
-    if x_index - int(intensity_shape[0]/2) + intensity_shape[0] > total_intensity.shape[0]:
+    if x_index - int(amplitude_shape[0]/2) + amplitude_shape[0] > total_amplitude.shape[0]:
         # would be out of bounds at max x
-        total_x_max = total_intensity.shape[0]
+        total_x_max = total_amplitude.shape[0]
         # single_size - ((endpoint) - total_size)
-        single_x_max = intensity_shape[0] - ((x_index - int(intensity_shape[0]/2) + intensity_shape[0]) - total_intensity.shape[0])
+        single_x_max = amplitude_shape[0] - ((x_index - int(amplitude_shape[0]/2) + amplitude_shape[0]) - total_amplitude.shape[0])
     else:
-        total_x_max = x_index - int(intensity_shape[0]/2) + intensity_shape[0]
-        single_x_max = intensity_shape[0]
+        total_x_max = x_index - int(amplitude_shape[0]/2) + amplitude_shape[0]
+        single_x_max = amplitude_shape[0]
 
-    if y_index - int(intensity_shape[1]/2) + intensity_shape[1] > total_intensity.shape[1]:
+    if y_index - int(amplitude_shape[1]/2) + amplitude_shape[1] > total_amplitude.shape[1]:
         # would be out of bounds at max y
-        total_y_max = total_intensity.shape[1]
-        single_y_max = intensity_shape[1] - ((y_index - int(intensity_shape[1]/2) + intensity_shape[1]) - total_intensity.shape[1])
+        total_y_max = total_amplitude.shape[1]
+        single_y_max = amplitude_shape[1] - ((y_index - int(amplitude_shape[1]/2) + amplitude_shape[1]) - total_amplitude.shape[1])
     else:
-        total_y_max = y_index - int(intensity_shape[1]/2) + intensity_shape[1]
-        single_y_max = intensity_shape[1]
+        total_y_max = y_index - int(amplitude_shape[1]/2) + amplitude_shape[1]
+        single_y_max = amplitude_shape[1]
 
-    total_intensity[total_x_min:total_x_max, total_y_min:total_y_max] += single_particle_intensity[single_x_min:single_x_max, single_y_min:single_y_max] -1
-    return total_intensity
+    #TODO: check this....... Are the amplitudes combined correctly
+    new_amplitude = single_particle_amplitude[single_x_min:single_x_max, single_y_min:single_y_max]
+    total_amplitude[total_x_min:total_x_max, total_y_min:total_y_max] *= new_amplitude
+
+    # new_amplitude_reshaped = AmplitudeField(np.ones_like(total_amplitude, dtype=np.complex128), pixel_size=10e-6)
+    # new_amplitude_reshaped[total_x_min:total_x_max, total_y_min:total_y_max] = new_amplitude
+
+    # total_amplitude = AmplitudeField(np.fft.ifft2(total_amplitude.phase * new_amplitude_reshaped.phase), pixel_size=10e-6)
+    # total_amplitude[total_x_min:total_x_max, total_y_min:total_y_max] *= single_particle_amplitude[single_x_min:single_x_max, single_y_min:single_y_max] - 1
+    return total_amplitude
 
 @dataclass
 class Slice:
     z_value: float # in m
-    intensity: np.ndarray # relative intensity
+    amplitude: AmplitudeField # relative intensity
 
 @dataclass
 class ImagedRegion:
     """A region illuminated by the laser beam at a single instant."""
     # orthogonal_vector: np.ndarray = (0,0,1) # in m
     detector_position: np.ndarray # in m
-    intensity: np.ndarray # relative intensity
+    amplitude: AmplitudeField # relative intensity
     arm_separation: float = 10e-2# in m
 
 @dataclass

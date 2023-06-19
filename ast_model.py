@@ -13,6 +13,37 @@ from matplotlib import pyplot as plt
 from scipy import ndimage
 from skimage.transform import rescale
 
+class AmplitudeField(np.ndarray):
+    """A class to represent an amplitude field.
+
+    Uses the numpy array as a base class, adding the pixel size attribute, storing
+    a grid of phases from a single interaction
+
+    Args:
+        np.ndarray: The amplitude field
+    """
+
+    def __new__(cls, input_array, pixel_size=None):
+        obj = np.asarray(input_array).view(cls)
+        obj.pixel_size = pixel_size
+        return obj
+
+    def __array_finalize__(self, obj):
+        if obj is None:
+            return
+        self.pixel_size = getattr(obj, "pixel_size", None)
+
+    @property
+    def phase(self):
+        """The phase field."""
+        return np.fft.fft2(self)
+
+    @property
+    def intensity(self):
+        """The intensity field."""
+        return IntensityField(np.abs(self)**2, pixel_size=self.pixel_size)
+
+
 class IntensityField(np.ndarray):
     """A class to represent an intensity field.
 
@@ -161,7 +192,7 @@ class ASTModel:
     pixel_size: float = 10e-6  # in metres
 
     def __post_init__(self):
-        self.intensities = {}  # z: intensity grid
+        self.amplitudes = {}  # z: phase grid
         self.diameters = {}
 
         # trim opaque shape of zero-valued rows and columns
@@ -242,20 +273,20 @@ class ASTModel:
 
 
 
-    def process(self, z_val: float, low_pass=1.0) -> IntensityField:
-        """Process the model, calculating the intensity given the opaque shape is at z.
+    def process(self, z_val: float, low_pass=1.0) -> AmplitudeField:
+        """Process the model, calculating the amplitude given the opaque shape is at z.
 
         Args:
             z_val (float): The distance of the the opaque_shape from the object plane.
-            low_pass (float, optional): The low pass filter to apply to the intensity. Defaults to 1.0.
+            low_pass (float, optional): The low pass filter to apply to the amplitude. Defaults to 1.0.
 
         Returns:
-            IntensityField: The intensity of the image at z.
+            AmplitudeField: The amplitude (transmission function) of the image at z.
         """
 
-        # check if the intensity has already been calculated
-        if z_val in self.intensities:
-            return self.intensities[z_val]
+        # check if the amplitude has already been calculated
+        if z_val in self.amplitudes:
+            return self.amplitudes[z_val]
 
         object_plane = np.pad(
             self.opaque_shape,
@@ -297,15 +328,11 @@ class ASTModel:
         # transform back into real space
         transmission_function_translated = np.fft.ifft2(
             transmission_function_fourier_translated)
+        
+        amplitude = AmplitudeField(transmission_function_translated, pixel_size=self.pixel_size)
 
-        # calculate the intensity
-        intensity_translated = np.abs(transmission_function_translated)**2
-        intensity_translated_as_field = IntensityField(
-            intensity_translated, pixel_size=self.pixel_size)
-
-        # cache and return the intensity
-        self.intensities[z_val] = intensity_translated_as_field
-        return intensity_translated_as_field
+        self.amplitudes[z_val] = amplitude
+        return amplitude
 
     def process_range(self, z_range: np.ndarray) -> np.ndarray:
         """Process the model for offsetting the object at range of z values.
@@ -324,9 +351,9 @@ class ASTModel:
         Args:
             z (float): The distance of the the opaque_shape from the object plane.
         """
-        intensity = self.process(z_val)
+        amplitude = self.process(z_val)
 
-        return intensity.plot(**kwargs)
+        return amplitude.intensity.plot(**kwargs)
 
     def xy_diameter(self) -> float:
         """Calculate the xy diameter of the opaque_shape."""
@@ -366,7 +393,7 @@ class ASTModel:
     def rescale(self, diameter_scale_factor):
         """Produce a new AST model for similar object at a different scale.
 
-        Scales the object, and any already-measured diameters or processed intensity 
+        Scales the object, and any already-measured diameters or processed amplitude 
         profiles by a given factor.
 
         Args:
@@ -388,12 +415,12 @@ class ASTModel:
 
         # scale the z value at which the diffraction patterns occur
         # z is proportional to D^1/2
-        scaled_model.intensities = {}
-        for z_val, intensity_profile in self.intensities.items():
+        scaled_model.amplitudes = {}
+        for z_val, amplitude_profile in self.amplitudes.items():
             scaled_z_val = z_val * diameter_scale_factor**0.5 
             # TODO: make sure cached z values here have a specified precision, so they're actually reused.
-            scaled_model.intensities[scaled_z_val] = deepcopy(intensity_profile)
-            scaled_model.intensities[scaled_z_val].pixel_size = scaled_model.pixel_size
+            scaled_model.amplitudes[scaled_z_val] = deepcopy(amplitude_profile)
+            scaled_model.amplitudes[scaled_z_val].pixel_size = scaled_model.pixel_size
 
         # return the new ASTModel object
         return scaled_model
@@ -401,7 +428,7 @@ class ASTModel:
     def regrid(self, pixel_size= 10e-6):
         """Regrid the model to a new pixel size.
 
-        Resamples the opaque object and any already-measured intensity profiles 
+        Resamples the opaque object and any already-measured amplitude profiles 
         to a new pixel size, such as one that matches the real detector.
         
         Args:
@@ -412,5 +439,7 @@ class ASTModel:
         self.opaque_shape = rescale(self.opaque_shape, 1/scale_factor)
         self.pixel_size = pixel_size
 
-        for z_val, intensity_profile in self.intensities.items():
-            self.intensities[z_val] = IntensityField(rescale(intensity_profile, 1/scale_factor), pixel_size=pixel_size)
+        for z_val, amplitude_profile in self.amplitudes.items():
+            #FIXME: this doesn't work, because amplitudes are complex
+            # self.amplitudes[z_val] = AmplitudeField(rescale(amplitude_profile, 1/scale_factor), pixel_size=pixel_size)
+            pass
