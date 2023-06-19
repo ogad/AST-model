@@ -45,19 +45,20 @@ class GammaPSD:
     """
 
     @staticmethod
-    def n_gamma(r:ArrayLike, intercept:float, slope:float, shape:float):
+    def n_gamma(d:ArrayLike, intercept:float, slope:float, shape:float):
         """The gamma distribution probability distribution function.
 
         Args:
-            r (ArrayLike): The radii in metres.
-            intercept (float): :math:`N_0` in :math:`\mathrm{m^{-3}}`.
+            d (ArrayLike): The diameters in metres.
+            intercept (float): :math:`N_0` in :math:`\mathrm{m^{-4}}`.
             slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
             shape (float): :math:`\mu`.
 
         Returns:
             callable: The gamma distribution probability distribution function.
         """
-        return intercept * r**shape * np.exp(-1 * slope * r)
+        # "shape" expects diameter values in cm.
+        return intercept * (d/1e-2)**shape * np.exp(-1 * slope * d)
 
     def __init__(self, intercept: float, slope: float, shape: float, bins: list[float] = None):
         self.intercept = intercept
@@ -69,10 +70,10 @@ class GammaPSD:
         else:
             self.bins = bins
 
-    def psd_value(self, r: ArrayLike) -> np.ndarray:
-        """Calculate the particle size distribution value given radii.
+    def psd_value(self, d: ArrayLike) -> np.ndarray:
+        """Calculate the particle size distribution value given diameters.
         """
-        return self.n_gamma(r, self.intercept, self.slope, self.shape)
+        return self.n_gamma(d, self.intercept, self.slope, self.shape)
 
     @property
     def binned_distribution(self):
@@ -81,20 +82,29 @@ class GammaPSD:
         Returns:
             np.ndarray: The number of particles in each bin.
         """
-        return self.psd_value(self.bins[1:]) * np.diff(self.bins)
+        return self.psd_value(self.bins[1:]) * (np.diff(self.bins))
     
     def generate_diameter(self) -> float:
         """Generate a particle diameter from the PSD."""
-        radius = choices(
+        diameter = choices(
                 self.bins[1:], weights=self.binned_distribution
             )[0]
-        return radius * 2
+        return diameter
     
     @property
     def total_number_density(self) -> float:
         """Calculate the total number density of particles."""
         # Uses the analytical expression for the integral of the gamma distribution
-        return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1)
+        # return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1) 
+        return self.binned_distribution.sum()
+    
+    def plot(self, ax):
+        """Plot the PSD value against diameter."""
+        ax.plot(self.bins[1:], self.psd_value(self.bins[1:]))
+        # ax.set_xscale('log')
+        # ax.set_yscale('log')
+        ax.set_xlabel('Diameter (m)')
+        ax.set_ylabel('PSD (m$^{-3}$)')
 
 class SamplingModel:
     """Particle size distribution model.
@@ -135,7 +145,7 @@ class SamplingModel:
             n_particles (int): The number of particles to generate.
 
         Returns:
-            np.ndarray: The particles represented by tuples of (radius, z).
+            np.ndarray: The particles represented by tuples of (diameter, z).
         """
         # generate particle size and z positions
         particles = np.zeros((n_particles, 2))
@@ -168,13 +178,13 @@ class SamplingModel:
         particles = self.generate(n_particles)
         diameters_measured = []
         for i in range(particles.shape[0]):
-            radius = particles[i, 0]
+            diameter = particles[i, 0]
             z_value = particles[i, 1]
 
-            if radius not in self.ast_models:
-                self.ast_models[radius] = ASTModel.from_diameter(
-                    radius * 2 / 1e-6)
-            intensity = self.ast_models[radius].process(z_val=z_value).intensity
+            if diameter not in self.ast_models:
+                self.ast_models[diameter] = ASTModel.from_diameter(
+                    diameter / 1e-6)
+            intensity = self.ast_models[diameter].process(z_val=z_value).intensity
 
             if single_particle:
                 diameters = [intensity.measure_xy_diameter().tolist()]
@@ -184,7 +194,7 @@ class SamplingModel:
             diameters_measured += diameters
 
             if not keep_models:
-                del self.ast_models[radius]
+                del self.ast_models[diameter]
         return np.array(diameters_measured)
 
     def simulate_distribution_from_scaling(
@@ -218,29 +228,29 @@ class SamplingModel:
         particles = self.generate(n_particles)
         diameters_measured = {}
         for i in range(particles.shape[0]):
-            radius = particles[i, 0]
+            diameter = particles[i, 0]
             z_value = particles[i, 1]
 
-            if radius not in self.ast_models:
-                self.ast_models[radius] = base_model.rescale(
-                    (radius * 2 / 1e-6)/base_diameter)
-                self.ast_models[radius].regrid()
-            intensity = self.ast_models[radius].process(z_val=z_value).intensity
+            if diameter not in self.ast_models:
+                self.ast_models[diameter] = base_model.rescale(
+                    (diameter / 1e-6)/base_diameter)
+                self.ast_models[diameter].regrid()
+            intensity = self.ast_models[diameter].process(z_val=z_value).intensity
 
             if single_particle:
                 diameters = [intensity.measure_xy_diameter().tolist()]
             else:
                 diameters = intensity.measure_xy_diameters()
 
-            diameters_measured[(radius, z_value)] = diameters
+            diameters_measured[(diameter, z_value)] = diameters
 
             if not keep_models:
-                del self.ast_models[radius]
+                del self.ast_models[diameter]
         # summing with an empty list flattens the list of lists
         return np.array(sum(diameters_measured.values(), [])) 
     
-def fit_gamma_distribution(radii, bins):
-    """Fit a gamma distribution to a set of radii.
+def fit_gamma_distribution(diameters, bins):
+    """Fit a gamma distribution to a set of diameters.
 
     Args:
         diameters (np.ndarray): The diameters to fit.
@@ -249,12 +259,12 @@ def fit_gamma_distribution(radii, bins):
     Returns:
         np.ndarray: The fitted gamma distribution.
     """
-    counts, _ = np.histogram(radii, bins=bins)
+    counts, _ = np.histogram(diameters, bins=bins)
     dN_dr = counts / (bins[1:] - bins[:-1]) # TODO: Need to divide by sample volume.... but we don't know what it is.
     bins = bins[:-1]
     bins = bins[counts > 0]
     dN_dr = dN_dr[counts > 0]
     popt, pcov = curve_fit(
-        lambda r, intercept, slope: GammaPSD.n_gamma(r, intercept, slope, 2.5), 
+        lambda d, intercept, slope: GammaPSD.n_gamma(d, intercept, slope, 2.5), 
         bins, dN_dr,p0=[1e10, 1e4])
     return popt, pcov
