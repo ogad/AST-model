@@ -8,7 +8,7 @@ if __name__ == "__main__":
     psd = SamplingModel(GammaPSD(1e10, 2e4, 2.5, bins=np.logspace(-8, -3, 10000)))
 
     fig, ax = plt.subplots()
-    ax.plot(d_vals, psd.psd.psd_value(d_vals))
+    ax.plot(d_vals, psd.psd.dn_dd(d_vals))
     # ax.set_xscale("log")
 # %%
 
@@ -26,12 +26,12 @@ if __name__ == "__main__":
     plt.xlim(0, 1e-3)
 
     popt, pcov = fit_gamma_distribution(arr / 2 * 1e-6, hist_bins)
-    n_fit = GammaPSD.n_gamma(hist_bins, *popt, 2.5)
+    n_fit = GammaPSD._dn_gamma_dd(hist_bins, *popt, 2.5)
 
     secax = ax.twinx()
     secax.plot(hist_bins, n_fit, label="Fit", c="red")
     # Can't get this to the right scale because we don't know the sample volume...
-    # secax.plot(hist_bins, psd_doubleobs.psd.psd_value(hist_bins), label="PSD", c="purple")
+    # secax.plot(hist_bins, psd_doubleobs.psd.dn_dd(hist_bins), label="PSD", c="purple")
 
     plt.legend()
 

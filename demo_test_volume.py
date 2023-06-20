@@ -40,7 +40,9 @@ np.random.seed(42)
 
 # O'Shea 2021 Fig. 18(c)
 # N_0 = 10e4 L-1 cm-1; µ = 2; @lambda = 200 cm-1
-gamma_dist = GammaPSD(1e4 * 1e3 * 1e2, 200 * 1e2, 2)
+# gamma_dist = GammaPSD(1e4 * 1e3 * 1e2, 200 * 1e2, 2)
+
+gamma_dist = GammaPSD(102 * 1e3 * 1e2, 4.82 * 1e2, 2.07, bins=np.logspace(-8, -2, 10000))
 
 fig, ax = plt.subplots()
 gamma_dist.plot(ax)

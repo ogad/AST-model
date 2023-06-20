@@ -3,6 +3,8 @@
 # Date: 01/06/2023
 
 from random import choices
+from abc import ABC, abstractmethod
+
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.optimize import curve_fit
@@ -27,53 +29,18 @@ def rejection_sampler(p, xbounds, pmax):
         if y <= p(x):
             return x
 
-
-class GammaPSD:
-    r"""Gamma particle size distribution object.
-
-    Contains the distribution parameters, and binning information.
-
-    .. math::
-
-        n_N(r) = N_0 \left(\frac{r}{\text{1 m}}\right)^\mu \mathrm{e}^{-\Lambda r}.
-
-    Args:
-        intercept (float): :math:`N_0` in :math:`\mathrm{m^{-3}}`.
-        slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
-        shape (float): :math:`\mu`.
-        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.
-    """
-
-    @staticmethod
-    def n_gamma(d:ArrayLike, intercept:float, slope:float, shape:float):
-        """The gamma distribution probability distribution function.
-
-        Args:
-            d (ArrayLike): The diameters in metres.
-            intercept (float): :math:`N_0` in :math:`\mathrm{m^{-4}}`.
-            slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
-            shape (float): :math:`\mu`.
-
-        Returns:
-            callable: The gamma distribution probability distribution function.
-        """
-        # "shape" expects diameter values in cm.
-        return intercept * (d/1e-2)**shape * np.exp(-1 * slope * d)
-
-    def __init__(self, intercept: float, slope: float, shape: float, bins: list[float] = None):
-        self.intercept = intercept
-        self.slope = slope
-        self.shape = shape
-
+class PSD(ABC):
+    """Base class for particle size distribution objects."""
+    def __init__(self, bins: list[float] = None):
         if bins is None:
-            self.bins = np.logspace(-7, -3, 1000)
-        else:
-            self.bins = bins
+            bins = np.logspace(-7, -3, 100)
+        self.bins = bins
 
-    def psd_value(self, d: ArrayLike) -> np.ndarray:
+    @abstractmethod
+    def dn_dd(self, d: ArrayLike) -> np.ndarray:
         """Calculate the particle size distribution value given diameters.
         """
-        return self.n_gamma(d, self.intercept, self.slope, self.shape)
+        pass
 
     @property
     def binned_distribution(self):
@@ -82,7 +49,7 @@ class GammaPSD:
         Returns:
             np.ndarray: The number of particles in each bin.
         """
-        return self.psd_value(self.bins[1:]) * (np.diff(self.bins))
+        return self.dn_dd(self.bins[1:]) * (np.diff(self.bins))
     
     def generate_diameter(self) -> float:
         """Generate a particle diameter from the PSD."""
@@ -100,11 +67,58 @@ class GammaPSD:
     
     def plot(self, ax):
         """Plot the PSD value against diameter."""
-        ax.plot(self.bins[1:], self.psd_value(self.bins[1:]))
+        ax.plot(self.bins[1:], self.dn_dd(self.bins[1:]))
         # ax.set_xscale('log')
         # ax.set_yscale('log')
         ax.set_xlabel('Diameter (m)')
         ax.set_ylabel('PSD (m$^{-3}$)')
+
+
+class GammaPSD(PSD):
+    r"""Gamma particle size distribution object.
+
+    Contains the distribution parameters, and binning information.
+
+    .. math::
+
+        n_N(r) = N_0 \left(\frac{r}{\text{1 m}}\right)^\mu \mathrm{e}^{-\Lambda r}.
+
+    Args:
+        intercept (float): :math:`N_0` in :math:`\mathrm{m^{-3}}`.
+        slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
+        shape (float): :math:`\mu`.
+        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.
+    """
+
+    def __init__(self, intercept: float, slope: float, shape: float, bins: list[float] = None):
+        self.intercept = intercept
+        self.slope = slope
+        self.shape = shape
+
+        super().__init__(bins)
+
+    @staticmethod
+    def _dn_gamma_dd(d:ArrayLike, intercept:float, slope:float, shape:float):
+        """The gamma distribution probability distribution function.
+
+        Args:
+            d (ArrayLike): The diameters in metres.
+            intercept (float): :math:`N_0` in :math:`\mathrm{m^{-4}}`.
+            slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
+            shape (float): :math:`\mu`.
+
+        Returns:
+            callable: The gamma distribution probability distribution function.
+        """
+        # "shape" expects diameter values in cm.
+        return intercept * (d/1e-2)**shape * np.exp(-1 * slope * d)
+
+
+    def dn_dd(self, d: ArrayLike) -> np.ndarray:
+        """Calculate the particle size distribution value given diameters.
+        """
+        return self._dn_gamma_dd(d, self.intercept, self.slope, self.shape)
+
 
 class SamplingModel:
     """Particle size distribution model.
