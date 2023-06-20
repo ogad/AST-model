@@ -237,7 +237,7 @@ class SamplingModel:
         if base_model is None:
             base_model = ASTModel.from_diameter(1000)
 
-        base_diameter = base_model.process(0).measure_xy_diameter()
+        base_diameter = base_model.process(0).intensity.measure_xy_diameter()
 
         particles = self.generate(n_particles)
         diameters_measured = {}
@@ -279,6 +279,6 @@ def fit_gamma_distribution(diameters, bins):
     bins = bins[counts > 0]
     dN_dr = dN_dr[counts > 0]
     popt, pcov = curve_fit(
-        lambda d, intercept, slope: GammaPSD.n_gamma(d, intercept, slope, 2.5), 
+        lambda d, intercept, slope: GammaPSD._dn_gamma_dd(d, intercept, slope, 2.5), 
         bins, dN_dr,p0=[1e10, 1e4])
     return popt, pcov
