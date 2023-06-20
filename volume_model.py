@@ -102,18 +102,21 @@ class CloudVolume:
             amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - arm_separation/2)
 
             total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle, detector_position)
-            # FIXME: The patterns should be combined as a phase, not as an intensity.
 
         return ImagedRegion(detector_position, total_amplitude)
 
 
 def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detector_position):
     """Embed the intensity profile of a particle into the total intensity array."""
+
     # vector from particle to detector
     pcle_from_detector = particle.position - detector_position
+
+    
     # index of particle centre in total_intensity
-    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size) + int(total_amplitude.shape[0]/2)
-    y_index = int(pcle_from_detector[1] / total_amplitude.pixel_size) + int(total_amplitude.shape[1]/2)
+    # detector is at x = total_amplitude.shape[0]/2, y = 0
+    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size) + int(total_amplitude.shape[0]/2) 
+    y_index = int(pcle_from_detector[1] / total_amplitude.pixel_size)
 
     amplitude_shape = single_particle_amplitude.shape
 
@@ -156,6 +159,10 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
     else:
         total_y_max = y_index - int(amplitude_shape[1]/2) + amplitude_shape[1]
         single_y_max = amplitude_shape[1]
+
+    # check for the non-overlapping case
+    if total_x_min > total_amplitude.shape[0] or total_y_min > total_amplitude.shape[1] or total_x_max < 0 or total_y_max < 0:
+        return total_amplitude
 
     #TODO: check this....... Are the amplitudes combined correctly
     new_amplitude = single_particle_amplitude[single_x_min:single_x_max, single_y_min:single_y_max]
