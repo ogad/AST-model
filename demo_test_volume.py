@@ -11,7 +11,7 @@ from volume_model import CloudVolume
 
 logging.basicConfig(level=logging.INFO)
 
-# %%
+# %% Old demo with unrealistically high density
 seed(42)
 np.random.seed(42)
 
@@ -52,16 +52,20 @@ print(cloud.n_particles)
 # plt.imshow(slice.intensity[4000:8000, 4000:8000])
 # %%
 pcle = cloud.particles.iloc[0]
-detector_location = pcle.position - np.array([-800e-6, - 0.8* pcle.diameter, 4e-2])
-detector_location = np.array([0.05, 0.05, 900])
+detector_location = np.array([0.05, 0.05, 10])
 
-# images = [cloud.take_image(detector_location + np.array([0, y, 0])) for y in tqdm(np.arange(0, 2.2*pcle.diameter, 10e-6))]
-# interesting_images = [img for img in images if (img.intensity != 1).any()]
-# image = np.concatenate([img.intensity for img in images], axis=1)
+for z in range(10, 1000, 10):
+    detection = cloud.take_image(detector_location, distance=10)
+    if detection:
+        intensity = image.amplitude.intensity
+        plt.imshow(image)
+        plt.colorbar()
+        plt.show()
+        detector_location[2] = z + 10
 
-image = cloud.take_image(detector_location, distance=10).amplitude.intensity
 # plt.imshow(image)
 # plt.colorbar()
+
 
 
 # %%

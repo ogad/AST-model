@@ -91,6 +91,9 @@ class CloudVolume:
             lambda particle: is_in_illuminated_region_x(particle) and is_in_illuminated_region_y(particle) and is_in_illuminated_region_z(particle),
             axis=1
         )
+        if not in_illuminated_region.any():
+            # No particles are in the illuminated region.
+            return None
 
         # get the intensity profile at the given z value for each illuminated particle
         total_amplitude = AmplitudeField(np.ones((128,n_images), dtype=np.complex128), pixel_size=10e-6)
