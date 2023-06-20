@@ -110,15 +110,57 @@ class GammaPSD(PSD):
         Returns:
             callable: The gamma distribution probability distribution function.
         """
-        # "shape" expects diameter values in cm.
-        return intercept * (d/1e-2)**shape * np.exp(-1 * slope * d)
+        # "shape" expects diameter values in cm in the O'Shea formulation
+        return intercept * (d)**shape * np.exp(-1 * slope * d)
 
 
     def dn_dd(self, d: ArrayLike) -> np.ndarray:
         """Calculate the particle size distribution value given diameters.
         """
+        # "shape" expects diameter values in cm in the O'Shea formulation - hence the 1e-2 fudge factor
         return self._dn_gamma_dd(d, self.intercept, self.slope, self.shape)
 
+class OSheaGammaPSD(GammaPSD):
+    def dn_dd(self, d: ArrayLike) -> np.ndarray:
+        """Calculate the particle size distribution value given diameters.
+        """
+        # "shape" expects diameter values in cm in the O'Shea formulation - hence the 1e-2 fudge factor
+        return self._dn_gamma_dd(d, self.intercept / (1e-2**self.shape), self.slope, self.shape)
+
+
+class TwoMomentGammaPSD(PSD):
+
+    def __init__(self, m2, m3, bins: list[float] = None):
+        self.m2 = m2
+        self.m3 = m3
+
+        super().__init__(bins)
+
+    @classmethod
+    def from_m2_tc(cls, m2, tc, bins: list[float] = None):
+        """Create a TwoMomentGammaPSD object from the second moment and in-cloud temperature.
+        """
+        
+        a_n = lambda n: np.exp(13.6 - 7.76 * n + 0.479 * n**2)
+        b_n = lambda n: -0.0361 + 0.0151 * n + 0.00149 * n**2
+        c_n = lambda n: 0.807 + 0.00581 * n - 0.0457 * n**2
+
+        m3 = a_n(3) * np.exp(b_n(3) * tc) * m2**c_n(3)
+        return cls(m2, m3, bins)
+
+
+    def dn_dd(self, d: ArrayLike) -> np.ndarray:
+        """Calculate the particle size distribution value given diameters.
+        """
+        x = d * self.m2 / self.m3 # now neatly dimensionless
+        # TODO: Currently only the mid-latitude parameters
+        phi_23 = GammaPSD._dn_gamma_dd(x, 102, 4.82, 2.07)
+
+        return phi_23 / (self.m3**3 / self.m2**4)
+    
+    @property
+    def characteristic_diameter(self):
+        return self.m3 / self.m2
 
 class SamplingModel:
     """Particle size distribution model.
