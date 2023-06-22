@@ -15,6 +15,14 @@ from ast_model import ASTModel, IntensityField, AmplitudeField
 # seed(42)
 # np.random.seed(42)
 
+
+@dataclass
+class Detector:
+    position: tuple[float, float, float] # (x, y, z) in m
+    arm_separation: float = 10e-2 # in m
+    n_pixels: int = 128
+    pixel_size: float =10e-6# in m
+
 @dataclass
 class CloudVolume:
     psd: GammaPSD
@@ -69,7 +77,7 @@ class CloudVolume:
             total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle)
         return Slice(z_value, total_amplitude)
     
-    def take_image(self,  detector_position: np.ndarray, arm_separation: float=10e-2, distance:float=10e-6, n_pixels: int=128, separate_particles: bool=False):
+    def take_image(self, detector: Detector,   distance:float=10e-6, offset: float = 0  ,separate_particles: bool=False):
         """Take an image using repeated detections along the y-axis.
 
         Detector is aligned with x-axis, and the y-axis is the direction of travel.
@@ -77,16 +85,18 @@ class CloudVolume:
         The detector position is the position of the detector centre during the final detection.
         
         """
+        detector_position = detector.position + np.array([0, offset, 0])
 
-        n_images = int(distance / 10e-6)
-        beam_width = 8e-3 - (128 * 10e-6) + (n_pixels * 10e-6) # leave the same padding
+        n_images = int(distance / detector.pixel_size)
+        beam_width = 8e-3 - (128 * 10e-6) + (detector.n_pixels * detector.pixel_size) # leave the same padding
+        beam_length = 2e-3 - (10e-6) + (detector.pixel_size) # leave the same padding
 
         # check which particles are somewhat within within the illuminated region
         # Illuminated region is defined as the 8mm x 2mm x arm_separation region aligned with the orthogonal vector pointing towards the detector
         # TODO: These need to also detect particles whose centres are outside the illuminated region, but whos edges are inside it.
         is_in_illuminated_region_x = lambda particle: abs(np.dot(particle.position - detector_position, np.array([1,0,0]))) < (beam_width/2)
-        is_in_illuminated_region_y = lambda particle: np.dot(particle.position - detector_position, np.array([0,1,0])) < (1e-3 + n_images * 10e-6) and np.dot(particle.position - detector_position, np.array([0,1,0])) > -1e-3
-        is_in_illuminated_region_z = lambda particle: np.dot(particle.position - detector_position, np.array([0,0,1])) < arm_separation and np.dot(particle.position - detector_position, np.array([0,0,1])) > 0 
+        is_in_illuminated_region_y = lambda particle: np.dot(particle.position - detector_position, np.array([0,1,0])) < (beam_length/2 + n_images * detector.pixel_size) and np.dot(particle.position - detector_position, np.array([0,1,0])) > -1*beam_length/2
+        is_in_illuminated_region_z = lambda particle: np.dot(particle.position - detector_position, np.array([0,0,1])) < detector.arm_separation and np.dot(particle.position - detector_position, np.array([0,0,1])) > 0 
 
         in_illuminated_region = self.particles.apply(
             lambda particle: is_in_illuminated_region_x(particle) and is_in_illuminated_region_y(particle) and is_in_illuminated_region_z(particle),
@@ -101,11 +111,11 @@ class CloudVolume:
             images = []
             for particle in tqdm(self.particles[in_illuminated_region].itertuples()):
                 y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
-                images.append(self.take_image(detector_position + np.array([0,y_offset,0]), arm_separation, 10*particle.diameter, n_pixels))
+                images.append(self.take_image(detector, 10*particle.diameter, offset=y_offset))
             return images
 
         # get the intensity profile at the given z value for each illuminated particle
-        total_amplitude = AmplitudeField(np.ones((n_pixels, n_images), dtype=np.complex128), pixel_size=10e-6)
+        total_amplitude = AmplitudeField(np.ones((detector.n_pixels, n_images), dtype=np.complex128), pixel_size=detector.pixel_size)
         
         particles = self.particles[in_illuminated_region].copy()
         particles["x_index"] = particles.apply(
@@ -117,7 +127,7 @@ class CloudVolume:
 
         for particle in particles.itertuples():
             ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
-            amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - arm_separation/2)
+            amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
 
             total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle, detector_position)
         return ImagedRegion(detector_position, total_amplitude, particles=particles)

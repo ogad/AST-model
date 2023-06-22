@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
-from volume_model import CloudVolume
+from volume_model import CloudVolume, Detector
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,7 +50,9 @@ detector_location = pcle.position - np.array([300e-6, 290*pcle.diameter, 4e-2])
 
 n_pixels = 128
 
-image = cloud.take_image(detector_location, distance=300* pcle.diameter, n_pixels=n_pixels).amplitude.intensity
+detector_1 = Detector(detector_location, n_pixels=n_pixels)
+
+image = cloud.take_image(detector_1, distance=300* pcle.diameter).amplitude.intensity
 plt.imshow(image)
 plt.scatter(0, n_pixels / 2, c="r")
 plt.colorbar()
@@ -58,8 +60,8 @@ plt.colorbar()
 
 # %%
 
-detector_location = np.array([0.05, 0.1, 0])
-detections = cloud.take_image(detector_location, distance=10, separate_particles=True)
+detector = Detector(np.array([0.05, 0.1, 0]))
+detections = cloud.take_image(detector, distance=10, separate_particles=True)
 
 # detections.amplitude.intensity.plot()
 
