@@ -1,37 +1,16 @@
 # %%
 import logging
 from random import seed
+import pickle
 
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
-from psd_ast_model import GammaPSD
+from psd_ast_model import GammaPSD, TwoMomentGammaPSD
 from volume_model import CloudVolume
 
 logging.basicConfig(level=logging.INFO)
-
-# %% Old demo with unrealistically high density
-seed(42)
-np.random.seed(42)
-
-
-psd = GammaPSD(1e10, 2e2, 0.5, bins=np.logspace(-8, -3, 10000))
-cloud = CloudVolume(psd, (0.1, 0.1, 0.2))
-
-print(cloud.n_particles)
-# slice = cloud.slice(200)
-# plt.imshow(slice.intensity[4000:8000, 4000:8000])
-
-pcle = cloud.particles.iloc[0]
-detector_location = pcle.position - np.array([-800e-6, - 0.8* pcle.diameter, 4e-2])
-
-# images = [cloud.take_image(detector_location + np.array([0, y, 0])) for y in tqdm(np.arange(0, 2.2*pcle.diameter, 10e-6))]
-# interesting_images = [img for img in images if (img.intensity != 1).any()]
-# image = np.concatenate([img.intensity for img in images], axis=1)
-image = cloud.take_image(detector_location, distance=2.2*pcle.diameter).amplitude.intensity
-plt.imshow(image)
-plt.colorbar()
 
 # %% Retry with a more realistic gamma distribution
 # reinitialise the random seed
@@ -40,50 +19,68 @@ np.random.seed(42)
 
 # O'Shea 2021 Fig. 18(c)
 # N_0 = 10e4 L-1 cm-1; µ = 2; @lambda = 200 cm-1
-# gamma_dist = GammaPSD(1e4 * 1e3 * 1e2, 200 * 1e2, 2)
+# gamma_dist = OSheaGammaPSD(1e4 * 1e3 * 1e2, 200 * 1e2, 2)
 
-gamma_dist = GammaPSD(102 * 1e3 * 1e2, 4.82 * 1e2, 2.07, bins=np.logspace(-8, -2, 10000))
+# gamma_dist = OSheaGammaPSD(102 * 1e3 * 1e2, 4.82 * 1e2, 2.07, bins=np.logspace(-8, -2, 10000))
+# gamma_dist = TwoMomentGammaPSD.from_m2_tc(8e-4, -40, bins=np.logspace(-8, -1, 10000))
+gamma_dist = GammaPSD(1.17e43, 8.31e4, 7.86)
 
 fig, ax = plt.subplots()
 gamma_dist.plot(ax)
+# %%
 # psd.plot(ax)
-cloud = CloudVolume(gamma_dist, (0.1, 0.1, 1000))
+try:
+    with open("cloud_01_1000_01.pkl", "rb") as f:
+        cloud = pickle.load(f)
+except FileNotFoundError:
+    cloud = CloudVolume(gamma_dist, (0.1, 1000, 0.1))
+    with open("cloud_01_1000_01.pkl", "wb") as f:
+        pickle.dump(cloud, f)
 
 print(cloud.n_particles)
 # slice = cloud.slice(200)
 # plt.imshow(slice.intensity[4000:8000, 4000:8000])
 # %%
 pcle = cloud.particles.iloc[0]
-detector_location = np.array([0.05, 0.05, 10])
+detector_location = pcle.position - np.array([300e-6, 290*pcle.diameter, 4e-2])
 
-for z in range(10, 1000, 10):
-    detection = cloud.take_image(detector_location, distance=10)
-    if detection:
-        intensity = image.amplitude.intensity
-        plt.imshow(image)
-        plt.colorbar()
-        plt.show()
-        detector_location[2] = z + 10
+# images = [cloud.take_image(detector_location + np.array([0, y, 0])) for y in tqdm(np.arange(0, 2.2*pcle.diameter, 10e-6))]
+# interesting_images = [img for img in images if (img.intensity != 1).any()]
+# image = np.concatenate([img.intensity for img in images], axis=1)
 
-# plt.imshow(image)
-# plt.colorbar()
+n_pixels = 128
 
+image = cloud.take_image(detector_location, distance=300* pcle.diameter, n_pixels=n_pixels).amplitude.intensity
+plt.imshow(image)
+plt.scatter(0, n_pixels / 2, c="r")
+plt.colorbar()
 
 
 # %%
-pcle.diameter
-# gamma_dist.total_number_density
-# %%
-# Use the O'Shea formulation exactly to check the units are working...
-n_gamma_oshea_units = lambda N, µ, l, d: N * d**µ * np.exp(-l*d)
-diameters = np.linspace(0, 1e-1, 1000)
-n_gamma_vals = n_gamma_oshea_units(1e4, 2, 200, diameters)
 
-plt.plot(diameters * 1e4, n_gamma_vals)
-plt.xscale('log')
-plt.yscale('log')
+detector_location = np.array([0.05, 0.1, 0])
+detections = cloud.take_image(detector_location, distance=10, separate_particles=True)
+
+# detections.amplitude.intensity.plot()
 
 # %%
-# per litre
-np.sum(n_gamma_vals[1:] * np.diff(diameters)) * 1e3
+for image in detections:
+    if image.amplitude.intensity.min() < 0.5:
+        # image.amplitude.intensity.plot(grayscale_bounds=[0.5])
+
+        measured_diameter = image.amplitude.intensity.measure_xy_diameter()
+        logging.info(f"Measured diameter: {measured_diameter:.2f} µm")
+        
+        # plt.errorbar(image.particles.x_index*10, image.particles.y_index * 10, xerr=image.particles.diameter/2e-6, yerr=image.particles.diameter/2e-6,capsize=5, fmt="o", c="r")
+
+        # abs_y = lambda rel_y: (image.particles.iloc[0].position[1] + (5*image.particles.iloc[0].diameter - rel_y*1e-6))
+        # rel_y = lambda abs_y: (5*image.particles.iloc[0].diameter - (abs_y - image.particles.iloc[0].position[1]))/1e-6
+        # ax = plt.gca()
+        # secax = ax.secondary_yaxis('right', functions=(abs_y, rel_y))
+        # secax.set_ylabel("y (m)")
+
+        # plt.xlim(0, 1280)
+
+        # plt.show()
+
 # %%
