@@ -10,6 +10,7 @@ from copy import deepcopy
 import numpy as np
 from numpy.typing import ArrayLike
 from matplotlib import pyplot as plt
+from matplotlib.colors import TwoSlopeNorm
 from scipy import ndimage
 from skimage.transform import rescale
 
@@ -75,9 +76,6 @@ class IntensityField(np.ndarray):
         Returns:
             matplotlib.image.Axes: The plotted image.
         """
-        if ax is None:
-            fig, ax = plt.subplots()
-
         if axis_length is not None:
             axis_length_px = axis_length * 1e-6 // self.pixel_size
             to_plot = self[
@@ -89,6 +87,10 @@ class IntensityField(np.ndarray):
         else:
             to_plot = self
 
+        if ax is None:
+            y_to_x_ratio = to_plot.shape[1] / to_plot.shape[0]
+            fig, ax = plt.subplots(figsize = (5, 5 * y_to_x_ratio))
+
         if grayscale_bounds is not None:
             # Replace pixel values to the next-highest grayscale bound
             bounded = np.zeros_like(to_plot)
@@ -97,14 +99,14 @@ class IntensityField(np.ndarray):
                 to_plot = np.where(current_bound, i, to_plot)
                 bounded = np.where(current_bound, 1, bounded)
             to_plot = np.where((bounded == 0), len(grayscale_bounds), to_plot)
+        else:
+            kwargs["norm"] = TwoSlopeNorm(vmin=0, vcenter=1, vmax=2)
 
-        ax_image = ax.imshow(to_plot, **kwargs)
-        xticks = ax.get_xticks()
-        yticks = ax.get_yticks()
-        ax.set_xticklabels((xticks * self.pixel_size * 1e6).round(1))
-        ax.set_yticklabels((yticks * self.pixel_size * 1e6).round(1))
-        ax.set_xlabel("x/µm")
-        ax.set_ylabel("y/µm")
+        xlen, ylen = np.array(to_plot.shape) * self.pixel_size * 1e6
+        ax_image = ax.imshow(to_plot.T, extent=[0,xlen, 0, ylen], **kwargs)
+        ax.set_xlabel("x/µm (Detector)")
+        ax.set_ylabel("y/µm (Travelling in -y direction)")
+        ax.set_aspect("equal")
 
         return ax_image
 
