@@ -105,14 +105,22 @@ class CloudVolume:
             return images
 
         # get the intensity profile at the given z value for each illuminated particle
-        total_amplitude = AmplitudeField(np.ones((n_pixels,n_images), dtype=np.complex128), pixel_size=10e-6)
-        for particle in self.particles[in_illuminated_region].itertuples():
+        total_amplitude = AmplitudeField(np.ones((n_pixels, n_images), dtype=np.complex128), pixel_size=10e-6)
+        
+        particles = self.particles[in_illuminated_region].copy()
+        particles["x_index"] = particles.apply(
+            lambda particle: int((particle["position"] - detector_position)[0] / total_amplitude.pixel_size) + int(total_amplitude.shape[0]/2),
+            axis=1)
+        particles["y_index"] = particles.apply(
+            lambda particle: int((particle["position"] - detector_position)[1] / total_amplitude.pixel_size),
+            axis=1)
+
+        for particle in particles.itertuples():
             ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
             amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - arm_separation/2)
 
             total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle, detector_position)
-
-        return ImagedRegion(detector_position, total_amplitude)
+        return ImagedRegion(detector_position, total_amplitude, particles=particles)
 
 
 def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detector_position):
@@ -135,7 +143,7 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
 
     # determine the bounds of the total intensity array to embed the particle intensity in
     # "do it to the edge, but not over the edge"
-    if x_index < int(amplitude_shape[0]/2):
+    if x_index - int(amplitude_shape[0]/2) < 0:
         # would be out of bounds at x=0
         # go to edge of total_intensity and trim single_particle_intensity
         total_x_min = 0
@@ -144,7 +152,7 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
         total_x_min = x_index - int(amplitude_shape[0]/2)
         single_x_min = 0
     
-    if y_index < int(amplitude_shape[1]/2):
+    if y_index - int(amplitude_shape[1]/2) < 0:
         # would be out of bounds at y=0
         total_y_min = 0
         single_y_min = int(amplitude_shape[1]/2) - y_index
@@ -196,6 +204,7 @@ class ImagedRegion:
     detector_position: np.ndarray # in m
     amplitude: AmplitudeField # relative intensity
     arm_separation: float = 10e-2# in m
+    particles: pd.DataFrame = None
 
 @dataclass
 class Particle:
