@@ -279,7 +279,7 @@ class SamplingModel:
         if base_model is None:
             base_model = ASTModel.from_diameter(1000)
 
-        base_diameter = base_model.process(0).intensity.measure_xy_diameter()
+        base_diameter, _ = base_model.process(0).intensity.measure_xy_diameter()
 
         particles = self.generate(n_particles)
         diameters_measured = {}

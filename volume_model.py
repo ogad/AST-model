@@ -130,7 +130,9 @@ class CloudVolume:
             amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
 
             total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle, detector_position)
-        return ImagedRegion(detector_position, total_amplitude, particles=particles)
+        
+        image = ImagedRegion(detector_position, total_amplitude, particles=particles)
+        return image
 
 
 def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detector_position):
@@ -215,6 +217,26 @@ class ImagedRegion:
     amplitude: AmplitudeField # relative intensity
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
+
+    def measure_diameter(self):
+        diameter, position = self.amplitude.intensity.measure_xy_diameter()
+
+
+        if len(self.particles) == 1:
+            self.particles['xy_diameter'] = [diameter]
+        elif len(self.particles) > 0:
+            x_deltas = self.particles.x_index - position[0]
+            y_deltas = self.particles.y_index - position[1]
+
+            distances = np.sqrt(x_deltas**2 + y_deltas**2)
+
+            min_distance_index = np.argmin(distances)
+            self.particles['xy_diameter'] = [diameter if i == min_distance_index else np.nan for i in self.particles.index]
+        else:
+            # would be wild if this ever happened?
+            logging.warning(f"More than one particle in image. Cannot assign diameters.")
+        
+        return diameter
 
 @dataclass
 class Particle:

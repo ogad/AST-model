@@ -102,8 +102,10 @@ class IntensityField(np.ndarray):
         else:
             kwargs["norm"] = TwoSlopeNorm(vmin=0, vcenter=1, vmax=2)
 
+
         xlen, ylen = np.array(to_plot.shape) * self.pixel_size * 1e6
         ax_image = ax.imshow(to_plot.T, extent=[0,xlen, 0, ylen], **kwargs)
+        plt.colorbar(ax_image, ax=ax)
         ax.set_xlabel("x/µm (Detector)")
         ax.set_ylabel("y/µm (Travelling in -y direction)")
         ax.set_aspect("equal")
@@ -124,12 +126,15 @@ class IntensityField(np.ndarray):
         largest_label = np.argmax(label_counts[1:]) + 1
         largest_region = labeled_image == largest_label
 
+        # calculate the position of the largest region
+        position = [coords.mean() for coords in  np.where(largest_region)]
+
         # find the maximum extent in the x and y directions
         x_extent = np.sum(largest_region, axis=0).max()
         y_extent = np.sum(largest_region, axis=1).max()
 
         # return the average of the two extents in micrometres
-        return (x_extent + y_extent) / 2 * self.pixel_size * 1e6
+        return (x_extent + y_extent) / 2 * self.pixel_size * 1e6, tuple(position)
 
     def measure_xy_diameters(self) -> list:
         """Measure the diameters of all connected regions in the image.

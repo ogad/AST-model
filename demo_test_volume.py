@@ -61,19 +61,19 @@ plt.colorbar()
 # %%
 
 detector = Detector(np.array([0.05, 0.1, 0]))
-detections = cloud.take_image(detector, distance=10, separate_particles=True)
+detections = cloud.take_image(detector, distance=100, separate_particles=True)
 
 # detections.amplitude.intensity.plot()
 
 # %%
-for image in detections:
+for image in detector.detections:
     if image.amplitude.intensity.min() < 0.5:
-        # image.amplitude.intensity.plot(grayscale_bounds=[0.5])
+        image.amplitude.intensity.plot(grayscale_bounds=[0.5])
 
-        measured_diameter = image.amplitude.intensity.measure_xy_diameter()
-        logging.info(f"Measured diameter: {measured_diameter:.2f} µm")
+        measured_diameter = image.measure_diameter()
+        logging.info(f"Measured diameter: {measured_diameter:.2f} µm; Actual diameter: {image.particles.iloc[0].diameter*1e6:.2f} µm")
         
-        # plt.errorbar(image.particles.x_index*10, image.particles.y_index * 10, xerr=image.particles.diameter/2e-6, yerr=image.particles.diameter/2e-6,capsize=5, fmt="o", c="r")
+        plt.errorbar(image.particles.x_index*10, image.particles.y_index * 10, xerr=image.particles.diameter/2e-6, yerr=image.particles.diameter/2e-6,capsize=5, fmt="o", c="r")
 
         # abs_y = lambda rel_y: (image.particles.iloc[0].position[1] + (5*image.particles.iloc[0].diameter - rel_y*1e-6))
         # rel_y = lambda abs_y: (5*image.particles.iloc[0].diameter - (abs_y - image.particles.iloc[0].position[1]))/1e-6
@@ -81,8 +81,10 @@ for image in detections:
         # secax = ax.secondary_yaxis('right', functions=(abs_y, rel_y))
         # secax.set_ylabel("y (m)")
 
-        # plt.xlim(0, 1280)
-
-        # plt.show()
+        z = (image.particles.iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
+        plt.text(20, 20, f"z = {z:.1f} cm", ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), )
+        plt.xlim(0, 1280)
+        plt.tight_layout()
+        plt.show()
 
 # %%
