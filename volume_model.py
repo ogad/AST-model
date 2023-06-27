@@ -8,6 +8,7 @@ import pandas as pd
 import logging
 import numpy as np
 from tqdm import tqdm
+from enum import Enum
 
 from psd_ast_model import GammaPSD
 from ast_model import ASTModel, IntensityField, AmplitudeField
@@ -23,6 +24,19 @@ class Detector:
     n_pixels: int = 128
     pixel_size: float =10e-6# in m
 
+class CrystalModel(Enum):
+    """Enum for crystal types."""
+    SPHERE = 1
+    RECT_AR5 = 2
+
+    def get_generator(self):
+        if self == CrystalModel.SPHERE:
+            return ASTModel.from_diameter
+        elif self == CrystalModel.RECT_AR5:
+            return lambda diameter: ASTModel.from_diameter_rectangular(diameter, 5)
+        else:
+            raise ValueError("Crystal model not recognised.")
+    
 @dataclass
 class CloudVolume:
     psd: GammaPSD
@@ -44,11 +58,11 @@ class CloudVolume:
         dim_grids = [np.arange(0, dim, 2e-6) for dim in self.dimensions]
 
         # Generate the particles
-        self.particles = pd.DataFrame(columns=["diameter", "position"])
+        self.particles = pd.DataFrame(columns=["diameter", "position", "model"])
         logging.info(f"Generating {self.n_particles} particles")
 
         for i in tqdm(range(self.n_particles)):
-            particle = [self.psd.generate_diameter(), self._generate_position(dim_grids)]
+            particle = [self.psd.generate_diameter(), self._generate_position(dim_grids), CrystalModel.SPHERE]
             self.particles.loc[i] = particle
 
     @property
@@ -60,32 +74,17 @@ class CloudVolume:
     def volume(self):
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
     
-    def slice(self, z_value: float):
-        """Return a slice of the cloud volume at a given z value."""
-        if z_value < 0 or z_value > self.dimensions[2]:
-            raise ValueError("z value must be within the cloud volume.")
-        
-        # get the intensity profile at the given z value for each particle
-        total_amplitude = np.zeros((int(self.dimensions[0] / 1e-6), int(self.dimensions[1] / 1e-6)))
-        logging.info(f"Calculating intensity profile at z = {z_value} m")
-        for particle in tqdm(self.particles.itertuples()):
-            ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
-            amplitude_at_particle_xy = ast_model.process(particle.position[2] - z_value)
-
-            # embed the amplitude in the total intensity array
-            
-            total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle)
-        return Slice(z_value, total_amplitude)
-    
-    def take_image(self, detector: Detector,   distance:float=10e-6, offset: float = 0  ,separate_particles: bool=False):
+    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False):
         """Take an image using repeated detections along the y-axis.
 
         Detector is aligned with x-axis, and the y-axis is the direction of travel.
         The z-axis is the focal axis.
         The detector position is the position of the detector centre during the final detection.
+        The model_generator is a callable taking the diameter of the particle in microns and returning an ASTModel.
         
         """
-        detector_position = detector.position + np.array([0, offset, 0])
+
+        detector_position = detector.position + offset
 
         n_images = int(distance / detector.pixel_size)
         beam_width = 8e-3 - (128 * 10e-6) + (detector.n_pixels * detector.pixel_size) # leave the same padding
@@ -111,8 +110,11 @@ class CloudVolume:
             images = []
             for particle in tqdm(self.particles[in_illuminated_region].itertuples()):
                 y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
-                images.append(self.take_image(detector, 10*particle.diameter, offset=y_offset))
-            return images
+                z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0
+                images.append(self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus))
+
+            particles = self.particles[in_illuminated_region].copy()
+            return images, particles
 
         # get the intensity profile at the given z value for each illuminated particle
         total_amplitude = AmplitudeField(np.ones((detector.n_pixels, n_images), dtype=np.complex128), pixel_size=detector.pixel_size)
@@ -126,7 +128,8 @@ class CloudVolume:
             axis=1)
 
         for particle in particles.itertuples():
-            ast_model = ASTModel.from_diameter(particle.diameter * 1e6)
+            model_generator = particle.model.get_generator() if particle.model is not None else model_generator
+            ast_model = model_generator(particle.diameter * 1e6)
             amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
 
             total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle, detector_position)
@@ -144,8 +147,14 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
     
     # index of particle centre in total_intensity
     # detector is at x = total_amplitude.shape[0]/2, y = 0
-    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size) + int(total_amplitude.shape[0]/2) 
-    y_index = int(pcle_from_detector[1] / total_amplitude.pixel_size)
+    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size + total_amplitude.shape[0]/2)
+    y_index = total_amplitude.shape[1] - int(pcle_from_detector[1] / total_amplitude.pixel_size)
+    embed_extent = [
+        x_index - int(single_particle_amplitude.shape[0]/2), 
+        x_index - int(single_particle_amplitude.shape[0]/2) + single_particle_amplitude.shape[0], 
+        y_index - int(single_particle_amplitude.shape[1]/2), 
+        y_index - int(single_particle_amplitude.shape[1]/2) + single_particle_amplitude.shape[1]
+    ]
 
     amplitude_shape = single_particle_amplitude.shape
 
@@ -155,38 +164,38 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
 
     # determine the bounds of the total intensity array to embed the particle intensity in
     # "do it to the edge, but not over the edge"
-    if x_index - int(amplitude_shape[0]/2) < 0:
+    if embed_extent[0] < 0:
         # would be out of bounds at x=0
         # go to edge of total_intensity and trim single_particle_intensity
         total_x_min = 0
         single_x_min = int(amplitude_shape[0]/2) - x_index
     else:
-        total_x_min = x_index - int(amplitude_shape[0]/2)
+        total_x_min = embed_extent[0]
         single_x_min = 0
     
-    if y_index - int(amplitude_shape[1]/2) < 0:
+    if embed_extent[2] < 0:
         # would be out of bounds at y=0
         total_y_min = 0
         single_y_min = int(amplitude_shape[1]/2) - y_index
     else:
-        total_y_min = y_index - int(amplitude_shape[1]/2)
+        total_y_min = embed_extent[2]
         single_y_min = 0
     
-    if x_index - int(amplitude_shape[0]/2) + amplitude_shape[0] > total_amplitude.shape[0]:
+    if embed_extent[1] > total_amplitude.shape[0]:
         # would be out of bounds at max x
         total_x_max = total_amplitude.shape[0]
         # single_size - ((endpoint) - total_size)
-        single_x_max = amplitude_shape[0] - ((x_index - int(amplitude_shape[0]/2) + amplitude_shape[0]) - total_amplitude.shape[0])
+        single_x_max = amplitude_shape[0] - (embed_extent[1] - total_amplitude.shape[0])
     else:
-        total_x_max = x_index - int(amplitude_shape[0]/2) + amplitude_shape[0]
+        total_x_max = embed_extent[1]
         single_x_max = amplitude_shape[0]
 
-    if y_index - int(amplitude_shape[1]/2) + amplitude_shape[1] > total_amplitude.shape[1]:
+    if embed_extent[3] > total_amplitude.shape[1]:
         # would be out of bounds at max y
         total_y_max = total_amplitude.shape[1]
-        single_y_max = amplitude_shape[1] - ((y_index - int(amplitude_shape[1]/2) + amplitude_shape[1]) - total_amplitude.shape[1])
+        single_y_max = amplitude_shape[1] - (embed_extent[3] - total_amplitude.shape[1])
     else:
-        total_y_max = y_index - int(amplitude_shape[1]/2) + amplitude_shape[1]
+        total_y_max = embed_extent[3]
         single_y_max = amplitude_shape[1]
 
     # check for the non-overlapping case
@@ -205,11 +214,6 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
     return total_amplitude
 
 @dataclass
-class Slice:
-    z_value: float # in m
-    amplitude: AmplitudeField # relative intensity
-
-@dataclass
 class ImagedRegion:
     """A region illuminated by the laser beam at a single instant."""
     # orthogonal_vector: np.ndarray = (0,0,1) # in m
@@ -218,25 +222,14 @@ class ImagedRegion:
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
 
-    def measure_diameter(self):
-        diameter, position = self.amplitude.intensity.measure_xy_diameter()
+    def measure_diameters(self):
 
-
-        if len(self.particles) == 1:
-            self.particles['xy_diameter'] = [diameter]
-        elif len(self.particles) > 0:
-            x_deltas = self.particles.x_index - position[0]
-            y_deltas = self.particles.y_index - position[1]
-
-            distances = np.sqrt(x_deltas**2 + y_deltas**2)
-
-            min_distance_index = np.argmin(distances)
-            self.particles['xy_diameter'] = [diameter if i == min_distance_index else np.nan for i in self.particles.index]
-        else:
-            # would be wild if this ever happened?
-            logging.warning(f"More than one particle in image. Cannot assign diameters.")
+        detected_particles = self.amplitude.intensity.measure_xy_diameters()
         
-        return diameter
+        return detected_particles
+    
+    def plot(self, **kwargs):
+        return self.amplitude.intensity.plot(**kwargs)
 
 @dataclass
 class Particle:

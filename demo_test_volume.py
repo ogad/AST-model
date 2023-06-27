@@ -7,6 +7,7 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
+from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
 from volume_model import CloudVolume, Detector
 
@@ -61,30 +62,35 @@ plt.colorbar()
 # %%
 
 detector = Detector(np.array([0.05, 0.1, 0]))
-detections = cloud.take_image(detector, distance=100, separate_particles=True)
+detections, particles = cloud.take_image(detector, distance=10, separate_particles=True)
+objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
-
 # %%
-for image in detector.detections:
-    if image.amplitude.intensity.min() < 0.5:
-        image.amplitude.intensity.plot(grayscale_bounds=[0.5])
+# colormap from red to transparent
+from matplotlib.colors import LinearSegmentedColormap
+object_cmap = LinearSegmentedColormap.from_list("red_transparent", [(1, 0, 0, 1), (1, 0, 0, 0)])
+object_norm = plt.Normalize(0, 1)
 
-        measured_diameter = image.measure_diameter()
-        logging.info(f"Measured diameter: {measured_diameter:.2f} µm; Actual diameter: {image.particles.iloc[0].diameter*1e6:.2f} µm")
-        
-        plt.errorbar(image.particles.x_index*10, image.particles.y_index * 10, xerr=image.particles.diameter/2e-6, yerr=image.particles.diameter/2e-6,capsize=5, fmt="o", c="r")
 
-        # abs_y = lambda rel_y: (image.particles.iloc[0].position[1] + (5*image.particles.iloc[0].diameter - rel_y*1e-6))
-        # rel_y = lambda abs_y: (5*image.particles.iloc[0].diameter - (abs_y - image.particles.iloc[0].position[1]))/1e-6
-        # ax = plt.gca()
-        # secax = ax.secondary_yaxis('right', functions=(abs_y, rel_y))
-        # secax.set_ylabel("y (m)")
+diameters = []
+for image, object in zip(detections, objects):
+    if image.amplitude.intensity.min() <= 0.5:
+        image.plot(grayscale_bounds=[0.5])
+        ax = plt.gca()
 
+        measured_diameter = image.measure_diameters()
+        accurate_diameter = object.measure_diameters()
         z = (image.particles.iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
-        plt.text(20, 20, f"z = {z:.1f} cm", ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), )
+
+        plt.text(20, 20,
+            f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}\
+            \nMeasured diameter = { ','.join(f'{s:.0f}' for s in list(measured_diameter.values())) } µm\
+            \nObject diameter = {','.join(f'{s:.0f}' for s in list(accurate_diameter.values()))} µm",
+            ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), 
+        )
         plt.xlim(0, 1280)
+        plot_outline(object.amplitude.intensity.T<0.1, ax)
         plt.tight_layout()
         plt.show()
-
-# %%
+        diameters.append(measured_diameter)

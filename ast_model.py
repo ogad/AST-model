@@ -14,6 +14,52 @@ from matplotlib.colors import TwoSlopeNorm
 from scipy import ndimage
 from skimage.transform import rescale
 
+
+def plot_outline(mapimg, ax=None):
+    """From https://stackoverflow.com/questions/24539296/outline-a-region-in-a-graph/24540564#24540564"""
+    if not mapimg.any():
+        return
+    
+    mapimg = np.flip(mapimg, axis=0)
+
+    # a vertical line segment is needed, when the pixels next to each other horizontally
+    #   belong to diffferent groups (one is part of the mask, the other isn't)
+    # after this ver_seg has two arrays, one for row coordinates, the other for column coordinates 
+    ver_seg = np.where(mapimg[:,1:] != mapimg[:,:-1])
+
+    # the same is repeated for horizontal segments
+    hor_seg = np.where(mapimg[1:,:] != mapimg[:-1,:])
+
+    # if we have a horizontal segment at 7,2, it means that it must be drawn between pixels
+    #   (2,7) and (2,8), i.e. from (2,8)..(3,8)
+    # in order to draw a discountinuous line, we add Nones in between segments
+    l = []
+    for p in zip(*hor_seg):
+        l.append((p[1], p[0]+1))
+        l.append((p[1]+1, p[0]+1))
+        l.append((np.nan,np.nan))
+
+    # and the same for vertical segments
+    for p in zip(*ver_seg):
+        l.append((p[1]+1, p[0]))
+        l.append((p[1]+1, p[0]+1))
+        l.append((np.nan, np.nan))
+
+    # now we transform the list into a numpy array of Nx2 shape
+    segments = np.array(l)
+
+    # now we need to know something about the image which is shown
+    #   at this point let's assume it has extents (x0, y0)..(x1,y1) on the axis
+    #   drawn with origin='lower'
+    # with this information we can rescale our points
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    segments[:,0] = x0 + (x1-x0) * segments[:,0] / mapimg.shape[1]
+    segments[:,1] = y0 + (y1-y0) * segments[:,1] / mapimg.shape[0]
+
+    # and now there isn't anything else to do than plot it
+    plt.plot(segments[:,0], segments[:,1], color=(1,0,0,.5), linewidth=1)
+
 class AmplitudeField(np.ndarray):
     """A class to represent an amplitude field.
 
@@ -65,7 +111,7 @@ class IntensityField(np.ndarray):
             return
         self.pixel_size = getattr(obj, "pixel_size", None)
 
-    def plot(self, ax:plt.Axes=None, axis_length:float=None, grayscale_bounds:list[float]=None, **kwargs) -> plt.Axes:
+    def plot(self, ax:plt.Axes=None, axis_length:float=None, grayscale_bounds:list[float]=None, colorbar:bool=False, **kwargs) -> plt.Axes:
         """Plot the intensity field.
 
         Args:
@@ -105,42 +151,43 @@ class IntensityField(np.ndarray):
 
         xlen, ylen = np.array(to_plot.shape) * self.pixel_size * 1e6
         ax_image = ax.imshow(to_plot.T, extent=[0,xlen, 0, ylen], **kwargs)
-        plt.colorbar(ax_image, ax=ax)
+        if colorbar:
+            plt.colorbar(ax_image, ax=ax)
         ax.set_xlabel("x/µm (Detector)")
         ax.set_ylabel("y/µm (Travelling in -y direction)")
         ax.set_aspect("equal")
 
         return ax_image
 
-    def measure_xy_diameter(self) -> float:
+    def _measure_xy_diameter(self, labelled_image, label) -> float:
         """Measure the diameter of the largest connected region in the image.
         
         Returns:
             float: The diameter in micrometres."""
-        # threshold the image at 50% of the initial intensity
-        thresholded_image = self < 0.5
 
-        # isolate only the largest conncted region
-        labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
-        label_counts = np.bincount(labeled_image.ravel())
-        largest_label = np.argmax(label_counts[1:]) + 1
-        largest_region = labeled_image == largest_label
-
-        # calculate the position of the largest region
-        position = [coords.mean() for coords in  np.where(largest_region)]
+        # isolate only the region of interest
+        region = labelled_image == label
 
         # find the maximum extent in the x and y directions
-        x_extent = np.sum(largest_region, axis=0).max()
-        y_extent = np.sum(largest_region, axis=1).max()
+        x_extent = np.sum(region, axis=0).max()
+        y_extent = np.sum(region, axis=1).max()
 
         # return the average of the two extents in micrometres
-        return (x_extent + y_extent) / 2 * self.pixel_size * 1e6, tuple(position)
+        return (x_extent + y_extent) / 2 * self.pixel_size * 1e6
+    
+    def _measure_position(self, labelled_image, label) -> tuple:
+        region = labelled_image == label
 
-    def measure_xy_diameters(self) -> list:
+        # calculate the position of the largest region
+        position = [np.round(coords.mean() * self.pixel_size * 1e6) for coords in  np.where(region)]
+
+        return tuple(position)
+
+    def measure_xy_diameters(self) -> dict:
         """Measure the diameters of all connected regions in the image.
         
         Returns:
-            list: The list of diameters in micrometres.
+            dict: The list of (diameter/µm, position/px) couples.
         """
         # threshold the image at 50% of the initial intensity
         thresholded_image = self < 0.5
@@ -148,17 +195,14 @@ class IntensityField(np.ndarray):
         # iterate over connected regions
         labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
 
-        diameters = []
+        diameters = {}
         for label in range(1, n_labels + 1):
-            region = labeled_image == label
+            diameter = self._measure_xy_diameter(labeled_image, label)
+            position = self._measure_position(labeled_image, label)
+            
+            diameters[position] = diameter
 
-            # find the maximum extent in the x and y directions
-            x_extent = np.sum(region, axis=0).max()
-            y_extent = np.sum(region, axis=1).max()
-
-            diameters.append((x_extent + y_extent) / 2 * self.pixel_size * 1e6)
-
-        # return list of diameters in micrometres
+        # return dictionary of diameters in micrometres
         return diameters
 
     def n_pixels_depletion_range(self, min_dep:float, max_dep:float) -> int:
@@ -267,7 +311,7 @@ class ASTModel:
         # create the opaque shape
         height_px = int(height * 1e-6 // pixel_size)
         width_px = int(width * 1e-6 // pixel_size)
-        opaque_shape = np.ones((height_px, width_px))
+        opaque_shape = np.ones((width_px, height_px))
         
         # rotate the opaque shape
         opaque_shape = ndimage.rotate(opaque_shape, angle)
@@ -278,7 +322,13 @@ class ASTModel:
         
         return model
 
+    @classmethod
+    def from_diameter_rectangular(cls, diameter: float, aspect_ratio: float, **kwargs):
+        """Create a model for a rectangular opaque object with a given diameter xy mean diameter and aspect ratio."""
+        width = 2 * diameter / (1 + aspect_ratio)
+        height = width * aspect_ratio
 
+        return cls.from_rectangle(width, height, **kwargs)
 
     def process(self, z_val: float, low_pass=1.0) -> AmplitudeField:
         """Process the model, calculating the amplitude given the opaque shape is at z.
