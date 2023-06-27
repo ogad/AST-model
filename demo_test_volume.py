@@ -6,6 +6,7 @@ import pickle
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime
 
 from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
@@ -62,8 +63,8 @@ plt.colorbar()
 # %%
 
 detector = Detector(np.array([0.05, 0.1, 0]))
-detections, particles = cloud.take_image(detector, distance=10, separate_particles=True)
-objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
+detections, particles = cloud.take_image(detector, distance=500, separate_particles=True)
+# objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
 # %%
@@ -74,23 +75,57 @@ object_norm = plt.Normalize(0, 1)
 
 
 diameters = []
-for image, object in zip(detections, objects):
-    if image.amplitude.intensity.min() <= 0.5:
-        image.plot(grayscale_bounds=[0.5])
-        ax = plt.gca()
+detections = [det for det in detections if det.amplitude.intensity.min() <= 0.5]
+for image in detections:
+    # image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
 
-        measured_diameter = image.measure_diameters()
-        accurate_diameter = object.measure_diameters()
-        z = (image.particles.iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
+    measured_diameter = image.measure_diameters()
+    diameters.append(list(measured_diameter.values()))
+    # accurate_diameter = object.measure_diameters()
+    z = (image.particles.iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
 
-        plt.text(20, 20,
-            f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}\
-            \nMeasured diameter = { ','.join(f'{s:.0f}' for s in list(measured_diameter.values())) } µm\
-            \nObject diameter = {','.join(f'{s:.0f}' for s in list(accurate_diameter.values()))} µm",
-            ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), 
-        )
-        plt.xlim(0, 1280)
-        plot_outline(object.amplitude.intensity.T<0.1, ax)
-        plt.tight_layout()
-        plt.show()
-        diameters.append(measured_diameter)
+    # plt.text(20, 20,
+    #     f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}\
+    #     \nMeasured diameter = { ','.join(f'{s:.0f}' for s in list(measured_diameter.values())) } µm\
+    #     ",
+    #     ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), 
+    # )
+    # plt.xlim(0, 1280)
+    # plt.tight_layout()
+    # plt.show()
+
+# %%
+bins = np.logspace(-5, -3.5, 20)
+plt.plot(bins[:-1], np.histogram(np.concatenate(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins)))
+plt.xscale("log")
+
+# plt.show()
+
+ # %% Saving the detections
+with open(f"{datetime.datetime.now():%Y-%m-%d}_detections.pkl", "wb") as f:
+    for image in detections:
+        pickle.dump(image, f)
+
+
+# %% Load the detections for postprocessing
+
+with open("2023-06-27_detections.pkl", "rb") as f:
+    detections_new = []
+    while True:
+        try:
+            detections_new.append(pickle.load(f))
+        except EOFError:
+            break
+
+# %%
+# sample_length = 10 # m
+# effective_array_width = # ? m: pixel_size * (n_pixels - 1) - diameter (parallel to array?)
+# depth_of_field = # ? m ± cD^2/4λ; c = 8 ish for 2D-S. (from Gurganus Lawson 2018)
+# sample_volume = sample_length * effective_array_width * depth_of_field # should strictly be integrated...
+
+# Plan of attack:
+# Bucket our diameters into bins (which bins?)
+# Work out a SVol for each bin (EAW approx constant with z)
+# Work out a number density for each bin, and then divide by the bin width to give an instantanous dN/dD
+# %%
+# sebs papers size metric z invariant ish. circ equivalent.

@@ -10,8 +10,10 @@ import numpy as np
 from tqdm import tqdm
 from enum import Enum
 
+import matplotlib.pyplot as plt
+
 from psd_ast_model import GammaPSD
-from ast_model import ASTModel, IntensityField, AmplitudeField
+from ast_model import ASTModel, IntensityField, AmplitudeField, plot_outline
 
 # seed(42)
 # np.random.seed(42)
@@ -61,7 +63,7 @@ class CloudVolume:
         self.particles = pd.DataFrame(columns=["diameter", "position", "model"])
         logging.info(f"Generating {self.n_particles} particles")
 
-        for i in tqdm(range(self.n_particles)):
+        for i in tqdm(range(self.n_particles), total=self.n_particles):
             particle = [self.psd.generate_diameter(), self._generate_position(dim_grids), CrystalModel.SPHERE]
             self.particles.loc[i] = particle
 
@@ -74,7 +76,7 @@ class CloudVolume:
     def volume(self):
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
     
-    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False):
+    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False, primary_only: bool=False):
         """Take an image using repeated detections along the y-axis.
 
         Detector is aligned with x-axis, and the y-axis is the direction of travel.
@@ -108,13 +110,21 @@ class CloudVolume:
         if separate_particles:
             # take an image of each particle individually
             images = []
-            for particle in tqdm(self.particles[in_illuminated_region].itertuples()):
+            length_iterations = len(self.particles[in_illuminated_region])
+            for particle in tqdm(self.particles[in_illuminated_region].itertuples(), total=length_iterations, leave=False):
+                if primary_only and not particle.primary:
+                    continue
                 y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
                 z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0
-                images.append(self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus))
+                particle_image = self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus)
+                particle_image.particles["primary"] = particle_image.particles.index == particle.Index
+
+                images.append(particle_image)
 
             particles = self.particles[in_illuminated_region].copy()
             return images, particles
+        
+
 
         # get the intensity profile at the given z value for each illuminated particle
         total_amplitude = AmplitudeField(np.ones((detector.n_pixels, n_images), dtype=np.complex128), pixel_size=detector.pixel_size)
@@ -223,13 +233,38 @@ class ImagedRegion:
     particles: pd.DataFrame = None
 
     def measure_diameters(self):
-
         detected_particles = self.amplitude.intensity.measure_xy_diameters()
+
+        self.xy_diameters = detected_particles
         
         return detected_particles
     
-    def plot(self, **kwargs):
-        return self.amplitude.intensity.plot(**kwargs)
+    def plot(self, detector=None, cloud=None, plot_outlines=False, **kwargs):
+        
+        plot = self.amplitude.intensity.plot(**kwargs)
+
+        if plot_outlines:
+            ax = plt.gca()
+            plot_outline(self.get_focused_image(cloud, detector).amplitude.intensity.T<0.1, ax)
+
+        return plot
+    
+    def get_focused_image(self, cloud, detector):
+        if cloud is None:
+            raise ValueError("Cloud must be specified")
+
+        if detector is None:
+            detector = Detector(self.detector_position, self.arm_separation)
+        else:
+            detector.position = self.detector_position
+
+        primary_index = self.particles[self.particles.primary].index[0]
+        cloud.particles["primary"] = cloud.particles.index == primary_index
+        objects, _ = cloud.take_image(detector, distance=self.amplitude.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
+        del cloud.particles["primary"]
+
+        return objects[0]
+        
 
 @dataclass
 class Particle:
