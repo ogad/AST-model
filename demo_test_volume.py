@@ -10,7 +10,7 @@ import datetime
 
 from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
-from volume_model import CloudVolume, Detector
+from volume_model import CloudVolume, Detector, DetectorRun
 
 logging.basicConfig(level=logging.INFO)
 
@@ -57,7 +57,7 @@ plt.colorbar()
 # %%
 
 detector = Detector(np.array([0.05, 0.1, 0]))
-detections, particles = cloud.take_image(detector, distance=10, separate_particles=True)
+run = cloud.take_image(detector, distance=10, separate_particles=True)
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
@@ -69,14 +69,14 @@ object_norm = plt.Normalize(0, 1)
 
 
 diameters = []
-detections = [det for det in detections if det.amplitude.intensity.field.min() <= 0.5]
+detections = [det for det in run.images if det.amplitude.intensity.field.min() <= 0.5]
 for image in detections:
     # image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
 
     measured_diameter = image.measure_diameters()
     diameters.append(list(measured_diameter.values()))
     # accurate_diameter = object.measure_diameters()
-    z = (image.particles.iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
+    z = (image.particles[image.particles.primary].iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
 
     # plt.text(20, 20,
     #     f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}\
@@ -89,28 +89,27 @@ for image in detections:
     # plt.show()
 
 # %%
-bins = np.logspace(-5, -3.5, 20)
-plt.plot(bins[:-1], np.histogram(np.concatenate(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins)))
-plt.xscale("log")
+bins = np.linspace(1e-5, 1e-3, 40)
+plt.plot(bins[:-1], np.histogram(np.concatenate(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins)), color="C1", label="Measured")
+plt.ylabel("Measured particles/bin width", color="C1")
+plt.yticks(color="C1")
+
+ax2 = plt.gca().twinx()
+gamma_dist.plot(plt.gca())
+# plt.xscale("log")
+
+plt.xlabel("Diameter (m)")
+plt.ylabel("dN/dD (m$^{-1}$)", color="C0")
+plt.yticks(color="C0")
 
 # plt.show()
 
  # %% Saving the detections
-with open(f"../data/{datetime.datetime.now():%Y-%m-%d}_detections.pkl", "wb") as f:
-    for image in detections:
-        pickle.dump(image, f)
+run.save(f"../data/{datetime.datetime.today():%Y-%m-%d}_{run.distance}_detections.pkl")
 
 
 # %% Load the detections for postprocessing
-
-with open("../data/2023-06-28_detections.pkl", "rb") as f:
-    detections = []
-    while True:
-        try:
-            detections.append(pickle.load(f))
-        except EOFError:
-            break
-
+run_loaded = DetectorRun.load("../data/2023-06-28_detections.pkl")
 # %%
 # sample_length = 10 # m
 # effective_array_width = # ? m: pixel_size * (n_pixels - 1) - diameter (parallel to array?)
@@ -123,3 +122,5 @@ with open("../data/2023-06-28_detections.pkl", "rb") as f:
 # Work out a number density for each bin, and then divide by the bin width to give an instantanous dN/dD
 # %%
 # sebs papers size metric z invariant ish. circ equivalent.
+run_loaded.hello_world()
+# %%

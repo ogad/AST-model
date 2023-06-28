@@ -3,12 +3,13 @@
 # Date: 13/06/2023
 
 from dataclasses import dataclass
-from random import choices, seed
+import random
 import pandas as pd
 import logging
 import numpy as np
 from tqdm import tqdm
 from enum import Enum
+import pickle
 
 import matplotlib.pyplot as plt
 
@@ -52,7 +53,17 @@ class CloudVolume:
     
     def __post_init__(self):
         logging.info("Initialising cloud volume")
-        
+        self.random_state = random.getstate()
+
+        self.particles = None
+        self.generate_particles()
+
+    def generate_particles(self):
+        random.setstate(self.random_state)
+
+        if self.particles is not None:
+            raise ValueError("Particles already generated.")
+
         logging.info(f"Generating grid of dimensions: {[int(dim / 1e-6) for dim in self.dimensions]} points.")
         # raise warning if any dimension will have more than 2e9 points
         if any([dim > 2e3 for dim in self.dimensions]):
@@ -76,7 +87,7 @@ class CloudVolume:
     def volume(self):
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
     
-    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False, primary_only: bool=False):
+    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None):
         """Take an image using repeated detections along the y-axis.
 
         Detector is aligned with x-axis, and the y-axis is the direction of travel.
@@ -94,7 +105,7 @@ class CloudVolume:
 
         # check which particles are somewhat within within the illuminated region
         # Illuminated region is defined as the 8mm x 2mm x arm_separation region aligned with the orthogonal vector pointing towards the detector
-        # TODO: These need to also detect particles whose centres are outside the illuminated region, but whos edges are inside it.
+        # TODO: These may also need to also detect particles whose centres are outside the illuminated region, but whos edges are inside it.
         is_in_illuminated_region_x = lambda particle: abs(np.dot(particle.position - detector_position, np.array([1,0,0]))) < (beam_width/2)
         is_in_illuminated_region_y = lambda particle: np.dot(particle.position - detector_position, np.array([0,1,0])) < (beam_length/2 + n_images * detector.pixel_size) and np.dot(particle.position - detector_position, np.array([0,1,0])) > -1*beam_length/2
         is_in_illuminated_region_z = lambda particle: np.dot(particle.position - detector_position, np.array([0,0,1])) < detector.arm_separation and np.dot(particle.position - detector_position, np.array([0,0,1])) > 0 
@@ -107,7 +118,7 @@ class CloudVolume:
             # No particles are in the illuminated region.
             return None
 
-        if separate_particles:
+        if separate_particles: #TODO: This should be default behaviour
             # take an image of each particle individually
             images = []
             length_iterations = len(self.particles[in_illuminated_region])
@@ -117,12 +128,16 @@ class CloudVolume:
                 y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
                 z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0
                 particle_image = self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus)
-                particle_image.particles["primary"] = particle_image.particles.index == particle.Index
+                if particle_image is not None:
+                    particle_image.particles["primary"] = particle_image.particles.index == particle.Index
 
-                images.append(particle_image)
+                    images.append(particle_image)
 
-            particles = self.particles[in_illuminated_region].copy()
-            return images, particles
+            run = DetectorRun(detector, images, distance)
+
+            # particles = self.particles[in_illuminated_region].copy()
+            # run = DetectorRun(detector, images, particles, distance)
+            return run # TODO: this should produce a dedicated object - maybe an ImageCollection
         
 
 
@@ -255,13 +270,26 @@ class ImagedRegion:
 
         primary_index = self.particles[self.particles.primary].index[0]
         cloud.particles["primary"] = cloud.particles.index == primary_index
-        objects, _ = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
+        focused_run = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
         del cloud.particles["primary"]
 
-        return objects[0]
-        
+        return focused_run.images[0]
 
 @dataclass
-class Particle:
-    diameter: float # in m
-    position: tuple[float, float, float] # (x, y, z) in m
+class DetectorRun:
+    detector: Detector
+    images: list[ImagedRegion]
+    # particles: pd.DataFrame # The particles illuminated by the laser beam (not necessarily detected) 
+    distance: float # in m
+
+
+    def save(self, filename):
+        with open(filename, "wb") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename, "rb") as f:
+            run =  pickle.load(f)
+
+        return run
