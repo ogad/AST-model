@@ -65,9 +65,9 @@ class PSD(ABC):
         # return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1) 
         return self.binned_distribution.sum()
     
-    def plot(self, ax):
+    def plot(self, ax, **kwargs):
         """Plot the PSD value against diameter."""
-        ax.plot(self.bins[1:], self.dn_dd(self.bins[1:]))
+        ax.plot(self.bins[1:], self.dn_dd(self.bins[1:]), **kwargs)
         # ax.set_xscale('log')
         # ax.set_yscale('log')
         ax.set_xlabel('Diameter (m)')
