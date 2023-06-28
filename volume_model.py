@@ -302,6 +302,6 @@ class DetectorRun:
         diameters = []
         for image in self.images:
             diameter_dict = image.measure_diameters(type=type)
-            diameters = diameters + diameter_dict.values()
+            diameters = diameters + list(diameter_dict.values())
         
         return diameters
