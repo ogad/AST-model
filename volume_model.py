@@ -242,10 +242,14 @@ class ImagedRegion:
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
 
-    def measure_diameters(self):
-        detected_particles = self.amplitude.intensity.measure_xy_diameters()
-
-        self.xy_diameters = detected_particles
+    def measure_diameters(self, type="xy"):
+        if type == "xy":
+            # XY diameter at 0.5I_0 intensity threshold
+            # Default behviour
+            detected_particles = self.amplitude.intensity.measure_xy_diameters()
+            self.xy_diameters = detected_particles
+        else:
+            raise NotImplementedError("Only xy diameters are currently supported")
         
         return detected_particles
     
@@ -293,3 +297,11 @@ class DetectorRun:
             run =  pickle.load(f)
 
         return run
+
+    def measure_diameters(self, type="xy"):
+        diameters = []
+        for image in self.images:
+            diameter_dict = image.measure_diameters(type=type)
+            diameters = diameters + diameter_dict.values()
+        
+        return diameters

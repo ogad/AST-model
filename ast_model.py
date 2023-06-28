@@ -170,14 +170,14 @@ class IntensityField:
 
         return tuple(position)
 
-    def measure_xy_diameters(self) -> dict:
+    def measure_xy_diameters(self, threshold=0.5) -> dict:
         """Measure the diameters of all connected regions in the image.
         
         Returns:
             dict: The list of (diameter/µm, position/px) couples.
         """
         # threshold the image at 50% of the initial intensity
-        thresholded_image = self.field < 0.5
+        thresholded_image = self.field < threshold
 
         # iterate over connected regions
         labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
