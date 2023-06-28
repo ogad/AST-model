@@ -60,7 +60,8 @@ def plot_outline(mapimg, ax=None):
     # and now there isn't anything else to do than plot it
     plt.plot(segments[:,0], segments[:,1], color=(1,0,0,.5), linewidth=1)
 
-class AmplitudeField(np.ndarray):
+@dataclass
+class AmplitudeField:
     """A class to represent an amplitude field.
 
     Uses the numpy array as a base class, adding the pixel size attribute, storing
@@ -70,28 +71,21 @@ class AmplitudeField(np.ndarray):
         np.ndarray: The amplitude field
     """
 
-    def __new__(cls, input_array, pixel_size=None):
-        obj = np.asarray(input_array).view(cls)
-        obj.pixel_size = pixel_size
-        return obj
-
-    def __array_finalize__(self, obj):
-        if obj is None:
-            return
-        self.pixel_size = getattr(obj, "pixel_size", None)
+    field: np.ndarray
+    pixel_size: float = 10e-6
 
     @property
     def phase(self):
         """The phase field."""
-        return np.fft.fft2(self)
+        return np.fft.fft2(self.field)
 
     @property
     def intensity(self):
         """The intensity field."""
-        return IntensityField(np.abs(self)**2, pixel_size=self.pixel_size)
+        return IntensityField(np.abs(self.field)**2, pixel_size=self.pixel_size)
 
-
-class IntensityField(np.ndarray):
+@dataclass
+class IntensityField:
     """A class to represent an intensity field.
 
     Uses the numpy array as a base class, adding the pixel size attribute, plotting
@@ -101,16 +95,9 @@ class IntensityField(np.ndarray):
         np.ndarray: The intensity field
     """
 
-    def __new__(cls, input_array, pixel_size=None):
-        obj = np.asarray(input_array).view(cls)
-        obj.pixel_size = pixel_size
-        return obj
-
-    def __array_finalize__(self, obj):
-        if obj is None:
-            return
-        self.pixel_size = getattr(obj, "pixel_size", None)
-
+    field: np.ndarray
+    pixel_size: float = 10e-6
+    
     def plot(self, ax:plt.Axes=None, axis_length:float=None, grayscale_bounds:list[float]=None, colorbar:bool=False, **kwargs) -> plt.Axes:
         """Plot the intensity field.
 
@@ -124,14 +111,14 @@ class IntensityField(np.ndarray):
         """
         if axis_length is not None:
             axis_length_px = axis_length * 1e-6 // self.pixel_size
-            to_plot = self[
-                int((self.shape[0] - axis_length_px) //
-                    2):int((self.shape[0] + axis_length_px) // 2),
+            to_plot = self.field[
+                int((self.field.shape[0] - axis_length_px) //
+                    2):int((self.field.shape[0] + axis_length_px) // 2),
                 int((self.shape[1] - axis_length_px) //
-                    2):int((self.shape[1] + axis_length_px) // 2),
+                    2):int((self.field.shape[1] + axis_length_px) // 2),
             ]
         else:
-            to_plot = self
+            to_plot = self.field
 
         if ax is None:
             y_to_x_ratio = to_plot.shape[1] / to_plot.shape[0]
@@ -190,7 +177,7 @@ class IntensityField(np.ndarray):
             dict: The list of (diameter/µm, position/px) couples.
         """
         # threshold the image at 50% of the initial intensity
-        thresholded_image = self < 0.5
+        thresholded_image = self.field < 0.5
 
         # iterate over connected regions
         labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
@@ -218,8 +205,8 @@ class IntensityField(np.ndarray):
         min_intensity_counted = 1 - max_dep
         max_intensity_counted = 1 - min_dep
 
-        n_pixels = np.sum((self <= max_intensity_counted)
-                          & (self > min_intensity_counted))
+        n_pixels = np.sum((self.field <= max_intensity_counted)
+                          & (self.field > min_intensity_counted))
 
         return n_pixels
 

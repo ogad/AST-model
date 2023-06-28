@@ -131,7 +131,7 @@ class CloudVolume:
         
         particles = self.particles[in_illuminated_region].copy()
         particles["x_index"] = particles.apply(
-            lambda particle: int((particle["position"] - detector_position)[0] / total_amplitude.pixel_size) + int(total_amplitude.shape[0]/2),
+            lambda particle: int((particle["position"] - detector_position)[0] / total_amplitude.pixel_size) + int(total_amplitude.field.shape[0]/2),
             axis=1)
         particles["y_index"] = particles.apply(
             lambda particle: int((particle["position"] - detector_position)[1] / total_amplitude.pixel_size),
@@ -147,7 +147,7 @@ class CloudVolume:
         image = ImagedRegion(detector_position, total_amplitude, particles=particles)
         return image
 
-
+#TODO: this should be moved to the AmplitudeField class
 def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detector_position):
     """Embed the intensity profile of a particle into the total intensity array."""
 
@@ -157,16 +157,16 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
     
     # index of particle centre in total_intensity
     # detector is at x = total_amplitude.shape[0]/2, y = 0
-    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size + total_amplitude.shape[0]/2)
-    y_index = total_amplitude.shape[1] - int(pcle_from_detector[1] / total_amplitude.pixel_size)
+    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size + total_amplitude.field.shape[0]/2)
+    y_index = total_amplitude.field.shape[1] - int(pcle_from_detector[1] / total_amplitude.pixel_size)
     embed_extent = [
-        x_index - int(single_particle_amplitude.shape[0]/2), 
-        x_index - int(single_particle_amplitude.shape[0]/2) + single_particle_amplitude.shape[0], 
-        y_index - int(single_particle_amplitude.shape[1]/2), 
-        y_index - int(single_particle_amplitude.shape[1]/2) + single_particle_amplitude.shape[1]
+        x_index - int(single_particle_amplitude.field.shape[0]/2), 
+        x_index - int(single_particle_amplitude.field.shape[0]/2) + single_particle_amplitude.field.shape[0], 
+        y_index - int(single_particle_amplitude.field.shape[1]/2), 
+        y_index - int(single_particle_amplitude.field.shape[1]/2) + single_particle_amplitude.field.shape[1]
     ]
 
-    amplitude_shape = single_particle_amplitude.shape
+    amplitude_shape = single_particle_amplitude.field.shape
 
     # Check pixel sizes are consistent
     if single_particle_amplitude.pixel_size != total_amplitude.pixel_size:
@@ -191,36 +191,31 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
         total_y_min = embed_extent[2]
         single_y_min = 0
     
-    if embed_extent[1] > total_amplitude.shape[0]:
+    if embed_extent[1] > total_amplitude.field.shape[0]:
         # would be out of bounds at max x
-        total_x_max = total_amplitude.shape[0]
+        total_x_max = total_amplitude.field.shape[0]
         # single_size - ((endpoint) - total_size)
-        single_x_max = amplitude_shape[0] - (embed_extent[1] - total_amplitude.shape[0])
+        single_x_max = amplitude_shape[0] - (embed_extent[1] - total_amplitude.field.shape[0])
     else:
         total_x_max = embed_extent[1]
         single_x_max = amplitude_shape[0]
 
-    if embed_extent[3] > total_amplitude.shape[1]:
+    if embed_extent[3] > total_amplitude.field.shape[1]:
         # would be out of bounds at max y
-        total_y_max = total_amplitude.shape[1]
-        single_y_max = amplitude_shape[1] - (embed_extent[3] - total_amplitude.shape[1])
+        total_y_max = total_amplitude.field.shape[1]
+        single_y_max = amplitude_shape[1] - (embed_extent[3] - total_amplitude.field.shape[1])
     else:
         total_y_max = embed_extent[3]
         single_y_max = amplitude_shape[1]
 
     # check for the non-overlapping case
-    if total_x_min > total_amplitude.shape[0] or total_y_min > total_amplitude.shape[1] or total_x_max < 0 or total_y_max < 0:
+    if total_x_min > total_amplitude.field.shape[0] or total_y_min > total_amplitude.field.shape[1] or total_x_max < 0 or total_y_max < 0:
         return total_amplitude
 
     #TODO: check this....... Are the amplitudes combined correctly
-    new_amplitude = single_particle_amplitude[single_x_min:single_x_max, single_y_min:single_y_max]
-    total_amplitude[total_x_min:total_x_max, total_y_min:total_y_max] *= new_amplitude
+    new_amplitude = single_particle_amplitude.field[single_x_min:single_x_max, single_y_min:single_y_max]
+    total_amplitude.field[total_x_min:total_x_max, total_y_min:total_y_max] *= new_amplitude
 
-    # new_amplitude_reshaped = AmplitudeField(np.ones_like(total_amplitude, dtype=np.complex128), pixel_size=10e-6)
-    # new_amplitude_reshaped[total_x_min:total_x_max, total_y_min:total_y_max] = new_amplitude
-
-    # total_amplitude = AmplitudeField(np.fft.ifft2(total_amplitude.phase * new_amplitude_reshaped.phase), pixel_size=10e-6)
-    # total_amplitude[total_x_min:total_x_max, total_y_min:total_y_max] *= single_particle_amplitude[single_x_min:single_x_max, single_y_min:single_y_max] - 1
     return total_amplitude
 
 @dataclass
@@ -245,7 +240,7 @@ class ImagedRegion:
 
         if plot_outlines:
             ax = plt.gca()
-            plot_outline(self.get_focused_image(cloud, detector).amplitude.intensity.T<0.1, ax)
+            plot_outline(self.get_focused_image(cloud, detector).amplitude.intensity.field.T<0.1, ax)
 
         return plot
     
@@ -260,7 +255,7 @@ class ImagedRegion:
 
         primary_index = self.particles[self.particles.primary].index[0]
         cloud.particles["primary"] = cloud.particles.index == primary_index
-        objects, _ = cloud.take_image(detector, distance=self.amplitude.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
+        objects, _ = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
         del cloud.particles["primary"]
 
         return objects[0]

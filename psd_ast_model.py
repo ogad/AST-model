@@ -162,7 +162,7 @@ class TwoMomentGammaPSD(PSD):
     def characteristic_diameter(self):
         return self.m3 / self.m2
 
-class SamplingModel:
+class SamplingModel: # NOTE: Not really used.
     """Particle size distribution model.
 
     A modelling class that contains a PSD object, and simulates particle

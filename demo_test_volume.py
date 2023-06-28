@@ -40,21 +40,15 @@ except FileNotFoundError:
         pickle.dump(cloud, f)
 
 print(cloud.n_particles)
-# slice = cloud.slice(200)
-# plt.imshow(slice.intensity[4000:8000, 4000:8000])
 # %%
 pcle = cloud.particles.iloc[0]
-detector_location = pcle.position - np.array([300e-6, 290*pcle.diameter, 4e-2])
-
-# images = [cloud.take_image(detector_location + np.array([0, y, 0])) for y in tqdm(np.arange(0, 2.2*pcle.diameter, 10e-6))]
-# interesting_images = [img for img in images if (img.intensity != 1).any()]
-# image = np.concatenate([img.intensity for img in images], axis=1)
+detector_location = pcle.position - np.array([300e-6, 15*pcle.diameter, 4e-2])
 
 n_pixels = 128
 
 detector_1 = Detector(detector_location, n_pixels=n_pixels)
 
-image = cloud.take_image(detector_1, distance=300* pcle.diameter).amplitude.intensity
+image = cloud.take_image(detector_1, distance=30* pcle.diameter).amplitude.intensity.field
 plt.imshow(image)
 plt.scatter(0, n_pixels / 2, c="r")
 plt.colorbar()
@@ -63,7 +57,7 @@ plt.colorbar()
 # %%
 
 detector = Detector(np.array([0.05, 0.1, 0]))
-detections, particles = cloud.take_image(detector, distance=500, separate_particles=True)
+detections, particles = cloud.take_image(detector, distance=10, separate_particles=True)
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
@@ -75,7 +69,7 @@ object_norm = plt.Normalize(0, 1)
 
 
 diameters = []
-detections = [det for det in detections if det.amplitude.intensity.min() <= 0.5]
+detections = [det for det in detections if det.amplitude.intensity.field.min() <= 0.5]
 for image in detections:
     # image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
 
@@ -102,18 +96,18 @@ plt.xscale("log")
 # plt.show()
 
  # %% Saving the detections
-with open(f"{datetime.datetime.now():%Y-%m-%d}_detections.pkl", "wb") as f:
+with open(f"../data/{datetime.datetime.now():%Y-%m-%d}_detections.pkl", "wb") as f:
     for image in detections:
         pickle.dump(image, f)
 
 
 # %% Load the detections for postprocessing
 
-with open("2023-06-27_detections.pkl", "rb") as f:
-    detections_new = []
+with open("../data/2023-06-28_detections.pkl", "rb") as f:
+    detections = []
     while True:
         try:
-            detections_new.append(pickle.load(f))
+            detections.append(pickle.load(f))
         except EOFError:
             break
 
