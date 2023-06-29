@@ -143,7 +143,7 @@ class CloudVolume:
 
         for particle in particles.itertuples():
             model_generator = particle.model.get_generator() if particle.model is not None else model_generator
-            ast_model = model_generator(particle.diameter * 1e6)
+            ast_model = model_generator(particle.diameter * 1e6, wavenumber=2*np.pi/detector.wavelength)
             amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
 
             total_amplitude.embed(amplitude_at_particle_xy, particle, detector_position)

@@ -58,7 +58,7 @@ plt.colorbar()
 redo_detections = False
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]))
-    run = cloud.take_image(detector, distance=10, separate_particles=True)
+    run = cloud.take_image(detector, distance=990, separate_particles=True)
 else:
     run = DetectorRun.load("../data/2023-06-29_10_spheres_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
