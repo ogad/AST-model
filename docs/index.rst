@@ -12,6 +12,8 @@ Welcome to TBS Project: Angular Spectrum Theory's documentation!
    
    ast_model
    psd_ast_model
+   cloud_model
+   detector_model
 
 
 Indices and tables

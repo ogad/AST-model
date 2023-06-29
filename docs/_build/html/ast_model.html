@@ -49,6 +49,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">ast_model module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#ast_model.ASTModel"><code class="docutils literal notranslate"><span class="pre">ASTModel</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.from_diameter"><code class="docutils literal notranslate"><span class="pre">ASTModel.from_diameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.from_diameter_rectangular"><code class="docutils literal notranslate"><span class="pre">ASTModel.from_diameter_rectangular()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.from_rectangle"><code class="docutils literal notranslate"><span class="pre">ASTModel.from_rectangle()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.get_zd"><code class="docutils literal notranslate"><span class="pre">ASTModel.get_zd()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.opaque_shape"><code class="docutils literal notranslate"><span class="pre">ASTModel.opaque_shape</span></code></a></li>
@@ -62,16 +63,28 @@
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.ASTModel.xy_diameter"><code class="docutils literal notranslate"><span class="pre">ASTModel.xy_diameter()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ast_model.AmplitudeField"><code class="docutils literal notranslate"><span class="pre">AmplitudeField</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.AmplitudeField.embed"><code class="docutils literal notranslate"><span class="pre">AmplitudeField.embed()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.AmplitudeField.field"><code class="docutils literal notranslate"><span class="pre">AmplitudeField.field</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.AmplitudeField.intensity"><code class="docutils literal notranslate"><span class="pre">AmplitudeField.intensity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.AmplitudeField.phase"><code class="docutils literal notranslate"><span class="pre">AmplitudeField.phase</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.AmplitudeField.pixel_size"><code class="docutils literal notranslate"><span class="pre">AmplitudeField.pixel_size</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#ast_model.IntensityField"><code class="docutils literal notranslate"><span class="pre">IntensityField</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.measure_xy_diameter"><code class="docutils literal notranslate"><span class="pre">IntensityField.measure_xy_diameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.field"><code class="docutils literal notranslate"><span class="pre">IntensityField.field</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.measure_xy_diameters"><code class="docutils literal notranslate"><span class="pre">IntensityField.measure_xy_diameters()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.n_pixels_depletion_range"><code class="docutils literal notranslate"><span class="pre">IntensityField.n_pixels_depletion_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.pixel_size"><code class="docutils literal notranslate"><span class="pre">IntensityField.pixel_size</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ast_model.IntensityField.plot"><code class="docutils literal notranslate"><span class="pre">IntensityField.plot()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#ast_model.plot_outline"><code class="docutils literal notranslate"><span class="pre">plot_outline()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="psd_ast_model.html">psd_ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cloud_model.html">cloud_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detector_model.html">detector_model module</a></li>
 </ul>
 
         </div>
@@ -139,6 +152,12 @@ using a specific pixel size.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ast_model.ASTModel.from_diameter_rectangular">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_diameter_rectangular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.from_diameter_rectangular"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.from_diameter_rectangular" title="Permalink to this definition"></a></dt>
+<dd><p>Create a model for a rectangular opaque object with a given diameter xy mean diameter and aspect ratio.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ast_model.ASTModel.from_rectangle">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavenumber</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.from_rectangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.from_rectangle" title="Permalink to this definition"></a></dt>
 <dd><p>Create a model for a rectangular opaque object.</p>
@@ -202,20 +221,20 @@ is a function of the dimensionless diffraction z distance,</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ast_model.ASTModel.process">
-<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ast_model.IntensityField" title="ast_model.IntensityField"><span class="pre">IntensityField</span></a></span></span><a class="reference internal" href="_modules/ast_model.html#ASTModel.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.process" title="Permalink to this definition"></a></dt>
-<dd><p>Process the model, calculating the intensity given the opaque shape is at z.</p>
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ast_model.AmplitudeField" title="ast_model.AmplitudeField"><span class="pre">AmplitudeField</span></a></span></span><a class="reference internal" href="_modules/ast_model.html#ASTModel.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.process" title="Permalink to this definition"></a></dt>
+<dd><p>Process the model, calculating the amplitude given the opaque shape is at z.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>z_val</strong> (<em>float</em>) – The distance of the the opaque_shape from the object plane.</p></li>
-<li><p><strong>low_pass</strong> (<em>float</em><em>, </em><em>optional</em>) – The low pass filter to apply to the intensity. Defaults to 1.0.</p></li>
+<li><p><strong>low_pass</strong> (<em>float</em><em>, </em><em>optional</em>) – The low pass filter to apply to the amplitude. Defaults to 1.0.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The intensity of the image at z.</p>
+<dd class="field-even"><p>The amplitude (transmission function) of the image at z.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ast_model.IntensityField" title="ast_model.IntensityField">IntensityField</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#ast_model.AmplitudeField" title="ast_model.AmplitudeField">AmplitudeField</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -241,7 +260,7 @@ is a function of the dimensionless diffraction z distance,</p>
 <dt class="sig sig-object py" id="ast_model.ASTModel.regrid">
 <span class="sig-name descname"><span class="pre">regrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.regrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.regrid" title="Permalink to this definition"></a></dt>
 <dd><p>Regrid the model to a new pixel size.</p>
-<p>Resamples the opaque object and any already-measured intensity profiles
+<p>Resamples the opaque object and any already-measured amplitude profiles
 to a new pixel size, such as one that matches the real detector.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -254,7 +273,7 @@ to a new pixel size, such as one that matches the real detector.</p>
 <dt class="sig sig-object py" id="ast_model.ASTModel.rescale">
 <span class="sig-name descname"><span class="pre">rescale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter_scale_factor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#ASTModel.rescale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.ASTModel.rescale" title="Permalink to this definition"></a></dt>
 <dd><p>Produce a new AST model for similar object at a different scale.</p>
-<p>Scales the object, and any already-measured diameters or processed intensity
+<p>Scales the object, and any already-measured diameters or processed amplitude
 profiles by a given factor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -283,9 +302,51 @@ profiles by a given factor.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ast_model.AmplitudeField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast_model.</span></span><span class="sig-name descname"><span class="pre">AmplitudeField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#AmplitudeField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.AmplitudeField" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to represent an amplitude field.</p>
+<p>Uses the numpy array as a base class, adding the pixel size attribute, storing
+a grid of phases from a single interaction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>np.ndarray</strong> – The amplitude field</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ast_model.AmplitudeField.embed">
+<span class="sig-name descname"><span class="pre">embed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">single_particle_amplitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_position</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#AmplitudeField.embed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.AmplitudeField.embed" title="Permalink to this definition"></a></dt>
+<dd><p>Embed the intensity profile of a particle into the total intensity array.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast_model.AmplitudeField.field">
+<span class="sig-name descname"><span class="pre">field</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#ast_model.AmplitudeField.field" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ast_model.AmplitudeField.intensity">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">intensity</span></span><a class="headerlink" href="#ast_model.AmplitudeField.intensity" title="Permalink to this definition"></a></dt>
+<dd><p>The intensity field.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ast_model.AmplitudeField.phase">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phase</span></span><a class="headerlink" href="#ast_model.AmplitudeField.phase" title="Permalink to this definition"></a></dt>
+<dd><p>The phase field.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast_model.AmplitudeField.pixel_size">
+<span class="sig-name descname"><span class="pre">pixel_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#ast_model.AmplitudeField.pixel_size" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ast_model.IntensityField">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast_model.</span></span><span class="sig-name descname"><span class="pre">IntensityField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#IntensityField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast_model.</span></span><span class="sig-name descname"><span class="pre">IntensityField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#IntensityField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class to represent an intensity field.</p>
 <p>Uses the numpy array as a base class, adding the pixel size attribute, plotting
 methods, and measurement methods.</p>
@@ -294,30 +355,21 @@ methods, and measurement methods.</p>
 <dd class="field-odd"><p><strong>np.ndarray</strong> – The intensity field</p>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="ast_model.IntensityField.measure_xy_diameter">
-<span class="sig-name descname"><span class="pre">measure_xy_diameter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/ast_model.html#IntensityField.measure_xy_diameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.measure_xy_diameter" title="Permalink to this definition"></a></dt>
-<dd><p>Measure the diameter of the largest connected region in the image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The diameter in micrometres.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast_model.IntensityField.field">
+<span class="sig-name descname"><span class="pre">field</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#ast_model.IntensityField.field" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ast_model.IntensityField.measure_xy_diameters">
-<span class="sig-name descname"><span class="pre">measure_xy_diameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/ast_model.html#IntensityField.measure_xy_diameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.measure_xy_diameters" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">measure_xy_diameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/ast_model.html#IntensityField.measure_xy_diameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.measure_xy_diameters" title="Permalink to this definition"></a></dt>
 <dd><p>Measure the diameters of all connected regions in the image.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The list of diameters in micrometres.</p>
+<dd class="field-odd"><p>The list of (diameter/µm, position/px) couples.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -342,9 +394,14 @@ methods, and measurement methods.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast_model.IntensityField.pixel_size">
+<span class="sig-name descname"><span class="pre">pixel_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-05</span></em><a class="headerlink" href="#ast_model.IntensityField.pixel_size" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ast_model.IntensityField.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grayscale_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Axes</span></span></span><a class="reference internal" href="_modules/ast_model.html#IntensityField.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.plot" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grayscale_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorbar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Axes</span></span></span><a class="reference internal" href="_modules/ast_model.html#IntensityField.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.IntensityField.plot" title="Permalink to this definition"></a></dt>
 <dd><p>Plot the intensity field.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -363,6 +420,12 @@ methods, and measurement methods.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast_model.plot_outline">
+<span class="sig-prename descclassname"><span class="pre">ast_model.</span></span><span class="sig-name descname"><span class="pre">plot_outline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapimg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast_model.html#plot_outline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast_model.plot_outline" title="Permalink to this definition"></a></dt>
+<dd><p>From <a class="reference external" href="https://stackoverflow.com/questions/24539296/outline-a-region-in-a-graph/24540564#24540564">https://stackoverflow.com/questions/24539296/outline-a-region-in-a-graph/24540564#24540564</a></p>
 </dd></dl>
 
 </section>

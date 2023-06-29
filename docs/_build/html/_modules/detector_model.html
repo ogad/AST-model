@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>detector_model &mdash; TBS Project: Angular Spectrum Theory  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TBS Project: Angular Spectrum Theory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ast_model.html">ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../psd_ast_model.html">psd_ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cloud_model.html">cloud_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector_model.html">detector_model module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TBS Project: Angular Spectrum Theory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">detector_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for detector_model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Detector model</span>
+<span class="c1"># Author: Oliver Driver</span>
+<span class="c1"># Date: 29/06/2023</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">ast_model</span> <span class="kn">import</span> <span class="n">plot_outline</span><span class="p">,</span> <span class="n">AmplitudeField</span>
+
+<div class="viewcode-block" id="Detector"><a class="viewcode-back" href="../detector_model.html#detector_model.Detector">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Detector</span><span class="p">:</span>
+    <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="c1"># (x, y, z) in m</span>
+    <span class="n">arm_separation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10e-2</span> <span class="c1"># in m</span>
+    <span class="n">n_pixels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span>
+    <span class="n">pixel_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span><span class="mf">10e-6</span><span class="c1"># in m</span></div>
+
+
+<div class="viewcode-block" id="ImagedRegion"><a class="viewcode-back" href="../detector_model.html#detector_model.ImagedRegion">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ImagedRegion</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A region illuminated by the laser beam at a single instant.&quot;&quot;&quot;</span>
+    <span class="c1"># orthogonal_vector: np.ndarray = (0,0,1) # in m</span>
+    <span class="n">detector_position</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1"># in m</span>
+    <span class="n">amplitude</span><span class="p">:</span> <span class="n">AmplitudeField</span> <span class="c1"># relative intensity</span>
+    <span class="n">arm_separation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10e-2</span><span class="c1"># in m</span>
+    <span class="n">particles</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ImagedRegion.measure_diameters"><a class="viewcode-back" href="../detector_model.html#detector_model.ImagedRegion.measure_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;xy&quot;</span><span class="p">:</span>
+            <span class="c1"># XY diameter at 0.5I_0 intensity threshold</span>
+            <span class="c1"># Default behviour</span>
+            <span class="n">detected_particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameters</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xy_diameters</span> <span class="o">=</span> <span class="n">detected_particles</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only xy diameters are currently supported&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">detected_particles</span></div>
+    
+<div class="viewcode-block" id="ImagedRegion.plot"><a class="viewcode-back" href="../detector_model.html#detector_model.ImagedRegion.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cloud</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot_outlines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        
+        <span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plot_outlines</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+            <span class="n">plot_outline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_focused_image</span><span class="p">(</span><span class="n">cloud</span><span class="p">,</span> <span class="n">detector</span><span class="p">)</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">T</span><span class="o">&lt;</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">plot</span></div>
+    
+<div class="viewcode-block" id="ImagedRegion.get_focused_image"><a class="viewcode-back" href="../detector_model.html#detector_model.ImagedRegion.get_focused_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_focused_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cloud</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cloud</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cloud must be specified&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">detector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">detector</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detector_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">arm_separation</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector_position</span>
+
+        <span class="n">primary_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="o">.</span><span class="n">primary</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cloud</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="s2">&quot;primary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cloud</span><span class="o">.</span><span class="n">particles</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="n">primary_index</span>
+        <span class="n">focused_run</span> <span class="o">=</span> <span class="n">cloud</span><span class="o">.</span><span class="n">take_image</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">,</span> <span class="n">use_focus</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">separate_particles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">primary_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">cloud</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="s2">&quot;primary&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">focused_run</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div></div>
+
+<div class="viewcode-block" id="DetectorRun"><a class="viewcode-back" href="../detector_model.html#detector_model.DetectorRun">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DetectorRun</span><span class="p">:</span>
+    <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span>
+    <span class="n">images</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ImagedRegion</span><span class="p">]</span>
+    <span class="c1"># particles: pd.DataFrame # The particles illuminated by the laser beam (not necessarily detected) </span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span> <span class="c1"># in m</span>
+
+
+<div class="viewcode-block" id="DetectorRun.save"><a class="viewcode-back" href="../detector_model.html#detector_model.DetectorRun.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetectorRun.load"><a class="viewcode-back" href="../detector_model.html#detector_model.DetectorRun.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">run</span> <span class="o">=</span>  <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">run</span></div>
+
+<div class="viewcode-block" id="DetectorRun.measure_diameters"><a class="viewcode-back" href="../detector_model.html#detector_model.DetectorRun.measure_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">):</span>
+        <span class="n">diameters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">:</span>
+            <span class="n">diameter_dict</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">measure_diameters</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">)</span>
+            <span class="n">diameters</span> <span class="o">=</span> <span class="n">diameters</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">diameter_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        
+        <span class="k">return</span> <span class="n">diameters</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

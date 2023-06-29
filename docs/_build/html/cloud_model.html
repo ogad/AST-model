@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cloud_model module &mdash; TBS Project: Angular Spectrum Theory  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="detector_model module" href="detector_model.html" />
+    <link rel="prev" title="psd_ast_model module" href="psd_ast_model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            TBS Project: Angular Spectrum Theory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ast_model.html">ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="psd_ast_model.html">psd_ast_model module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">cloud_model module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cloud_model.CloudVolume"><code class="docutils literal notranslate"><span class="pre">CloudVolume</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CloudVolume.dimensions"><code class="docutils literal notranslate"><span class="pre">CloudVolume.dimensions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CloudVolume.generate_particles"><code class="docutils literal notranslate"><span class="pre">CloudVolume.generate_particles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CloudVolume.n_particles"><code class="docutils literal notranslate"><span class="pre">CloudVolume.n_particles</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CloudVolume.psd"><code class="docutils literal notranslate"><span class="pre">CloudVolume.psd</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CloudVolume.take_image"><code class="docutils literal notranslate"><span class="pre">CloudVolume.take_image()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CloudVolume.volume"><code class="docutils literal notranslate"><span class="pre">CloudVolume.volume</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cloud_model.CrystalModel"><code class="docutils literal notranslate"><span class="pre">CrystalModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CrystalModel.RECT_AR5"><code class="docutils literal notranslate"><span class="pre">CrystalModel.RECT_AR5</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CrystalModel.SPHERE"><code class="docutils literal notranslate"><span class="pre">CrystalModel.SPHERE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cloud_model.CrystalModel.get_generator"><code class="docutils literal notranslate"><span class="pre">CrystalModel.get_generator()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="detector_model.html">detector_model module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">TBS Project: Angular Spectrum Theory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">cloud_model module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cloud_model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-cloud_model">
+<span id="cloud-model-module"></span><h1>cloud_model module<a class="headerlink" href="#module-cloud_model" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cloud_model.CloudVolume">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cloud_model.</span></span><span class="sig-name descname"><span class="pre">CloudVolume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="psd_ast_model.html#psd_ast_model.GammaPSD" title="psd_ast_model.GammaPSD"><span class="pre">psd_ast_model.GammaPSD</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cloud_model.html#CloudVolume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cloud_model.CloudVolume" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cloud_model.CloudVolume.dimensions">
+<span class="sig-name descname"><span class="pre">dimensions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#cloud_model.CloudVolume.dimensions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cloud_model.CloudVolume.generate_particles">
+<span class="sig-name descname"><span class="pre">generate_particles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cloud_model.html#CloudVolume.generate_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cloud_model.CloudVolume.generate_particles" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cloud_model.CloudVolume.n_particles">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_particles</span></span><a class="headerlink" href="#cloud_model.CloudVolume.n_particles" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the number of particles in the volume based on the PSD.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cloud_model.CloudVolume.psd">
+<span class="sig-name descname"><span class="pre">psd</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="psd_ast_model.html#psd_ast_model.GammaPSD" title="psd_ast_model.GammaPSD"><span class="pre">GammaPSD</span></a></em><a class="headerlink" href="#cloud_model.CloudVolume.psd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cloud_model.CloudVolume.take_image">
+<span class="sig-name descname"><span class="pre">take_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="detector_model.html#detector_model.Detector" title="detector_model.Detector"><span class="pre">Detector</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0,</span> <span class="pre">0,</span> <span class="pre">0])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separate_particles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_focus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_condition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cloud_model.html#CloudVolume.take_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cloud_model.CloudVolume.take_image" title="Permalink to this definition"></a></dt>
+<dd><p>Take an image using repeated detections along the y-axis.</p>
+<p>Detector is aligned with x-axis, and the y-axis is the direction of travel.
+The z-axis is the focal axis.
+The detector position is the position of the detector centre during the final detection.
+The model_generator is a callable taking the diameter of the particle in microns and returning an ASTModel.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="cloud_model.CloudVolume.volume">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">volume</span></span><a class="headerlink" href="#cloud_model.CloudVolume.volume" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cloud_model.CrystalModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cloud_model.</span></span><span class="sig-name descname"><span class="pre">CrystalModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cloud_model.html#CrystalModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cloud_model.CrystalModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enum for crystal types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cloud_model.CrystalModel.RECT_AR5">
+<span class="sig-name descname"><span class="pre">RECT_AR5</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#cloud_model.CrystalModel.RECT_AR5" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cloud_model.CrystalModel.SPHERE">
+<span class="sig-name descname"><span class="pre">SPHERE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#cloud_model.CrystalModel.SPHERE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cloud_model.CrystalModel.get_generator">
+<span class="sig-name descname"><span class="pre">get_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cloud_model.html#CrystalModel.get_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cloud_model.CrystalModel.get_generator" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="psd_ast_model.html" class="btn btn-neutral float-left" title="psd_ast_model module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="detector_model.html" class="btn btn-neutral float-right" title="detector_model module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
