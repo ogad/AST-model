@@ -34,7 +34,7 @@ gamma_dist.plot(ax)
 try:
     with open("cloud_01_1000_01.pkl", "rb") as f:
         cloud = pickle.load(f)
-except FileNotFoundError:
+except (FileNotFoundError, ModuleNotFoundError):
     cloud = CloudVolume(gamma_dist, (0.1, 1000, 0.1))
     with open("cloud_01_1000_01.pkl", "wb") as f:
         pickle.dump(cloud, f)
@@ -55,10 +55,10 @@ plt.colorbar()
 
 
 # %%
-redo_detections = False
+redo_detections = True
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]))
-    run = cloud.take_image(detector, distance=990, separate_particles=True)
+    run = cloud.take_image(detector, distance=10, separate_particles=True)
 else:
     run = DetectorRun.load("../data/2023-06-28_990_spheres_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
@@ -73,8 +73,8 @@ object_norm = plt.Normalize(0, 1)
 
 # diameters = []
 # detections = [det for det in run.images if det.amplitude.intensity.field.min() <= 0.5]
-# for image in detections:
-#     # image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
+for image in run.images:
+    image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
 
 #     measured_diameter = image.measure_diameters()
 #     diameters.append(list(measured_diameter.values()))

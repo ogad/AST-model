@@ -126,7 +126,7 @@ class CloudVolume:
 
             # particles = self.particles[in_illuminated_region].copy()
             # run = DetectorRun(detector, images, particles, distance)
-            return run # TODO: this should produce a dedicated object - maybe an ImageCollection
+            return run 
         
 
 
@@ -178,46 +178,22 @@ def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detect
 
     # determine the bounds of the total intensity array to embed the particle intensity in
     # "do it to the edge, but not over the edge"
-    if embed_extent[0] < 0:
-        # would be out of bounds at x=0
-        # go to edge of total_intensity and trim single_particle_intensity
-        total_x_min = 0
-        single_x_min = int(amplitude_shape[0]/2) - x_index
-    else:
-        total_x_min = embed_extent[0]
-        single_x_min = 0
-    
-    if embed_extent[2] < 0:
-        # would be out of bounds at y=0
-        total_y_min = 0
-        single_y_min = int(amplitude_shape[1]/2) - y_index
-    else:
-        total_y_min = embed_extent[2]
-        single_y_min = 0
-    
-    if embed_extent[1] > total_amplitude.field.shape[0]:
-        # would be out of bounds at max x
-        total_x_max = total_amplitude.field.shape[0]
-        # single_size - ((endpoint) - total_size)
-        single_x_max = amplitude_shape[0] - (embed_extent[1] - total_amplitude.field.shape[0])
-    else:
-        total_x_max = embed_extent[1]
-        single_x_max = amplitude_shape[0]
+    embed_iloc = [x_index, y_index]
+    total_min, total_max, single_min, single_max = [None, None], [None, None], [None, None], [None, None]
+    for axis in [0,1]:
+        total_min[axis] = 0 if embed_extent[axis*2] < 0 else embed_extent[axis*2]
+        single_min[axis] = int(amplitude_shape[axis]/2) - embed_iloc[axis] if embed_extent[axis*2] < 0 else 0
+        total_max[axis] = total_amplitude.field.shape[axis] if embed_extent[axis*2+1] > total_amplitude.field.shape[axis] else embed_extent[axis*2+1]
+        single_max[axis] = amplitude_shape[axis] - (embed_extent[axis*2+1] - total_amplitude.field.shape[axis]) if embed_extent[axis*2+1] > total_amplitude.field.shape[axis] else amplitude_shape[axis]
 
-    if embed_extent[3] > total_amplitude.field.shape[1]:
-        # would be out of bounds at max y
-        total_y_max = total_amplitude.field.shape[1]
-        single_y_max = amplitude_shape[1] - (embed_extent[3] - total_amplitude.field.shape[1])
-    else:
-        total_y_max = embed_extent[3]
-        single_y_max = amplitude_shape[1]
 
     # check for the non-overlapping case
-    if total_x_min > total_amplitude.field.shape[0] or total_y_min > total_amplitude.field.shape[1] or total_x_max < 0 or total_y_max < 0:
-        return total_amplitude
+    for axis in [0,1]:
+        if total_min[axis] > total_amplitude.field.shape[axis] or total_max[axis] < 0:
+            return total_amplitude
 
-    #TODO: check this....... Are the amplitudes combined correctly
-    new_amplitude = single_particle_amplitude.field[single_x_min:single_x_max, single_y_min:single_y_max]
-    total_amplitude.field[total_x_min:total_x_max, total_y_min:total_y_max] *= new_amplitude
+    #NOTE: check this....... Are the amplitudes combined correctly
+    new_amplitude = single_particle_amplitude.field[single_min[0]:single_max[0], single_min[1]:single_max[1]]
+    total_amplitude.field[total_min[0]:total_max[0], total_min[1]:total_max[1]] *= new_amplitude
 
     return total_amplitude
