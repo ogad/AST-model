@@ -28,11 +28,11 @@ class ImagedRegion:
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
 
-    def measure_diameters(self, type="xy"):
+    def measure_diameters(self, type="xy", **kwargs):
         if type == "xy":
             # XY diameter at 0.5I_0 intensity threshold
             # Default behviour
-            detected_particles = self.amplitude.intensity.measure_xy_diameters()
+            detected_particles = self.amplitude.intensity.measure_xy_diameters(**kwargs)
             self.xy_diameters = detected_particles
         else:
             raise NotImplementedError("Only xy diameters are currently supported")
@@ -84,10 +84,32 @@ class DetectorRun:
 
         return run
 
-    def measure_diameters(self, type="xy"):
+    def measure_diameters(self, type="xy", image_filter=lambda im: im.amplitude.intensity.field.min() <= 0.5):
         diameters = []
         for image in self.images:
+            if not image_filter(image):
+                continue
             diameter_dict = image.measure_diameters(type=type)
             diameters = diameters + list(diameter_dict.values())
         
         return diameters
+
+    def plot(self, image_filter=lambda im: im.amplitude.intensity.field.min() < 0.5, **kwargs):
+        images_to_plot = [image for image in self.images if image_filter(image)]
+        
+        n_plots = len(images_to_plot)
+        n_cols = 3
+        n_rows = int(np.ceil(n_plots / n_cols))
+
+        fig, axs = plt.subplots(n_rows, n_cols, figsize=(n_cols*5, n_rows*5),sharex=True)
+        for image, ax in zip(images_to_plot, axs.flatten()):
+            image.plot(ax=ax, **kwargs)
+
+
+        n_bottom = n_plots % 3
+        if n_bottom != 0:
+            for ax in axs[-2][n_bottom:]:
+                ax.xaxis.set_tick_params(labelbottom=True)
+            for ax in axs[-1][n_bottom:]:
+                ax.remove()
+        return fig, axs

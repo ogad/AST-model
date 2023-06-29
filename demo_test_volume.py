@@ -55,12 +55,12 @@ plt.colorbar()
 
 
 # %%
-redo_detections = True
+redo_detections = False
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]))
     run = cloud.take_image(detector, distance=10, separate_particles=True)
 else:
-    run = DetectorRun.load("../data/2023-06-28_990_spheres_run.pkl")
+    run = DetectorRun.load("../data/2023-06-29_10_spheres_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
@@ -109,12 +109,12 @@ plt.yticks(color="C0")
 
 # plt.show()
 
- # %% Saving the detections
-run.save(f"../data/{datetime.datetime.today():%Y-%m-%d}_{run.distance}_spheres_run.pkl")
+#  # %% Saving the detections
+# run.save(f"../data/{datetime.datetime.today():%Y-%m-%d}_{run.distance}_spheres_run.pkl")
 
 
-# %% Load the detections for postprocessing
-run_loaded = DetectorRun.load("../data/2023-06-28_detections.pkl")
+# # %% Load the detections for postprocessing
+# run_loaded = DetectorRun.load("../data/2023-06-28_detections.pkl")
 # %%
 # sample_length = 10 # m
 # effective_array_width = # ? m: pixel_size * (n_pixels - 1) - diameter (parallel to array?)
