@@ -146,54 +146,7 @@ class CloudVolume:
             ast_model = model_generator(particle.diameter * 1e6)
             amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
 
-            total_amplitude = embed_amplitude(amplitude_at_particle_xy, total_amplitude, particle, detector_position)
+            total_amplitude.embed(amplitude_at_particle_xy, particle, detector_position)
         
         image = ImagedRegion(detector_position, total_amplitude, particles=particles)
         return image
-
-#TODO: this should be moved to the AmplitudeField class
-def embed_amplitude(single_particle_amplitude, total_amplitude, particle, detector_position):
-    """Embed the intensity profile of a particle into the total intensity array."""
-
-    # vector from particle to detector
-    pcle_from_detector = particle.position - detector_position
-
-    
-    # index of particle centre in total_intensity
-    # detector is at x = total_amplitude.shape[0]/2, y = 0
-    x_index = int(pcle_from_detector[0] / total_amplitude.pixel_size + total_amplitude.field.shape[0]/2)
-    y_index = total_amplitude.field.shape[1] - int(pcle_from_detector[1] / total_amplitude.pixel_size)
-    embed_extent = [
-        x_index - int(single_particle_amplitude.field.shape[0]/2), 
-        x_index - int(single_particle_amplitude.field.shape[0]/2) + single_particle_amplitude.field.shape[0], 
-        y_index - int(single_particle_amplitude.field.shape[1]/2), 
-        y_index - int(single_particle_amplitude.field.shape[1]/2) + single_particle_amplitude.field.shape[1]
-    ]
-
-    amplitude_shape = single_particle_amplitude.field.shape
-
-    # Check pixel sizes are consistent
-    if single_particle_amplitude.pixel_size != total_amplitude.pixel_size:
-        raise ValueError(f"Pixel sizes of single_particle_amplitude and total_amplitude must be the same.\nSingle particle: {single_particle_amplitude.pixel_size} m, Total: {total_amplitude.pixel_size} m")
-
-    # determine the bounds of the total intensity array to embed the particle intensity in
-    # "do it to the edge, but not over the edge"
-    embed_iloc = [x_index, y_index]
-    total_min, total_max, single_min, single_max = [None, None], [None, None], [None, None], [None, None]
-    for axis in [0,1]:
-        total_min[axis] = 0 if embed_extent[axis*2] < 0 else embed_extent[axis*2]
-        single_min[axis] = int(amplitude_shape[axis]/2) - embed_iloc[axis] if embed_extent[axis*2] < 0 else 0
-        total_max[axis] = total_amplitude.field.shape[axis] if embed_extent[axis*2+1] > total_amplitude.field.shape[axis] else embed_extent[axis*2+1]
-        single_max[axis] = amplitude_shape[axis] - (embed_extent[axis*2+1] - total_amplitude.field.shape[axis]) if embed_extent[axis*2+1] > total_amplitude.field.shape[axis] else amplitude_shape[axis]
-
-
-    # check for the non-overlapping case
-    for axis in [0,1]:
-        if total_min[axis] > total_amplitude.field.shape[axis] or total_max[axis] < 0:
-            return total_amplitude
-
-    #NOTE: check this....... Are the amplitudes combined correctly
-    new_amplitude = single_particle_amplitude.field[single_min[0]:single_max[0], single_min[1]:single_max[1]]
-    total_amplitude.field[total_min[0]:total_max[0], total_min[1]:total_max[1]] *= new_amplitude
-
-    return total_amplitude

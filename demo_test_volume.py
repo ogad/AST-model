@@ -74,7 +74,8 @@ object_norm = plt.Normalize(0, 1)
 # diameters = []
 # detections = [det for det in run.images if det.amplitude.intensity.field.min() <= 0.5]
 for image in run.images:
-    image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
+    if image.amplitude.intensity.field.min() < 0.5:
+        image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
 
 #     measured_diameter = image.measure_diameters()
 #     diameters.append(list(measured_diameter.values()))
