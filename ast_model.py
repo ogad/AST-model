@@ -58,7 +58,7 @@ def plot_outline(mapimg, ax=None):
     segments[:,1] = y0 + (y1-y0) * segments[:,1] / mapimg.shape[0]
 
     # and now there isn't anything else to do than plot it
-    plt.plot(segments[:,0], segments[:,1], color=(1,0,0,.5), linewidth=1)
+    ax.plot(segments[:,0], segments[:,1], color=(1,0,0,.5), linewidth=1)
 
 @dataclass
 class AmplitudeField:

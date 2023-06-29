@@ -71,26 +71,7 @@ object_cmap = LinearSegmentedColormap.from_list("red_transparent", [(1, 0, 0, 1)
 object_norm = plt.Normalize(0, 1)
 
 
-# diameters = []
-# detections = [det for det in run.images if det.amplitude.intensity.field.min() <= 0.5]
-for image in run.images:
-    if image.amplitude.intensity.field.min() < 0.5:
-        image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
-
-#     measured_diameter = image.measure_diameters()
-#     diameters.append(list(measured_diameter.values()))
-#     # accurate_diameter = object.measure_diameters()
-#     z = (image.particles[image.particles.primary].iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
-
-#     # plt.text(20, 20,
-#     #     f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}\
-#     #     \nMeasured diameter = { ','.join(f'{s:.0f}' for s in list(measured_diameter.values())) } µm\
-#     #     ",
-#     #     ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), 
-#     # )
-#     # plt.xlim(0, 1280)
-#     # plt.tight_layout()
-#     # plt.show()
+run.plot(grayscale_bounds=[0.5], plot_outlines=True,  cloud=cloud)
 
 # %%
 diameters = run.measure_diameters()

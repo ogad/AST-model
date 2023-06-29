@@ -39,12 +39,14 @@ class ImagedRegion:
         
         return detected_particles
     
-    def plot(self, detector=None, cloud=None, plot_outlines=False, **kwargs):
+    def plot(self, detector=None, cloud=None, plot_outlines=False,**kwargs):
         
         plot = self.amplitude.intensity.plot(**kwargs)
 
         if plot_outlines:
-            ax = plt.gca()
+            ax=kwargs.get("ax")
+            if ax is None:
+                ax = plt.gca()
             plot_outline(self.get_focused_image(cloud, detector).amplitude.intensity.field.T<0.1, ax)
 
         return plot
@@ -103,7 +105,7 @@ class DetectorRun:
 
         fig, axs = plt.subplots(n_rows, n_cols, figsize=(n_cols*5, n_rows*5),sharex=True)
         for image, ax in zip(images_to_plot, axs.flatten()):
-            image.plot(ax=ax, **kwargs)
+            image.plot(ax=ax, detector=None, **kwargs)
 
 
         n_bottom = n_plots % 3
