@@ -10,7 +10,7 @@ import datetime
 
 from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
-from volume_model import CloudVolume, Detector, DetectorRun
+from cloud_model import CloudVolume, Detector, DetectorRun
 
 logging.basicConfig(level=logging.INFO)
 
@@ -55,9 +55,12 @@ plt.colorbar()
 
 
 # %%
-
-detector = Detector(np.array([0.05, 0.1, 0]))
-run = cloud.take_image(detector, distance=10, separate_particles=True)
+redo_detections = False
+if redo_detections:
+    detector = Detector(np.array([0.05, 0.1, 0]))
+    run = cloud.take_image(detector, distance=990, separate_particles=True)
+else:
+    run = DetectorRun.load("../data/2023-06-28_990_spheres_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
@@ -68,29 +71,30 @@ object_cmap = LinearSegmentedColormap.from_list("red_transparent", [(1, 0, 0, 1)
 object_norm = plt.Normalize(0, 1)
 
 
-diameters = []
-detections = [det for det in run.images if det.amplitude.intensity.field.min() <= 0.5]
-for image in detections:
-    # image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
+# diameters = []
+# detections = [det for det in run.images if det.amplitude.intensity.field.min() <= 0.5]
+# for image in detections:
+#     # image.plot(grayscale_bounds=[0.25,.5,.75], plot_outlines=True, cloud=cloud)
 
-    measured_diameter = image.measure_diameters()
-    diameters.append(list(measured_diameter.values()))
-    # accurate_diameter = object.measure_diameters()
-    z = (image.particles[image.particles.primary].iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
+#     measured_diameter = image.measure_diameters()
+#     diameters.append(list(measured_diameter.values()))
+#     # accurate_diameter = object.measure_diameters()
+#     z = (image.particles[image.particles.primary].iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
 
-    # plt.text(20, 20,
-    #     f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}\
-    #     \nMeasured diameter = { ','.join(f'{s:.0f}' for s in list(measured_diameter.values())) } µm\
-    #     ",
-    #     ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), 
-    # )
-    # plt.xlim(0, 1280)
-    # plt.tight_layout()
-    # plt.show()
+#     # plt.text(20, 20,
+#     #     f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}\
+#     #     \nMeasured diameter = { ','.join(f'{s:.0f}' for s in list(measured_diameter.values())) } µm\
+#     #     ",
+#     #     ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), 
+#     # )
+#     # plt.xlim(0, 1280)
+#     # plt.tight_layout()
+#     # plt.show()
 
 # %%
+diameters = run.measure_diameters()
 bins = np.linspace(1e-5, 1e-3, 40)
-plt.plot(bins[:-1], np.histogram(np.concatenate(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins)), color="C1", label="Measured")
+plt.plot(bins[:-1], np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins)), color="C1", label="Measured")
 plt.ylabel("Measured particles/bin width", color="C1")
 plt.yticks(color="C1")
 
@@ -105,7 +109,7 @@ plt.yticks(color="C0")
 # plt.show()
 
  # %% Saving the detections
-run.save(f"../data/{datetime.datetime.today():%Y-%m-%d}_{run.distance}_detections.pkl")
+run.save(f"../data/{datetime.datetime.today():%Y-%m-%d}_{run.distance}_spheres_run.pkl")
 
 
 # %% Load the detections for postprocessing
@@ -122,5 +126,4 @@ run_loaded = DetectorRun.load("../data/2023-06-28_detections.pkl")
 # Work out a number density for each bin, and then divide by the bin width to give an instantanous dN/dD
 # %%
 # sebs papers size metric z invariant ish. circ equivalent.
-run_loaded.hello_world()
 # %%

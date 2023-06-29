@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from ast_model import plot_outline, ASTModel
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
-from volume_model import CloudVolume, Detector, CrystalModel
+from cloud_model import CloudVolume, Detector, CrystalModel
 
 logging.basicConfig(level=logging.INFO)
 
