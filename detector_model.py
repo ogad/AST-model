@@ -118,8 +118,9 @@ class DetectorRun:
         return fig, axs
     
     def volume(self, diameter, c=8):
+        # TODO: in theory, parallel diameter can be different to DOF diameter (!)
         sample_length = self.distance # m
         effective_array_width = self.detector.pixel_size * (self.detector.n_pixels - 1) - diameter # ? m: pixel_size * (n_pixels - 1) - diameter (parallel to array?)
-        depth_of_field = min(self.detector.arm_separation, c * diameter**2 / (4 * self.detector.wavelength))# ? m ± cD^2/4λ; c = 8 ish for 2D-S. (from Gurganus Lawson 2018)
+        depth_of_field = np.minimum(self.detector.arm_separation, c * diameter**2 / (4 * self.detector.wavelength))# ? m ± cD^2/4λ; c = 8 ish for 2D-S. (from Gurganus Lawson 2018)
         sample_volume = sample_length * effective_array_width * depth_of_field # should strictly be integrated...
         return sample_volume
