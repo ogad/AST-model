@@ -58,7 +58,8 @@ plt.colorbar()
 redo_detections = True
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]))
-    run = cloud.take_image(detector, distance=100, separate_particles=True)
+    run = cloud.take_image(detector, distance=999, separate_particles=True)
+    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_spheres_run.pkl")
 else:
     run = DetectorRun.load("../data/2023-06-29_10_spheres_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
@@ -70,12 +71,12 @@ from matplotlib.colors import LinearSegmentedColormap
 object_cmap = LinearSegmentedColormap.from_list("red_transparent", [(1, 0, 0, 1), (1, 0, 0, 0)])
 object_norm = plt.Normalize(0, 1)
 
-
-run.plot(grayscale_bounds=[0.5], plot_outlines=True,  cloud=cloud)
+if run.distance <= 100:
+    run.plot(grayscale_bounds=[0.5], plot_outlines=True,  cloud=cloud)
 
 # %%
 diameters = run.measure_diameters()
-bins = np.linspace(1e-5, 1e-3, 40)
+bins = np.linspace(0, 5e-4, 50)
 plt.stairs(np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, color="C1", label="Measured")
 plt.ylabel("Measured particles/bin width")#, color="C1")
 # plt.yticks(color="C1")
@@ -83,10 +84,12 @@ plt.ylabel("Measured particles/bin width")#, color="C1")
 # ax2 = plt.gca().twinx()
 gamma_dist.plot(plt.gca(), label="True")
 plt.legend()
-# plt.xscale("log")
+plt.xlim(0,5e-4)
+# plt.yscale("log")
 
 plt.xlabel("Diameter (m)")
 plt.ylabel("dN/dD (m$^{-1}$)")#, color="C0")
+plt.ylim(0, 0.5e9)
 # plt.yticks(color="C0")
 
 # plt.show()
