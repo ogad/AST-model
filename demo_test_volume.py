@@ -11,6 +11,7 @@ import datetime
 from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
 from cloud_model import CloudVolume, Detector, DetectorRun
+from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter
 
 logging.basicConfig(level=logging.INFO)
 
@@ -55,13 +56,13 @@ plt.colorbar()
 
 
 # %%
-redo_detections = True
+redo_detections = False
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]))
     run = cloud.take_image(detector, distance=999, separate_particles=True)
     run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_spheres_run.pkl")
 else:
-    run = DetectorRun.load("../data/2023-06-29_10_spheres_run.pkl")
+    run = DetectorRun.load("../data/2023-06-29_999_spheres_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
@@ -75,9 +76,11 @@ if run.distance <= 100:
     run.plot(grayscale_bounds=[0.5], plot_outlines=True,  cloud=cloud)
 
 # %%
-diameters = run.measure_diameters()
+diameters_noedgefilter = run.measure_diameters()
+diameters = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY])
 bins = np.linspace(0, 5e-4, 50)
-plt.stairs(np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, color="C1", label="Measured")
+plt.stairs(np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, color="C1", label="Measured (no edge filter)")
+plt.stairs(np.histogram(np.array(diameters_noedgefilter) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, color="C2", label="Measured")
 plt.ylabel("Measured particles/bin width")#, color="C1")
 # plt.yticks(color="C1")
 

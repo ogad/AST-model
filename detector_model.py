@@ -4,6 +4,7 @@
 
 from dataclasses import dataclass
 import pickle
+from enum import Enum
 
 import numpy as np
 import pandas as pd
@@ -19,6 +20,18 @@ class Detector:
     pixel_size: float =10e-6# in m
     wavelength: float = 658e-9 
 
+
+class ImageFilter(Enum):
+    PRESENT_HALF_INTENSITY = 1
+    NO_EDGE_HALF_INTENSITY = 2
+
+    def __call__(self, image):
+        if self == ImageFilter.PRESENT_HALF_INTENSITY:
+            return image.amplitude.intensity.field.min() <= 0.5
+        elif self == ImageFilter.NO_EDGE_HALF_INTENSITY:
+            return np.concatenate([image.amplitude.intensity.field[0,:], image.amplitude.intensity.field[-1,:]]).min() > 0.5
+        else:
+            raise NotImplementedError(f"Image filter {self} not implemented")
 
 @dataclass
 class ImagedRegion:
@@ -87,18 +100,18 @@ class DetectorRun:
 
         return run
 
-    def measure_diameters(self, type="xy", image_filter=lambda im: im.amplitude.intensity.field.min() <= 0.5):
+    def measure_diameters(self, type="xy", image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY]):
         diameters = []
         for image in self.images:
-            if not image_filter(image):
+            if not np.all([image_filter(image) for image_filter in image_filters]):
                 continue
             diameter_dict = image.measure_diameters(type=type)
             diameters = diameters + list(diameter_dict.values())
         
         return diameters
 
-    def plot(self, image_filter=lambda im: im.amplitude.intensity.field.min() < 0.5, **kwargs):
-        images_to_plot = [image for image in self.images if image_filter(image)]
+    def plot(self, image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
+        images_to_plot = [image for image in self.images if np.all([image_filter(image) for image_filter in image_filters])]
         
         n_plots = len(images_to_plot)
         n_cols = 3
@@ -124,3 +137,4 @@ class DetectorRun:
         depth_of_field = np.minimum(self.detector.arm_separation, c * diameter**2 / (4 * self.detector.wavelength))# ? m ± cD^2/4λ; c = 8 ish for 2D-S. (from Gurganus Lawson 2018)
         sample_volume = sample_length * effective_array_width * depth_of_field # should strictly be integrated...
         return sample_volume
+
