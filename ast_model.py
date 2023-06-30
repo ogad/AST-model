@@ -5,6 +5,7 @@
 # Standard library imports
 from dataclasses import dataclass
 from copy import deepcopy
+from typing import Generator, Self
 
 # Package imports
 import numpy as np
@@ -239,6 +240,24 @@ class IntensityField:
 
         # return dictionary of diameters in micrometres
         return diameters
+    
+    def frames(self, threshold=0.5) -> Generator[Self, None, None]:
+        """Split the intensity field into frames.
+
+        Args:
+            threshold (float, optional): The threshold to use to split the frames. Defaults to 0.5.
+
+        Yields:
+            Generator[Self, None, None]: The intensity field for each frame.
+        """
+        frame_rows = np.where((self.field < threshold).any(axis=0))[0]
+        if frame_rows.size == 0:
+            return
+        frames_indices = np.split(frame_rows, np.where(np.diff(frame_rows) != 1)[0] + 1)
+        for frame in frames_indices:
+            frame_field = self.field[:, frame[0]:frame[-1]]
+            frame_intensityfield = IntensityField(frame_field, self.pixel_size)
+            yield frame_intensityfield
 
     def n_pixels_depletion_range(self, min_dep:float, max_dep:float) -> int:
         """Calculate the number of pixels in the depletion range

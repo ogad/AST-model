@@ -48,6 +48,15 @@ class ImagedRegion:
             # Default behviour
             detected_particles = self.amplitude.intensity.measure_xy_diameters(**kwargs)
             self.xy_diameters = detected_particles
+        elif type == "xy_framed":
+            # split image into "frames" separated by empty rows.
+            # For each frame, measure the diameter
+            frames = self.amplitude.intensity.frames()
+            detected_particles = []
+            for frame in frames:
+                detected_particles = detected_particles + frame.measure_xy_diameters(**kwargs)
+                self.xy_diameters_framed = detected_particles
+
         else:
             raise NotImplementedError("Only xy diameters are currently supported")
         
