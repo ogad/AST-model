@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 import pickle
 from enum import Enum
+import logging
 
 import numpy as np
 import pandas as pd
@@ -90,6 +91,28 @@ class ImagedRegion:
 
         return focused_run.images[0]
 
+    @property
+    def distance(self):
+        return self.amplitude.field.shape[1] * self.amplitude.pixel_size
+    
+    @property
+    def start(self):
+        """The start of the region in the detector's reference frame, note that this is the high y value."""
+        return self.detector_position[1] 
+    
+    @property
+    def end(self):
+        """The end of the region in the detector's reference frame, note that this is the low y value."""
+        return self.detector_position[1]+ self.amplitude.pixel_size * self.amplitude.field.shape[1] 
+    
+    @property
+    def y_values(self): # y values decrease
+        """The y values of the detector pixels, aligned so the y value at index i is the y value of the pixel at index i."""
+        n_pixels = self.amplitude.field.shape[1]
+        range = np.arange(self.end, self.start - self.amplitude.pixel_size/2, -1*self.amplitude.pixel_size)
+        return range[:n_pixels]
+
+
 @dataclass
 class DetectorRun:
     detector: Detector
@@ -146,4 +169,43 @@ class DetectorRun:
         depth_of_field = np.minimum(self.detector.arm_separation, c * diameter**2 / (4 * self.detector.wavelength))# ? m ± cD^2/4λ; c = 8 ish for 2D-S. (from Gurganus Lawson 2018)
         sample_volume = sample_length * effective_array_width * depth_of_field # should strictly be integrated...
         return sample_volume
+    
+    def overlaps(self):
+        ends = [im.end for im in self.images]
+        starts = [im.start for im in self.images]
+        regions = list(zip(range(len(starts)), starts, ends))
+        sorted_regions = sorted(regions, key=lambda x: x[1])
 
+        overlaps = []
+        for i in range(len(sorted_regions)-1):
+            # if the end of the current region is after the start of the next region
+            if sorted_regions[i][2] > sorted_regions[i+1][1]:
+                # print("Overlap detected")
+                overlaps.append((sorted_regions[i], sorted_regions[i+1]))
+        
+        for overlap in overlaps:
+            intensity_1 = self.images[overlap[0][0]].amplitude.intensity.field
+            intensity_2 = self.images[overlap[1][0]].amplitude.intensity.field
+            
+            y_vals_1 = self.images[overlap[0][0]].y_values
+            y_vals_2 = self.images[overlap[1][0]].y_values
+
+            # the end of 1 overlaps with the beginning of 2
+            overlap_start = y_vals_1[0] #bigger value, at lesser index
+            overlap_end = y_vals_2[-1] #smaller value, at greater index
+            if overlap_start > overlap_end:
+                logging.warning("Overlap start > overlap end.")
+                continue
+            
+            # the index after the overlap in the first image
+            overlap_end_index_1 = np.argwhere(y_vals_1 < overlap_end)[0][0]
+            # the index after the overlap ends in the second image
+            overlap_start_index_2 = np.argwhere(y_vals_2 > overlap_start)[-1][0]
+
+            overlap_intensity_1 = intensity_1[:overlap_end_index_1]
+            overlap_intensity_2 = intensity_2[overlap_start_index_2:]
+
+            if (overlap_intensity_1 <0.9).any() or (overlap_intensity_2 < 0.9).any():
+                logging.warning("Overlap intensity has some signal < 0.9.")
+                continue
+        return overlaps
