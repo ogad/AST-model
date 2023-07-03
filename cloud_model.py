@@ -25,7 +25,7 @@ class CrystalModel(Enum):
         if self == CrystalModel.SPHERE:
             return ASTModel.from_diameter
         elif self == CrystalModel.RECT_AR5:
-            return lambda diameter: ASTModel.from_diameter_rectangular(diameter, 5)
+            return lambda diameter, wavenumber: ASTModel.from_diameter_rectangular(diameter, 5)
         else:
             raise ValueError("Crystal model not recognised.")
     

@@ -219,7 +219,7 @@ class IntensityField:
 
         return tuple(position)
 
-    def measure_xy_diameters(self, threshold=0.5) -> dict:
+    def measure_xy_diameters(self, threshold=0.5, bounded=False) -> dict:
         """Measure the diameters of all connected regions in the image.
         
         Returns:
@@ -228,8 +228,17 @@ class IntensityField:
         # threshold the image at 50% of the initial intensity
         thresholded_image = self.field < threshold
 
-        # iterate over connected regions
-        labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
+        if bounded:
+            labeled_image = np.zeros_like(thresholded_image)
+            threshold_pixels = np.where(thresholded_image)
+            labeled_image[
+                threshold_pixels[0].min(): threshold_pixels[0].max()+1,
+                threshold_pixels[1].min(): threshold_pixels[1].max()+1,
+            ] = 1
+            n_labels = 1
+        else:
+            # iterate over connected regions
+            labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
 
         diameters = {}
         for label in range(1, n_labels + 1):
@@ -255,7 +264,7 @@ class IntensityField:
             return
         frames_indices = np.split(frame_rows, np.where(np.diff(frame_rows) != 1)[0] + 1)
         for frame in frames_indices:
-            frame_field = self.field[:, frame[0]:frame[-1]]
+            frame_field = self.field[:, frame[0]:frame[-1]+1]
             frame_intensityfield = IntensityField(frame_field, self.pixel_size)
             yield frame_intensityfield
 

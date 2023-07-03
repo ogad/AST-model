@@ -52,9 +52,9 @@ class ImagedRegion:
             # split image into "frames" separated by empty rows.
             # For each frame, measure the diameter
             frames = self.amplitude.intensity.frames()
-            detected_particles = []
+            detected_particles = {}
             for frame in frames:
-                detected_particles = detected_particles + frame.measure_xy_diameters(**kwargs)
+                detected_particles = detected_particles | frame.measure_xy_diameters(**kwargs)
                 self.xy_diameters_framed = detected_particles
 
         else:
@@ -109,12 +109,12 @@ class DetectorRun:
 
         return run
 
-    def measure_diameters(self, type="xy", image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY]):
+    def measure_diameters(self, type="xy", image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
         diameters = []
         for image in self.images:
             if not np.all([image_filter(image) for image_filter in image_filters]):
                 continue
-            diameter_dict = image.measure_diameters(type=type)
+            diameter_dict = image.measure_diameters(type=type, **kwargs)
             diameters = diameters + list(diameter_dict.values())
         
         return diameters
