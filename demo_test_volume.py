@@ -66,7 +66,8 @@ if redo_detections:
     run = cloud.take_image(detector, distance=distance, separate_particles=True)
     run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{shape}_run.pkl")
 else:
-    run = DetectorRun.load("../data/2023-06-29_999_spheres_run.pkl")
+    # run = DetectorRun.load("../data/2023-06-29_999_spheres_run.pkl")
+    run = DetectorRun.load("../data/2023-07-04_999_rects_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
@@ -85,11 +86,13 @@ if run.distance <= 100:
 diameter_series = {}
 diameter_series["50%"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY])
 # diameter_series["50% framed"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY], type="xy_framed")#FIXME: why is this different to the unframed case?
-diameter_series["50% no edge"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY])
+# diameter_series["50% no edge"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY])
 diameter_series["50% no edge bounded"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True)
-diameter_series["50% no edge bounded framed"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed")
-diameter_series["50% no edge bounded framed minsep"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed_minsep", min_sep=200e-6)
-diameter_series["50% no edge, circle equiv."] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], type="circle_equivalent")
+diameter_series["50% no edge bounded unfilled"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], unfilled_bounded=True)
+# diameter_series["50% no edge bounded framed"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed")
+# diameter_series["50% no edge bounded framed minsep"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed_minsep", min_sep=200e-6)
+# diameter_series["50% no edge, circle equiv."] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], type="circle_equivalent")
+diameter_series["50% no edge, circle equiv. bounded unfilled"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], type="circle_equivalent", unfilled_bounded=True)
 
 
 bins = np.linspace(0, 5e-4, 50)

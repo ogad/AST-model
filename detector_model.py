@@ -54,7 +54,7 @@ class ImagedRegion:
             # XY diameter at 0.5I_0 intensity threshold
             # Default behviour
             detected_particles = self.amplitude.intensity.measure_diameters(diameter_method="circle_equivalent", **kwargs)
-            self.xy_diameters = detected_particles
+            self.ce_diameters = detected_particles
         elif type == "xy_framed":
             # split image into "frames" separated by empty rows.
             # For each frame, measure the diameter

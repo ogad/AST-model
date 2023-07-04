@@ -236,7 +236,7 @@ class IntensityField:
 
         return tuple(position)
 
-    def measure_diameters(self, threshold=0.5, bounded=False, diameter_method="xy") -> dict:
+    def measure_diameters(self, threshold=0.5, bounded=False, unfilled_bounded=False, diameter_method="xy") -> dict:
         """Measure the diameters of all connected regions in the image.
         
         Returns:
@@ -247,7 +247,7 @@ class IntensityField:
 
         diameter_method = getattr(self, f"_measure_{diameter_method}_diameter")
 
-        if bounded:
+        if bounded and not unfilled_bounded:
             labeled_image = np.zeros_like(thresholded_image)
             threshold_pixels = np.where(thresholded_image)
             labeled_image[
@@ -255,6 +255,13 @@ class IntensityField:
                 threshold_pixels[1].min(): threshold_pixels[1].max()+1,
             ] = 1
             n_labels = 1
+        elif unfilled_bounded and not bounded:
+            labeled_image = np.zeros_like(thresholded_image)
+            threshold_pixels = np.where(thresholded_image)
+            labeled_image[threshold_pixels] = 1
+            n_labels = 1
+        elif bounded and unfilled_bounded:
+            raise Exception("Cannot use both bounded and unfilled_bounded")
         else:
             # iterate over connected regions
             labeled_image, n_labels = ndimage.label(thresholded_image, structure=np.ones((3, 3)))
