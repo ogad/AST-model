@@ -195,11 +195,12 @@ class IntensityField:
 
         return ax_image
 
-    def _measure_xy_diameter(self, labelled_image, label) -> float:
-        """Measure the diameter of the largest connected region in the image.
+    @staticmethod
+    def _measure_xy_diameter(labelled_image, label) -> float:
+        """Measure the diameter of a labelled region in the image.
         
         Returns:
-            float: The diameter in micrometres."""
+            float: The diameter in units of pixels."""
 
         # isolate only the region of interest
         region = labelled_image == label
@@ -209,7 +210,23 @@ class IntensityField:
         y_extent = np.sum(region, axis=1).max()
 
         # return the average of the two extents in micrometres
-        return (x_extent + y_extent) / 2 * self.pixel_size * 1e6
+        return (x_extent + y_extent) / 2
+    
+    @staticmethod
+    def _measure_circle_equivalent_diameter(labelled_image, label) -> float:
+        """Measure the diameter of a labelled region in the image.
+        
+        Returns:
+            float: The diameter in units of pixels."""
+
+        # isolate only the region of interest
+        region = labelled_image == label
+
+        n_pixels = np.sum(region)
+        ce_diameter = 2 * np.sqrt(n_pixels / np.pi)
+
+        # circle equivalent diameter in number of pixels
+        return ce_diameter
     
     def _measure_position(self, labelled_image, label) -> tuple:
         region = labelled_image == label
@@ -219,7 +236,7 @@ class IntensityField:
 
         return tuple(position)
 
-    def measure_xy_diameters(self, threshold=0.5, bounded=False) -> dict:
+    def measure_diameters(self, threshold=0.5, bounded=False, diameter_method="xy") -> dict:
         """Measure the diameters of all connected regions in the image.
         
         Returns:
@@ -227,6 +244,8 @@ class IntensityField:
         """
         # threshold the image at 50% of the initial intensity
         thresholded_image = self.field < threshold
+
+        diameter_method = getattr(self, f"_measure_{diameter_method}_diameter")
 
         if bounded:
             labeled_image = np.zeros_like(thresholded_image)
@@ -242,7 +261,7 @@ class IntensityField:
 
         diameters = {}
         for label in range(1, n_labels + 1):
-            diameter = self._measure_xy_diameter(labeled_image, label)
+            diameter = diameter_method(labeled_image, label) * self.pixel_size * 1e6
             position = self._measure_position(labeled_image, label)
             
             diameters[position] = diameter
@@ -266,7 +285,7 @@ class IntensityField:
         for frame in frames_indices:
             frame_field = self.field[:, frame[0]:frame[-1]+1]
             frame_intensityfield = IntensityField(frame_field, self.pixel_size)
-            yield frame_intensityfield
+            yield frame[0], frame_intensityfield
 
     def n_pixels_depletion_range(self, min_dep:float, max_dep:float) -> int:
         """Calculate the number of pixels in the depletion range

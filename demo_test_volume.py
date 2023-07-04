@@ -58,11 +58,13 @@ plt.colorbar()
 # %%
 from cloud_model import CrystalModel
 redo_detections = False
+shape = "rects"
+distance = 999
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]))
-    cloud.particles.loc[:, "model"] = CrystalModel.RECT_AR5
-    run = cloud.take_image(detector, distance=5, separate_particles=True)
-    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_rects_run.pkl")
+    cloud.particles.loc[:, "model"] = CrystalModel.RECT_AR5 if shape == "rects" else CrystalModel.SPHERE
+    run = cloud.take_image(detector, distance=distance, separate_particles=True)
+    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{shape}_run.pkl")
 else:
     run = DetectorRun.load("../data/2023-06-29_999_spheres_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
@@ -86,6 +88,9 @@ diameter_series["50%"] = run.measure_diameters(image_filters=[ImageFilter.PRESEN
 diameter_series["50% no edge"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY])
 diameter_series["50% no edge bounded"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True)
 diameter_series["50% no edge bounded framed"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed")
+diameter_series["50% no edge bounded framed minsep"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed_minsep", min_sep=200e-6)
+diameter_series["50% no edge, circle equiv."] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], type="circle_equivalent")
+
 
 bins = np.linspace(0, 5e-4, 50)
 

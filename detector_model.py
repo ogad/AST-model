@@ -43,20 +43,65 @@ class ImagedRegion:
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
 
-    def measure_diameters(self, type="xy", **kwargs):
+    def measure_diameters(self, type="xy", min_sep=None, **kwargs):
+
         if type == "xy":
             # XY diameter at 0.5I_0 intensity threshold
             # Default behviour
-            detected_particles = self.amplitude.intensity.measure_xy_diameters(**kwargs)
+            detected_particles = self.amplitude.intensity.measure_diameters(diameter_method="xy", **kwargs)
+            self.xy_diameters = detected_particles
+        elif type == "circle_equivalent":
+            # XY diameter at 0.5I_0 intensity threshold
+            # Default behviour
+            detected_particles = self.amplitude.intensity.measure_diameters(diameter_method="circle_equivalent", **kwargs)
             self.xy_diameters = detected_particles
         elif type == "xy_framed":
             # split image into "frames" separated by empty rows.
             # For each frame, measure the diameter
             frames = self.amplitude.intensity.frames()
             detected_particles = {}
-            for frame in frames:
-                detected_particles = detected_particles | frame.measure_xy_diameters(**kwargs)
-                self.xy_diameters_framed = detected_particles
+            detected_particles_dicts = []
+            for _, frame in frames:
+                detected_particles_dicts.append(frame.measure_diameters(diameter_method="xy", **kwargs))
+                detected_particles = detected_particles | detected_particles_dicts[-1]
+
+            self.xy_diameters_framed = detected_particles
+        elif type == "xy_framed_minsep":
+            # split image into "frames" separated by empty rows.
+            # For each frame, measure the diameter
+            frames = self.amplitude.intensity.frames()
+            y_extent_detected_particles = []
+            for istart, frame in frames:
+                y_extent = (self.y_values[istart], self.y_values[istart+frame.field.shape[1]-1])
+                detected_particles_frame = frame.measure_diameters(diameter_method="xy",**kwargs)
+
+                y_extent_detected_particles.append((y_extent, detected_particles_frame))
+
+            # sort on y start value
+            y_extent_detected_particles.sort(key=lambda x: x[0][0])
+
+            # remove (both) frames if separated by too few pixels
+            to_remove = []
+            min_sep = min_sep if min_sep is not None else 100e-6
+            for i, (y_extent, detected_particles_frame) in enumerate(y_extent_detected_particles):
+                if i == 0:
+                    continue
+                if y_extent[0] - y_extent_detected_particles[i-1][0][1] < min_sep:
+                    to_remove.append(i)
+                    to_remove.append(i-1)
+            # remove duplicates
+            to_remove = list(set(to_remove))
+
+            # remove frames (in reverse order so indices don't change)
+            for i in sorted(to_remove, reverse=True):
+                del y_extent_detected_particles[i]
+            
+            # combine detected particles
+            detected_particles = {}
+            for y_extent, detected_particles_frame in y_extent_detected_particles:
+                detected_particles = detected_particles | detected_particles_frame
+            
+            self.xy_diameters_framed = detected_particles
 
         else:
             raise NotImplementedError("Only xy diameters are currently supported")
