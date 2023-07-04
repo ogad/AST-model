@@ -189,8 +189,8 @@ class IntensityField:
         ax_image = ax.imshow(to_plot.T, extent=[0,xlen, 0, ylen], **kwargs)
         if colorbar:
             plt.colorbar(ax_image, ax=ax)
-        ax.set_xlabel("x/µm (Detector)")
-        ax.set_ylabel("y/µm (Travelling in -y direction)")
+        ax.set_xlabel("(x/µm (Along detector)")
+        ax.set_ylabel(r"($y-y_{\mathrm{det}}$)/µm")
         ax.set_aspect("equal")
 
         return ax_image
