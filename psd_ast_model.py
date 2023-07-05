@@ -144,6 +144,14 @@ class GammaPSD(PSD):
     def variance(self):
         """Calculate the variance of the particle diameter."""
         return self.shape / self.slope**2
+    
+    @classmethod
+    def from_mean_variance(cls, number_concentration, mean, variance):
+        """Create a GammaPSD object from the mean and variance of the particle diameter."""
+        slope = mean / variance
+        shape = mean * slope
+        return cls.from_concentration(number_concentration, slope, shape)
+
 
 class OSheaGammaPSD(GammaPSD):
     def dn_dd(self, d: ArrayLike) -> np.ndarray:

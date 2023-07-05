@@ -19,6 +19,10 @@ from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter, Dia
 # Gamma distributions
 gamma_dist_base = GammaPSD.from_concentration(8000, 8.31e4, 7.86)
 gamma_dist = GammaPSD.from_concentration(8, 8.31e4, 7.86)
+
+gamma_test  = GammaPSD.from_mean_variance(8000, 20e-6, 0.000002**2)
+gamma_test.plot(plt.axes())
+plt.show()
 # %%
 ax = plt.axes()
 gamma_dist_base.plot(ax=ax)
