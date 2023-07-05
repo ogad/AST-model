@@ -11,7 +11,7 @@ import datetime
 from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
 from cloud_model import CloudVolume, Detector, DetectorRun
-from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter
+from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter, DiameterSpec
 
 logging.basicConfig(level=logging.INFO)
 
@@ -84,15 +84,14 @@ if run.distance <= 100:
 # %%
 
 diameter_series = {}
-diameter_series["50%"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY])
-# diameter_series["50% framed"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY], type="xy_framed")#FIXME: why is this different to the unframed case?
-# diameter_series["50% no edge"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY])
-diameter_series["50% no edge bounded"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True)
-diameter_series["50% no edge bounded unfilled"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], unfilled_bounded=True)
-# diameter_series["50% no edge bounded framed"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed")
-# diameter_series["50% no edge bounded framed minsep"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], bounded=True, type="xy_framed_minsep", min_sep=200e-6)
-# diameter_series["50% no edge, circle equiv."] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], type="circle_equivalent")
-diameter_series["50% no edge, circle equiv. bounded unfilled"] = run.measure_diameters(image_filters=[ImageFilter.PRESENT_HALF_INTENSITY, ImageFilter.NO_EDGE_HALF_INTENSITY], type="circle_equivalent", unfilled_bounded=True)
+# diameter_series["50%"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", edge_filter=False, framed=False, bound=False))
+# diameter_series["50% framed"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", edge_filter=False, bound=False))#FIXME: why is this different to the unframed case?
+# diameter_series["50% no edge"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy",  bound=False, framed=False))
+# diameter_series["50% no edge bounded"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", filled=True, framed=False))
+# diameter_series["50% no edge bounded unfilled"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", framed=False))
+# diameter_series["50% no edge bounded framed"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", filled=True))
+diameter_series["50% no edge bounded framed minsep"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", min_sep=0.001, filled=True))
+diameter_series["50% no edge, circle equiv. bounded unfilled framed"] = run.measure_diameters(spec=DiameterSpec())
 
 
 bins = np.linspace(0, 5e-4, 50)
@@ -111,6 +110,8 @@ plt.ylim(0, 0.5e9)
 # plt.yticks(color="C0")
 
 # plt.show()
+# %%
+
 # %%
 # Plan of attack:
 # Bucket our diameters into bins (which bins?)

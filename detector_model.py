@@ -35,6 +35,29 @@ class ImageFilter(Enum):
             raise NotImplementedError(f"Image filter {self} not implemented")
 
 @dataclass
+class DiameterSpec: # TODO: implement custom threshold value.
+    diameter_method: str = "circle_equivalent"
+    edge_filter: bool = True
+    framed: bool = True
+    min_sep: float = None # in m #TODO: check units; enable time units
+    bound: bool = True
+    filled: bool = False
+
+    def __post_init__(self):
+        if self.filled and not self.bound:
+            raise ValueError("Can only be filled if bound.")
+        if not self.framed and self.min_sep is not None:
+            raise ValueError("min_sep can only be specified if framed")
+        
+    @property
+    def filters(self):
+        filters = [ImageFilter.PRESENT_HALF_INTENSITY]
+        if self.edge_filter:
+            filters.append(ImageFilter.NO_EDGE_HALF_INTENSITY)
+        return filters
+
+
+@dataclass
 class ImagedRegion:
     """A region illuminated by the laser beam at a single instant."""
     # orthogonal_vector: np.ndarray = (0,0,1) # in m
@@ -43,69 +66,56 @@ class ImagedRegion:
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
 
-    def measure_diameters(self, type="xy", min_sep=None, **kwargs):
+    def get_frames_to_measure(self, spec, **kwargs):
 
-        if type == "xy":
-            # XY diameter at 0.5I_0 intensity threshold
-            # Default behviour
-            detected_particles = self.amplitude.intensity.measure_diameters(diameter_method="xy", **kwargs)
-            self.xy_diameters = detected_particles
-        elif type == "circle_equivalent":
-            # XY diameter at 0.5I_0 intensity threshold
-            # Default behviour
-            detected_particles = self.amplitude.intensity.measure_diameters(diameter_method="circle_equivalent", **kwargs)
-            self.ce_diameters = detected_particles
-        elif type == "xy_framed":
+        filters = [ImageFilter.PRESENT_HALF_INTENSITY]
+        if spec.edge_filter:
+            filters.append(ImageFilter.NO_EDGE_HALF_INTENSITY)
+        
+        if not np.all([image_filter(self) for image_filter in filters]):
+            raise ValueError("Image does not pass filters; it shouldn't have got this far...")
+
+        if spec.framed:
             # split image into "frames" separated by empty rows.
-            # For each frame, measure the diameter
-            frames = self.amplitude.intensity.frames()
-            detected_particles = {}
-            detected_particles_dicts = []
-            for _, frame in frames:
-                detected_particles_dicts.append(frame.measure_diameters(diameter_method="xy", **kwargs))
-                detected_particles = detected_particles | detected_particles_dicts[-1]
+            frames = list(self.amplitude.intensity.frames())
+        else:
+            frames = [(0, self.amplitude.intensity)]
 
-            self.xy_diameters_framed = detected_particles
-        elif type == "xy_framed_minsep":
-            # split image into "frames" separated by empty rows.
-            # For each frame, measure the diameter
-            frames = self.amplitude.intensity.frames()
-            y_extent_detected_particles = []
-            for istart, frame in frames:
-                y_extent = (self.y_values[istart], self.y_values[istart+frame.field.shape[1]-1])
-                detected_particles_frame = frame.measure_diameters(diameter_method="xy",**kwargs)
-
-                y_extent_detected_particles.append((y_extent, detected_particles_frame))
-
-            # sort on y start value
-            y_extent_detected_particles.sort(key=lambda x: x[0][0])
-
-            # remove (both) frames if separated by too few pixels
+        # Remove frames that aren't separated by at least min_sep (distance in m) #TODO: check units
+        if spec.min_sep is not None:
+            y_extents = [(self.y_values[istart], self.y_values[istart+frame.field.shape[1]-1]) for istart, frame in frames]
+            # sort frames and y_extents on y_extent[0]
+            zip_locs_frames = list(zip(y_extents, frames))
+            zip_locs_frames.sort(key=lambda x: x[0][0])
             to_remove = []
-            min_sep = min_sep if min_sep is not None else 100e-6
-            for i, (y_extent, detected_particles_frame) in enumerate(y_extent_detected_particles):
+            for i, (y_extent, frame) in enumerate(zip_locs_frames):
                 if i == 0:
                     continue
-                if y_extent[0] - y_extent_detected_particles[i-1][0][1] < min_sep:
+                if y_extent[0] - zip_locs_frames[i-1][0][1] < spec.min_sep:
+                    # mark for removal
                     to_remove.append(i)
                     to_remove.append(i-1)
             # remove duplicates
             to_remove = list(set(to_remove))
-
-            # remove frames (in reverse order so indices don't change)
             for i in sorted(to_remove, reverse=True):
-                del y_extent_detected_particles[i]
-            
-            # combine detected particles
-            detected_particles = {}
-            for y_extent, detected_particles_frame in y_extent_detected_particles:
-                detected_particles = detected_particles | detected_particles_frame
-            
-            self.xy_diameters_framed = detected_particles
+                del zip_locs_frames[i]
+            # unzip
+            frames = [frame for _, frame in zip_locs_frames]
 
-        else:
-            raise NotImplementedError("Only xy diameters are currently supported")
-        
+        # replace index with y extremes
+        frames = [((self.y_values[istart], self.y_values[istart+frame.field.shape[1]]), frame) for istart, frame in frames]
+        return frames
+    
+    def measure_diameters(self, spec, **kwargs):
+        frames = self.get_frames_to_measure(spec, **kwargs)
+
+        kwargs["bounded"] = spec.bound
+        kwargs["filled"] = spec.filled
+
+        detected_particles = {}
+        for _, frame in frames:
+            detected_particles = detected_particles | frame.measure_diameters(diameter_method=spec.diameter_method, **kwargs)
+
         return detected_particles
     
     def plot(self, detector=None, cloud=None, plot_outlines=False,**kwargs):
@@ -155,7 +165,7 @@ class ImagedRegion:
         """The y values of the detector pixels, aligned so the y value at index i is the y value of the pixel at index i."""
         n_pixels = self.amplitude.field.shape[1]
         range = np.arange(self.end, self.start - self.amplitude.pixel_size/2, -1*self.amplitude.pixel_size)
-        return range[:n_pixels]
+        return range[:n_pixels+1]
 
 
 @dataclass
@@ -177,14 +187,39 @@ class DetectorRun:
 
         return run
 
-    def measure_diameters(self, type="xy", image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
-        diameters = []
+    def measure_diameters(self, spec=DiameterSpec(), **kwargs):
+        image_filters = spec.filters
+        frames = []
         for image in self.images:
             if not np.all([image_filter(image) for image_filter in image_filters]):
                 continue
-            diameter_dict = image.measure_diameters(type=type, **kwargs)
-            diameters = diameters + list(diameter_dict.values())
-        
+            frames = frames + list(image.get_frames_to_measure(spec, **kwargs))
+
+        frames.sort(key=lambda x: x[0][0])
+        to_remove = []
+
+
+        if spec.min_sep is not None:
+            for i, ((ymin, ymax), frame) in enumerate(frames):
+                    if i == 0:
+                        continue
+                    if ymin - frames[i-1][0][1] < spec.min_sep:
+                        # mark for removal
+                        to_remove.append(i)
+                        to_remove.append(i-1)
+            # remove duplicates
+            to_remove = list(set(to_remove))
+            for i in sorted(to_remove, reverse=True):
+                del frames[i]
+
+        kwargs["bounded"] = spec.bound
+        kwargs["filled"] = spec.filled
+
+        detected_particles = {}
+        for (_,_), frame in frames:
+            detected_particles = detected_particles | frame.measure_diameters(diameter_method=spec.diameter_method, **kwargs)
+
+        diameters = list(detected_particles.values())
         return diameters
 
     def plot(self, image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
