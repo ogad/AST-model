@@ -97,6 +97,21 @@ class GammaPSD(PSD):
 
         super().__init__(bins)
 
+    @classmethod
+    def from_concentration(cls, number_concentration, slope, shape):
+        """Calculate the number density per field.
+
+        Args:
+            number_concentration (float): The number concentration in :math:`\mathrm{m^{-3}}`.
+            slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.
+            shape (float): :math:`\mu`.
+
+        Returns:
+            float: The number density per field.
+        """
+        intercept = number_concentration * (slope ** (shape + 1)) / np.math.gamma(shape + 1)
+        return cls(intercept, slope, shape)
+
     @staticmethod
     def _dn_gamma_dd(d:ArrayLike, intercept:float, slope:float, shape:float):
         """The gamma distribution probability distribution function.
@@ -119,6 +134,16 @@ class GammaPSD(PSD):
         """
         # "shape" expects diameter values in cm in the O'Shea formulation - hence the 1e-2 fudge factor
         return self._dn_gamma_dd(d, self.intercept, self.slope, self.shape)
+    
+    @property
+    def mean(self):
+        """Calculate the mean particle diameter."""
+        return self.shape / self.slope
+
+    @property
+    def variance(self):
+        """Calculate the variance of the particle diameter."""
+        return self.shape / self.slope**2
 
 class OSheaGammaPSD(GammaPSD):
     def dn_dd(self, d: ArrayLike) -> np.ndarray:
