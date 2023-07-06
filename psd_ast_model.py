@@ -33,7 +33,7 @@ class PSD(ABC):
     """Base class for particle size distribution objects."""
     def __init__(self, bins: list[float] = None):
         if bins is None and getattr(self,"xlim", None) is not None:
-            bins = np.logspace(np.log10(max(self.xlim[0], 1e-6)), np.log10(self.xlim[1]), 100)
+            bins = np.logspace(np.log10(max(self.xlim[0], 10e-6)), np.log10(self.xlim[1]), 100)
         elif bins is None:
             bins = np.logspace(-7, -3, 100)
         self.bins = bins
