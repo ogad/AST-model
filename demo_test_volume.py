@@ -32,12 +32,13 @@ fig, ax = plt.subplots()
 gamma_dist.plot(ax)
 # %%
 # psd.plot(ax)
+cloud_len = 1
 try:
-    with open("cloud_01_1000_01.pkl", "rb") as f:
+    with open(f"cloud_01_{cloud_len}_01.pkl", "rb") as f:
         cloud = pickle.load(f)
 except (FileNotFoundError, ModuleNotFoundError):
-    cloud = CloudVolume(gamma_dist, (0.1, 1000, 0.1))
-    with open("cloud_01_1000_01.pkl", "wb") as f:
+    cloud = CloudVolume(gamma_dist, (0.1, cloud_len, 0.1))
+    with open(f"cloud_01_{cloud_len}_01.pkl", "wb") as f:
         pickle.dump(cloud, f)
 
 print(cloud.n_particles)
@@ -56,7 +57,7 @@ plt.colorbar()
 
 
 # %%
-from cloud_model import CrystalModel
+from psd_ast_model import CrystalModel
 redo_detections = False
 shape = "rects"
 distance = 999

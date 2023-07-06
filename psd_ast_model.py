@@ -4,6 +4,7 @@
 
 from random import choices
 from abc import ABC, abstractmethod
+from enum import Enum
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -12,6 +13,20 @@ from scipy.optimize import curve_fit
 
 from ast_model import ASTModel
 
+
+class CrystalModel(Enum):
+    """Enum for crystal types."""
+    SPHERE = 1
+    RECT_AR5 = 2
+
+    def get_generator(self):
+        if self == CrystalModel.SPHERE:
+            return ASTModel.from_diameter
+        elif self == CrystalModel.RECT_AR5:
+            return lambda diameter, wavenumber: ASTModel.from_diameter_rectangular(diameter, 5)
+        else:
+            raise ValueError("Crystal model not recognised.")
+    
 
 def rejection_sampler(p, xbounds, pmax):
     """Returns a value sampled from a bounded probability distribution.
@@ -31,12 +46,14 @@ def rejection_sampler(p, xbounds, pmax):
 
 class PSD(ABC):
     """Base class for particle size distribution objects."""
-    def __init__(self, bins: list[float] = None):
+    def __init__(self, bins: list[float] = None, model: CrystalModel = CrystalModel.SPHERE):
         if bins is None and getattr(self,"xlim", None) is not None:
             bins = np.logspace(np.log10(max(self.xlim[0], 10e-6)), np.log10(self.xlim[1]), 100)
         elif bins is None:
             bins = np.logspace(-7, -3, 100)
         self.bins = bins
+
+        self.model = model
 
     @abstractmethod
     def dn_dd(self, d: ArrayLike) -> np.ndarray:
@@ -58,7 +75,7 @@ class PSD(ABC):
         diameter = choices(
                 self.bins[1:], weights=self.binned_distribution
             )[0]
-        return diameter
+        return diameter, self.model
     
     @property
     def total_number_density(self) -> float:
@@ -75,6 +92,31 @@ class PSD(ABC):
         ax.set_xlabel('Diameter (m)')
         ax.set_ylabel('PSD (m$^{-3}$)')
 
+class CompositePSD(PSD):
+    """A composite particle size distribution object.
+
+    Contains the distribution parameters, and binning information.
+
+    Args:
+        psds (list[PSD]): The list of PSDs to combine.
+        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.
+    """
+
+    def __init__(self, psds: list[PSD], bins: list[float] = None):
+        self.psds = psds
+        self.psd_weights = [psd.total_number_density for psd in psds]
+        self.xlim = (min([psd.xlim[0] for psd in psds]), max([psd.xlim[1] for psd in psds]))
+        super().__init__(bins=bins)
+
+    def dn_dd(self, d: ArrayLike) -> np.ndarray:
+        """Calculate the particle size distribution value given diameters.
+        """
+        return sum([psd.dn_dd(d) for psd in self.psds])
+    
+    def generate_diameter(self) -> float:
+        """Generate a particle diameter from the PSD."""
+        from_psd = choices(self.psds, weights=self.psd_weights)[0]
+        return from_psd.generate_diameter(), from_psd.model
 
 class GammaPSD(PSD):
     r"""Gamma particle size distribution object.
@@ -92,17 +134,17 @@ class GammaPSD(PSD):
         bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.
     """
 
-    def __init__(self, intercept: float, slope: float, shape: float, bins: list[float] = None):
+    def __init__(self, intercept: float, slope: float, shape: float, bins: list[float] = None, model: CrystalModel = CrystalModel.SPHERE):
         self.intercept = intercept
         self.slope = slope
         self.shape = shape
 
         self.xlim = self.mean + ( 10 * np.sqrt(self.variance) * np.array([-1,1]) )
 
-        super().__init__(bins)
+        super().__init__(bins, model)
 
     @classmethod
-    def from_concentration(cls, number_concentration, slope, shape):
+    def from_concentration(cls, number_concentration, slope, shape, **kwargs):
         """Calculate the number density per field.
 
         Args:
@@ -114,7 +156,7 @@ class GammaPSD(PSD):
             float: The number density per field.
         """
         intercept = number_concentration * (slope ** (shape + 1)) / np.math.gamma(shape + 1)
-        return cls(intercept, slope, shape)
+        return cls(intercept, slope, shape, **kwargs)
 
     @staticmethod
     def _dn_gamma_dd(d:ArrayLike, intercept:float, slope:float, shape:float):
@@ -150,11 +192,11 @@ class GammaPSD(PSD):
         return (self.shape-1) / self.slope**2
     
     @classmethod
-    def from_mean_variance(cls, number_concentration, mean, variance):
+    def from_mean_variance(cls, number_concentration, mean, variance, **kwargs):
         """Create a GammaPSD object from the mean and variance of the particle diameter."""
         slope = mean / variance
         shape = (mean * slope) + 1
-        return cls.from_concentration(number_concentration, slope, shape)
+        return cls.from_concentration(number_concentration, slope, shape, **kwargs)
 
 
 class OSheaGammaPSD(GammaPSD):
@@ -167,14 +209,14 @@ class OSheaGammaPSD(GammaPSD):
 
 class TwoMomentGammaPSD(PSD):
 
-    def __init__(self, m2, m3, bins: list[float] = None):
+    def __init__(self, m2, m3, bins: list[float] = None, model: CrystalModel = CrystalModel.SPHERE):
         self.m2 = m2
         self.m3 = m3
 
-        super().__init__(bins)
+        super().__init__(bins, model)
 
     @classmethod
-    def from_m2_tc(cls, m2, tc, bins: list[float] = None):
+    def from_m2_tc(cls, m2, tc, **kwargs):
         """Create a TwoMomentGammaPSD object from the second moment and in-cloud temperature.
         """
         
@@ -183,7 +225,7 @@ class TwoMomentGammaPSD(PSD):
         c_n = lambda n: 0.807 + 0.00581 * n - 0.0457 * n**2
 
         m3 = a_n(3) * np.exp(b_n(3) * tc) * m2**c_n(3)
-        return cls(m2, m3, bins)
+        return cls(m2, m3, **kwargs)
 
 
     def dn_dd(self, d: ArrayLike) -> np.ndarray:
