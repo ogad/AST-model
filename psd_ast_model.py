@@ -32,7 +32,9 @@ def rejection_sampler(p, xbounds, pmax):
 class PSD(ABC):
     """Base class for particle size distribution objects."""
     def __init__(self, bins: list[float] = None):
-        if bins is None:
+        if bins is None and getattr(self,"xlim", None) is not None:
+            bins = np.logspace(np.log10(max(self.xlim[0], 1e-6)), np.log10(self.xlim[1]), 100)
+        elif bins is None:
             bins = np.logspace(-7, -3, 100)
         self.bins = bins
 
@@ -95,6 +97,8 @@ class GammaPSD(PSD):
         self.slope = slope
         self.shape = shape
 
+        self.xlim = self.mean + ( 10 * np.sqrt(self.variance) * np.array([-1,1]) )
+
         super().__init__(bins)
 
     @classmethod
@@ -138,18 +142,18 @@ class GammaPSD(PSD):
     @property
     def mean(self):
         """Calculate the mean particle diameter."""
-        return self.shape / self.slope
+        return (self.shape-1) / self.slope
 
     @property
     def variance(self):
         """Calculate the variance of the particle diameter."""
-        return self.shape / self.slope**2
+        return (self.shape-1) / self.slope**2
     
     @classmethod
     def from_mean_variance(cls, number_concentration, mean, variance):
         """Create a GammaPSD object from the mean and variance of the particle diameter."""
         slope = mean / variance
-        shape = mean * slope
+        shape = (mean * slope) + 1
         return cls.from_concentration(number_concentration, slope, shape)
 
 
