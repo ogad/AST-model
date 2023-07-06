@@ -163,7 +163,7 @@ class IntensityField:
             to_plot = self.field[
                 int((self.field.shape[0] - axis_length_px) //
                     2):int((self.field.shape[0] + axis_length_px) // 2),
-                int((self.shape[1] - axis_length_px) //
+                int((self.field.shape[1] - axis_length_px) //
                     2):int((self.field.shape[1] + axis_length_px) // 2),
             ]
         else:
@@ -379,6 +379,28 @@ class ASTModel:
         model.diameters["true"] = diameter * 1e-6
 
         return model
+
+    @staticmethod
+    def rectangle(px_height, px_width, angle=0):
+        r"""Create a rectangular opaque object.
+
+        Args:
+            px_height (int): The height of the opaque object in pixels.
+            px_width (int): The width of the opaque object in pixels.
+            angle (float, optional): The angle of the opaque object in degrees. Defaults to 0.
+
+        Returns:
+            np.ndarray: The shape of the opaque object.
+        """
+        # create the opaque shape
+        # create the opaque shape
+        px_height = int(round(px_height))
+        px_width = int(round(px_width))
+        shape = np.ones((px_width, px_height))
+        
+        # rotate the opaque shape
+        shape = ndimage.rotate(shape, angle)
+        return shape
     
     @classmethod
     def from_rectangle(cls, width: float, height: float, angle: float=0, wavenumber: float=None, pixel_size: float=None):
@@ -395,15 +417,13 @@ class ASTModel:
         if wavenumber is None:
             wavenumber = cls.wavenumber
         if pixel_size is None:
-            pixel_size = cls.pixel_size
+            pixel_size = cls.pixel_size #TODO: this should inherit from a detector!
         
         # create the opaque shape
-        height_px = int(height * 1e-6 // pixel_size)
-        width_px = int(width * 1e-6 // pixel_size)
-        opaque_shape = np.ones((width_px, height_px))
-        
-        # rotate the opaque shape
-        opaque_shape = ndimage.rotate(opaque_shape, angle)
+        height_px = height * 1e-6 / pixel_size
+        width_px = width * 1e-6 / pixel_size
+
+        opaque_shape = cls.rectangle(height_px, width_px, angle)
         
         # create the model
         model = cls(opaque_shape, wavenumber, pixel_size)
@@ -418,6 +438,49 @@ class ASTModel:
         height = width * aspect_ratio
 
         return cls.from_rectangle(width, height, **kwargs)
+    
+    @classmethod
+    def from_diameter_rosette(cls, diameter:float, n_rectangles:int, width:float=None, rect_aspect_ratio: float=None, wavenumber:float=None, pixel_size:float=None, **kwargs):
+        """Create a model for a rosette opaque object made up of n_rectangles opaque objects."""
+        # set defaults
+        if wavenumber is None:
+            wavenumber = cls.wavenumber
+        if pixel_size is None:
+            pixel_size = cls.pixel_size
+
+        if width is not None and rect_aspect_ratio is not None:
+            raise ValueError("Only one of width and rect_aspect_ratio can be specified.")
+        if width is None and rect_aspect_ratio is None:
+            width = 100
+
+        px_length = diameter*1e-6 / pixel_size
+        if width is None:
+            width = (px_length / rect_aspect_ratio)
+        else:
+            ps_width = width*1e-6 / pixel_size
+        
+        # create the opaque shape
+        angles = np.linspace(0, 180, n_rectangles, endpoint=False)
+        opaque_shapes = [cls.rectangle(px_length, ps_width, angle) for angle in angles]
+
+        # work out the size of the opaque shape
+        opaque_shape_size = np.max([shape.shape for shape in opaque_shapes], axis=0)
+        # create the opaque shape
+        opaque_shape = np.zeros(opaque_shape_size)
+        for shape in opaque_shapes:
+            x_offset = int((opaque_shape_size[0] - shape.shape[0]) / 2)
+            y_offset = int((opaque_shape_size[1] - shape.shape[1]) / 2)
+            opaque_shape[x_offset:x_offset+shape.shape[0], y_offset:y_offset+shape.shape[1]] += shape
+
+        # flatten opaque shape
+        opaque_shape = np.where(opaque_shape > 0, 1, 0)
+
+        # create the model
+        model = cls(opaque_shape, wavenumber, pixel_size)
+        model.diameters["true"] = diameter * 1e-6
+
+        return model
+
 
     def process(self, z_val: float, low_pass=1.0) -> AmplitudeField:
         """Process the model, calculating the amplitude given the opaque shape is at z.
