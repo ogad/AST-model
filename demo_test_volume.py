@@ -89,7 +89,7 @@ if run.distance <= 100:
 
 diameter_series = {}
 # diameter_series["50%"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", edge_filter=False, framed=False, bound=False))
-# diameter_series["50% framed"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", edge_filter=False, bound=False))#FIXME: why is this different to the unframed case?
+# diameter_series["50% framed"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", edge_filter=False, bound=False))
 # diameter_series["50% no edge"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy",  bound=False, framed=False))
 # diameter_series["50% no edge bounded"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", filled=True, framed=False))
 # diameter_series["50% no edge bounded unfilled"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", framed=False))
@@ -105,7 +105,7 @@ for label, diameters in diameter_series.items():
     plt.stairs(np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, label=label)
 # plt.legend()
 # plt.xlim(0,5e-4)
-# # plt.yscale("log")sssß
+# # plt.yscale("log")
 
 # plt.xlabel("Diameter (m)")
 # plt.ylabel("dN/dD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)")#, color="C0")
@@ -120,10 +120,7 @@ fit = retrieval.fit_gamma(min_diameter = 50e-6) # What minimum diameter is appro
 
 retrieval.plot(label="Retrieved")
 gamma_dist.plot(plt.gca(), label="True")
-# fit.plot(plt.gca(), label="Fit")
-
-expon = lambda d, intercept, slope: intercept * np.exp(-1 * slope * d)
-plt.plot(retrieval.midpoints,GammaPSD._dn_gamma_dd(retrieval.midpoints, *fit[0]))
+fit.plot(plt.gca(), label="Fit")
 
 # plt.yscale("log")
 plt.ylim(0, 0.5e9)

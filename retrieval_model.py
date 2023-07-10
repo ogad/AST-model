@@ -2,6 +2,8 @@
 # Author: Oliver Driver
 # Date: 10/07/2023
 
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -43,6 +45,17 @@ class Retrieval:
 
         # log_gamma = lambda d, intercept, slope, shape: np.log10(GammaPSD._dn_gamma_dd(d, intercept, slope, shape))
 
-        popt, pcov = curve_fit(GammaPSD._dn_gamma_dd, diameter_vals, dn_dd_vals, p0=[1e8, 1e5, 4], maxfev=10000, bounds=([0, 0, 1], [np.inf, np.inf, np.inf])) 
-        # return GammaPSD(*popt, bins=self.bins)
-        return popt, pcov
+        fit_gamma = lambda d, intercept, slope, shape: GammaPSD._dn_gamma_dd(d, intercept, slope, shape)
+
+        results = curve_fit(GammaPSD._dn_gamma_dd, diameter_vals, dn_dd_vals / 1e6, 
+                                p0=[1, 1, 1], 
+                                maxfev=10000,
+                                bounds=([0, 0, 1], [np.inf, np.inf, np.inf]),
+                                # method='dogbox',
+                                full_output=True
+                               ) 
+        
+        intercept_l_mcb, slope, shape = results[0]
+        intercept = intercept_l_mcb * 1e6
+
+        return GammaPSD(intercept, slope, shape)
