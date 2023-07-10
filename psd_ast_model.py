@@ -94,7 +94,7 @@ class PSD(ABC):
         # ax.set_xscale('log')
         # ax.set_yscale('log')
         ax.set_xlabel('Diameter (m)')
-        ax.set_ylabel('PSD (m$^{-3}$)')
+        ax.set_ylabel('PSD ($\mathrm{m}^-3\,\mathrm{m}^-1$)')
 
 class CompositePSD(PSD):
     """A composite particle size distribution object.

@@ -12,6 +12,7 @@ from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
 from cloud_model import CloudVolume, Detector, DetectorRun
 from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter, DiameterSpec
+from retrieval_model import Retrieval
 
 logging.basicConfig(level=logging.INFO)
 
@@ -92,26 +93,39 @@ diameter_series = {}
 # diameter_series["50% no edge bounded unfilled"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", framed=False))
 # diameter_series["50% no edge bounded framed"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", filled=True))
 diameter_series["50% no edge bounded framed minsep"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", min_sep=0.001, filled=True))
-diameter_series["50% no edge, circle equiv. bounded unfilled framed"] = run.measure_diameters(spec=DiameterSpec())
-
+# diameter_series["50% no edge, circle equiv. bounded unfilled framed"] = run.measure_diameters(spec=DiameterSpec(min_sep=0.001))
 
 bins = np.linspace(0, 5e-4, 50)
 
-gamma_dist.plot(plt.gca(), label="True")
+# gamma_dist.plot(plt.gca(), label="True")
 
 for label, diameters in diameter_series.items():
     plt.stairs(np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, label=label)
-plt.legend()
-plt.xlim(0,5e-4)
-# plt.yscale("log")sssß
+# plt.legend()
+# plt.xlim(0,5e-4)
+# # plt.yscale("log")sssß
 
-plt.xlabel("Diameter (m)")
-plt.ylabel("dN/dD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)")#, color="C0")
-plt.ylim(0, 0.5e9)
+# plt.xlabel("Diameter (m)")
+# plt.ylabel("dN/dD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)")#, color="C0")
+# plt.ylim(0, 0.5e9)
 # plt.yticks(color="C0")
 
 # plt.show()
 # %%
+# retrieval = Retrieval(run, DiameterSpec(min_sep=0.001))
+retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.001, filled=True))
+fit = retrieval.fit_gamma(min_diameter = 30e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+
+retrieval.plot(label="Retrieved")
+gamma_dist.plot(plt.gca(), label="True")
+# fit.plot(plt.gca(), label="Fit")
+
+expon = lambda d, intercept, slope: intercept * np.exp(-1 * slope * d)
+plt.plot(retrieval.midpoints,GammaPSD._dn_gamma_dd(retrieval.midpoints, *fit[0]))
+
+# plt.yscale("log")
+plt.legend()
+plt.show()
 
 # %%
 # Plan of attack:
