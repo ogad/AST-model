@@ -14,6 +14,8 @@ from cloud_model import CloudVolume, Detector, DetectorRun
 from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter, DiameterSpec
 from retrieval_model import Retrieval
 
+from profiler import profile
+
 logging.basicConfig(level=logging.INFO)
 
 # %% Retry with a more realistic gamma distribution
@@ -68,8 +70,8 @@ if redo_detections:
     run = cloud.take_image(detector, distance=distance, separate_particles=True)
     run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{shape}_run.pkl")
 else:
-    # run = DetectorRun.load("../data/2023-06-29_999_spheres_run.pkl")
-    run = DetectorRun.load("../data/2023-07-06_999_rects_run.pkl")
+    run = DetectorRun.load("../data/2023-07-10_999_spheres_run.pkl")
+    # run = DetectorRun.load("../data/2023-07-06_999_rects_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()
@@ -112,9 +114,9 @@ for label, diameters in diameter_series.items():
 
 # plt.show()
 # %%
-# retrieval = Retrieval(run, DiameterSpec(min_sep=0.001))
-retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.001, filled=True))
-fit = retrieval.fit_gamma(min_diameter = 30e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+retrieval = Retrieval(run, DiameterSpec(min_sep=0.1))
+# retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
+fit = retrieval.fit_gamma(min_diameter = 50e-6) # What minimum diameter is appropriate; how can we account for the low spike...
 
 retrieval.plot(label="Retrieved")
 gamma_dist.plot(plt.gca(), label="True")
@@ -124,6 +126,7 @@ expon = lambda d, intercept, slope: intercept * np.exp(-1 * slope * d)
 plt.plot(retrieval.midpoints,GammaPSD._dn_gamma_dd(retrieval.midpoints, *fit[0]))
 
 # plt.yscale("log")
+plt.ylim(0, 0.5e9)
 plt.legend()
 plt.show()
 

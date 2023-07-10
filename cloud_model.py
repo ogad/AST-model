@@ -88,14 +88,13 @@ class CloudVolume:
         # check which particles are somewhat within within the illuminated region
         # Illuminated region is defined as the 8mm x 2mm x arm_separation region aligned with the orthogonal vector pointing towards the detector
         # TODO: These may also need to also detect particles whose centres are outside the illuminated region, but whos edges are inside it.
-        is_in_illuminated_region_x = lambda particle: abs(np.dot(particle.position - detector_position, np.array([1,0,0]))) < (beam_width/2)
-        is_in_illuminated_region_y = lambda particle: np.dot(particle.position - detector_position, np.array([0,1,0])) < (beam_length/2 + n_images * detector.pixel_size) and np.dot(particle.position - detector_position, np.array([0,1,0])) > -1*beam_length/2
-        is_in_illuminated_region_z = lambda particle: np.dot(particle.position - detector_position, np.array([0,0,1])) < detector.arm_separation and np.dot(particle.position - detector_position, np.array([0,0,1])) > 0 
+        particle_from_detector = np.stack(self.particles.position.values) - detector_position
 
-        in_illuminated_region = self.particles.apply(
-            lambda particle: is_in_illuminated_region_x(particle) and is_in_illuminated_region_y(particle) and is_in_illuminated_region_z(particle),
-            axis=1
-        )
+        is_in_illuminated_region_x = abs(particle_from_detector[:,0]) < (beam_width/2)
+        is_in_illuminated_region_y = (particle_from_detector[:,1] < (beam_length/2 + n_images * detector.pixel_size)) & (particle_from_detector[:,1] > -1*beam_length/2)
+        is_in_illuminated_region_z = (particle_from_detector[:,2]< detector.arm_separation) & (particle_from_detector[:,2] > 0 )
+
+        in_illuminated_region = is_in_illuminated_region_x & is_in_illuminated_region_y & is_in_illuminated_region_z
         if not in_illuminated_region.any():
             # No particles are in the illuminated region.
             return None

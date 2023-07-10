@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from ast_model import plot_outline, AmplitudeField
+from ast_model import plot_outline, AmplitudeField, IntensityField
 
 @dataclass
 class Detector:
@@ -66,7 +66,7 @@ class ImagedRegion:
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
 
-    def get_frames_to_measure(self, spec, **kwargs):
+    def get_frames_to_measure(self, spec, **kwargs) -> list[tuple[tuple[float, float], IntensityField]]:
 
         filters = [ImageFilter.PRESENT_HALF_INTENSITY]
         if spec.edge_filter:
@@ -106,7 +106,7 @@ class ImagedRegion:
         frames = [((self.y_values[istart], self.y_values[istart+frame.field.shape[1]]), frame) for istart, frame in frames]
         return frames
     
-    def measure_diameters(self, spec, **kwargs):
+    def measure_diameters(self, spec: DiameterSpec, **kwargs):
         frames = self.get_frames_to_measure(spec, **kwargs)
 
         kwargs["bounded"] = spec.bound
@@ -186,18 +186,23 @@ class DetectorRun:
             run =  pickle.load(f)
 
         return run
-
-    def measure_diameters(self, spec=DiameterSpec(), **kwargs):
-        image_filters = spec.filters
+    
+    def get_frames_to_measure(self, spec, **kwargs) -> list[ImagedRegion]:
+        """Returns a list of frames to measure, with the y extent of the frame and the frame itself."""
         frames = []
+        image_filters = spec.filters
         for image in self.images:
             if not np.all([image_filter(image) for image_filter in image_filters]):
                 continue
             frames = frames + list(image.get_frames_to_measure(spec, **kwargs))
 
+        return frames
+
+    def measure_diameters(self, spec=DiameterSpec(), **kwargs):
+        frames = self.get_frames_to_measure(spec, **kwargs)
+
         frames.sort(key=lambda x: x[0][0])
         to_remove = []
-
 
         if spec.min_sep is not None:
             for i, ((ymin, ymax), frame) in enumerate(frames):

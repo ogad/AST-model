@@ -43,6 +43,6 @@ class Retrieval:
 
         # log_gamma = lambda d, intercept, slope, shape: np.log10(GammaPSD._dn_gamma_dd(d, intercept, slope, shape))
 
-        popt, pcov = curve_fit(GammaPSD._dn_gamma_dd, diameter_vals, dn_dd_vals, p0=[1e8, 1e5, 1], maxfev=10000, bounds=([0, 0, 1], [np.inf, np.inf, np.inf])) 
+        popt, pcov = curve_fit(GammaPSD._dn_gamma_dd, diameter_vals, dn_dd_vals, p0=[1e8, 1e5, 4], maxfev=10000, bounds=([0, 0, 1], [np.inf, np.inf, np.inf])) 
         # return GammaPSD(*popt, bins=self.bins)
         return popt, pcov
