@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 import numpy as np
+from numpy.random import randint
 from numpy.typing import ArrayLike
 from scipy.optimize import curve_fit
 
@@ -18,12 +19,15 @@ class CrystalModel(Enum):
     """Enum for crystal types."""
     SPHERE = 1
     RECT_AR5 = 2
+    ROS_6 = 3
 
     def get_generator(self):
         if self == CrystalModel.SPHERE:
             return ASTModel.from_diameter
         elif self == CrystalModel.RECT_AR5:
-            return lambda diameter, wavenumber: ASTModel.from_diameter_rectangular(diameter, 5)
+            return lambda diameter, **kwargs: ASTModel.from_diameter_rectangular(diameter, 5, **kwargs)
+        elif self == CrystalModel.ROS_6:
+            return lambda diameter, **kwargs: ASTModel.from_diameter_rosette(diameter, 3, **kwargs)
         else:
             raise ValueError("Crystal model not recognised.")
     
@@ -70,12 +74,12 @@ class PSD(ABC):
         """
         return self.dn_dd(self.bins[1:]) * (np.diff(self.bins))
     
-    def generate_diameter(self) -> float:
+    def generate_diameters(self, n_particles) -> tuple[list[float], list[ASTModel]]:
         """Generate a particle diameter from the PSD."""
-        diameter = choices(
-                self.bins[1:], weights=self.binned_distribution
-            )[0]
-        return diameter, self.model
+        diameters = choices(
+                self.bins[1:], weights=self.binned_distribution, k=n_particles
+            )
+        return diameters, [self.model] * n_particles
     
     @property
     def total_number_density(self) -> float:
@@ -113,10 +117,21 @@ class CompositePSD(PSD):
         """
         return sum([psd.dn_dd(d) for psd in self.psds])
     
-    def generate_diameter(self) -> float:
+    def generate_diameters(self, n_particles) -> tuple[list[float], list[ASTModel]]:
         """Generate a particle diameter from the PSD."""
-        from_psd = choices(self.psds, weights=self.psd_weights)[0]
-        return from_psd.generate_diameter(), from_psd.model
+        n_from_psd = [int(n_particles * weight / self.total_number_density) for weight in self.psd_weights]
+
+        #check sum
+        if sum(n_from_psd) != n_particles:
+            n_from_psd[randint(0,len(self.psds))] += n_particles - sum(n_from_psd)
+
+        diameters = np.array([])
+        models = []
+        for psd, n in zip(self.psds, n_from_psd):
+            psd_diameters, psd_models = psd.generate_diameters(n)
+            diameters = np.append(diameters, psd_diameters)
+            models += psd_models
+        return diameters, models
 
 class GammaPSD(PSD):
     r"""Gamma particle size distribution object.

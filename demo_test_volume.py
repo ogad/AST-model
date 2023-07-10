@@ -32,7 +32,7 @@ fig, ax = plt.subplots()
 gamma_dist.plot(ax)
 # %%
 # psd.plot(ax)
-cloud_len = 1
+cloud_len = 1000
 try:
     with open(f"cloud_01_{cloud_len}_01.pkl", "rb") as f:
         cloud = pickle.load(f)
@@ -59,7 +59,7 @@ plt.colorbar()
 # %%
 from psd_ast_model import CrystalModel
 redo_detections = False
-shape = "rects"
+shape = "spheres"
 distance = 999
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]))
@@ -68,7 +68,7 @@ if redo_detections:
     run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{shape}_run.pkl")
 else:
     # run = DetectorRun.load("../data/2023-06-29_999_spheres_run.pkl")
-    run = DetectorRun.load("../data/2023-07-04_999_rects_run.pkl")
+    run = DetectorRun.load("../data/2023-07-06_999_rects_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
 # detections.amplitude.intensity.plot()

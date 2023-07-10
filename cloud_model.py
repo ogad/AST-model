@@ -21,11 +21,13 @@ class CloudVolume:
     psd: GammaPSD
     dimensions: tuple[float, float, float] # (x, y, z) in m
 
-    @staticmethod
-    def _generate_position(dim_grids):
+    def _generate_positions(self, resolution, n_particles):
         """Generate a random position within the cloud volume."""
-        position =  np.array([np.random.choice(dim_grid) for dim_grid in dim_grids])
-        return position
+        rng = np.random.default_rng()
+        xs = rng.integers(0, int(self.dimensions[0]//resolution), size=(n_particles))
+        ys = rng.integers(0, int(self.dimensions[1]//resolution), size=(n_particles))
+        zs = rng.integers(0, int(self.dimensions[2]//resolution), size=(n_particles))
+        return np.array([xs, ys, zs]).T * resolution
     
     def __post_init__(self):
         logging.info("Initialising cloud volume")
@@ -47,13 +49,16 @@ class CloudVolume:
         dim_grids = [np.arange(0, dim, 2e-6) for dim in self.dimensions]
 
         # Generate the particles
-        self.particles = pd.DataFrame(columns=["diameter", "position", "model"])
+        # self.particles = pd.DataFrame(columns=["diameter", "position", "model"])
         logging.info(f"Generating {self.n_particles} particles")
 
-        for i in tqdm(range(self.n_particles), total=self.n_particles):
-            diameter, model = self.psd.generate_diameter()
-            particle = [diameter, self._generate_position(dim_grids), model]
-            self.particles.loc[i] = particle
+        positions = self._generate_positions(2e-6, self.n_particles)
+        diameters, models = self.psd.generate_diameters(self.n_particles)
+
+        self.particles = pd.DataFrame({"diameter": diameters, "position":list(map(tuple, positions)), "model": models})
+        # for i in tqdm(range(self.n_particles), total=self.n_particles):
+        #     particle = [diameters_models[i][0], positions[i, :], diameters_models[i][1]]
+        #     self.particles.loc[i] = particle
 
     @property
     def n_particles(self):
@@ -131,7 +136,7 @@ class CloudVolume:
 
         for particle in particles.itertuples():
             model_generator = particle.model.get_generator() if particle.model is not None else model_generator
-            ast_model = model_generator(particle.diameter * 1e6, wavenumber=2*np.pi/detector.wavelength)
+            ast_model = model_generator(particle.diameter * 1e6, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
             amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
 
             total_amplitude.embed(amplitude_at_particle_xy, particle, detector_position)
