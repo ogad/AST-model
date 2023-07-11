@@ -62,16 +62,17 @@ plt.colorbar()
 
 # %%
 from psd_ast_model import CrystalModel
-redo_detections = False
+redo_detections = True
 shape = "spheres"
 distance = 999
+n_px = 128
 if redo_detections:
-    detector = Detector(np.array([0.05, 0.1, 0]))
+    detector = Detector(np.array([0.05, 0.1, 0]), n_pixels=n_px)
     cloud.particles.loc[:, "model"] = CrystalModel.RECT_AR5 if shape == "rects" else CrystalModel.SPHERE
     run = cloud.take_image(detector, distance=distance, separate_particles=True)
-    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{shape}_run.pkl")
+    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{n_px}px_{shape}_run.pkl")
 else:
-    run = DetectorRun.load("../data/2023-07-10_999_spheres_run.pkl")
+    run = DetectorRun.load("../data/2023-07-11_999_spheres_run.pkl")
     # run = DetectorRun.load("../data/2023-07-06_999_rects_run.pkl")
 # objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
 
@@ -116,15 +117,22 @@ for label, diameters in diameter_series.items():
 # plt.show()
 # %%
 retrieval = Retrieval(run, DiameterSpec(min_sep=0.1))
+retrieval2 = Retrieval(run, DiameterSpec(min_sep=0.1, z_confinement=True))
+
 # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
 fit = retrieval.fit_gamma(min_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+fit2 = retrieval2.fit_gamma(min_diameter = 20e-6)
 
+# %%
 retrieval.plot(label="Retrieved")
+retrieval2.plot(label="Retrieved2")
 gamma_dist.plot(plt.gca(), label="True")
 fit.plot(plt.gca(), label="Fit")
+fit2.plot(plt.gca(), label="Fit2")
 
 # plt.yscale("log")
-plt.ylim(0, 0.5e9)
+# plt.ylim(0, 0.5e9)
+plt.xlim(0, 5e-4)
 plt.legend()
 plt.show()
 

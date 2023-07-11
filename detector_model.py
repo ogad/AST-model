@@ -25,12 +25,15 @@ class Detector:
 class ImageFilter(Enum):
     PRESENT_HALF_INTENSITY = 1
     NO_EDGE_HALF_INTENSITY = 2
+    PRIMARY_Z_CONFINED = 3
 
-    def __call__(self, image):
+    def __call__(self, image: 'ImagedRegion'):
         if self == ImageFilter.PRESENT_HALF_INTENSITY:
             return image.amplitude.intensity.field.min() <= 0.5
         elif self == ImageFilter.NO_EDGE_HALF_INTENSITY:
             return np.concatenate([image.amplitude.intensity.field[0,:], image.amplitude.intensity.field[-1,:]]).min() > 0.5
+        elif self == ImageFilter.PRIMARY_Z_CONFINED:
+            return abs(image.particles.position[image.particles.primary].iloc[0][2] - image.detector_position[2]) < (image.amplitude.pixel_size * image.amplitude.field.shape[0] / 2)
         else:
             raise NotImplementedError(f"Image filter {self} not implemented")
 
@@ -42,6 +45,7 @@ class DiameterSpec: # TODO: implement custom threshold value.
     min_sep: float = None # in m #TODO: check units; enable time units
     bound: bool = True
     filled: bool = False
+    z_confinement: bool = False
 
     def __post_init__(self):
         if self.filled and not self.bound:
@@ -54,6 +58,8 @@ class DiameterSpec: # TODO: implement custom threshold value.
         filters = [ImageFilter.PRESENT_HALF_INTENSITY]
         if self.edge_filter:
             filters.append(ImageFilter.NO_EDGE_HALF_INTENSITY)
+        if self.z_confinement:
+            filters.append(ImageFilter.PRIMARY_Z_CONFINED)
         return filters
 
 
@@ -67,12 +73,7 @@ class ImagedRegion:
     particles: pd.DataFrame = None
 
     def get_frames_to_measure(self, spec, **kwargs) -> list[tuple[tuple[float, float], IntensityField]]:
-
-        filters = [ImageFilter.PRESENT_HALF_INTENSITY]
-        if spec.edge_filter:
-            filters.append(ImageFilter.NO_EDGE_HALF_INTENSITY)
-        
-        if not np.all([image_filter(self) for image_filter in filters]):
+        if not np.all([image_filter(self) for image_filter in spec.filters]):
             raise ValueError("Image does not pass filters; it shouldn't have got this far...")
 
         if spec.framed:

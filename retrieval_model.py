@@ -23,7 +23,7 @@ class Retrieval:
         self.midpoints = (self.bins[:-1] + self.bins[1:]) / 2
         bin_widths = self.bins[1:] - self.bins[:-1]
 
-        volumes = run.volume(self.midpoints)
+        volumes = run.volume(self.midpoints, spec=spec)
 
         self.dn_dd_measured = np.histogram(self.diameters, bins=self.bins)[0] / (bin_widths * volumes)
 
