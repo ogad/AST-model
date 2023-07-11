@@ -158,6 +158,9 @@ class GammaPSD(PSD):
 
         super().__init__(bins, model)
 
+    def __str__(self) -> str:
+        return super().__str__() + f"GammaPSD({self.intercept}, {self.slope}, {self.shape})"
+
     @classmethod
     def from_concentration(cls, number_concentration, slope, shape, **kwargs):
         """Calculate the number density per field.

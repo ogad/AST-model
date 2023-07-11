@@ -14,7 +14,9 @@ import matplotlib.pyplot as plt
 
 from psd_ast_model import GammaPSD
 from ast_model import ASTModel, AmplitudeField
-from detector_model import Detector, ImagedRegion, DetectorRun
+from detector_model import Detector, ImagedRegion
+from detector_run import DetectorRun
+
 
 @dataclass
 class CloudVolume:

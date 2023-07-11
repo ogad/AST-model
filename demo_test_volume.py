@@ -10,9 +10,10 @@ import datetime
 
 from ast_model import plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD
-from cloud_model import CloudVolume, Detector, DetectorRun
-from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter, DiameterSpec
+from cloud_model import CloudVolume, Detector
+from detector_model import Detector, ImagedRegion, ImageFilter, DiameterSpec
 from retrieval_model import Retrieval
+from detector_run import DetectorRun
 
 from profiler import profile
 
@@ -116,7 +117,7 @@ for label, diameters in diameter_series.items():
 # %%
 retrieval = Retrieval(run, DiameterSpec(min_sep=0.1))
 # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
-fit = retrieval.fit_gamma(min_diameter = 50e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+fit = retrieval.fit_gamma(min_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
 
 retrieval.plot(label="Retrieved")
 gamma_dist.plot(plt.gca(), label="True")
