@@ -12,10 +12,10 @@ import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ast_model import plot_outline
 from psd_ast_model import GammaPSD, CompositePSD, CrystalModel
-from cloud_model import CloudVolume, Detector, DetectorRun
-from detector_model import Detector, ImagedRegion, DetectorRun, ImageFilter, DiameterSpec
+from cloud_model import CloudVolume, Detector
+from detector_model import Detector
+
 
 np.random.seed(42)
 random.seed(42)

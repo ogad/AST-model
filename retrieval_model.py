@@ -8,7 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from psd_ast_model import GammaPSD
-from detector_model import DetectorRun, DiameterSpec
+from detector_model import  DiameterSpec
+from detector_run import DetectorRun
 
 class Retrieval:
     def __init__(self, run: DetectorRun, spec: DiameterSpec, bins: np.array=None):
