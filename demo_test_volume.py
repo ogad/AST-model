@@ -104,6 +104,7 @@ bins = np.linspace(0, 5e-4, 50)
 # gamma_dist.plot(plt.gca(), label="True")
 
 for label, diameters in diameter_series.items():
+    diameters = list(diameters.values())
     plt.stairs(np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, label=label)
 # plt.legend()
 # plt.xlim(0,5e-4)

@@ -18,7 +18,8 @@ class Retrieval:
         array_length = run.detector.n_pixels * run.detector.pixel_size
         self.bins = bins if bins is not None else np.linspace(0, array_length, run.detector.n_pixels+1)
 
-        self.diameters = np.array(run.measure_diameters(spec)) * 1e-6
+        self.detected_particles = run.measure_diameters(spec)
+        self.diameters = np.array(list(self.detected_particles.values())) * 1e-6
 
         self.midpoints = (self.bins[:-1] + self.bins[1:]) / 2
         bin_widths = self.bins[1:] - self.bins[:-1]

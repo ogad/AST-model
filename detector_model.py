@@ -12,6 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from ast_model import plot_outline, AmplitudeField, IntensityField
+from diameters import measure_diameters
 
 @dataclass
 class Detector:
@@ -72,6 +73,12 @@ class ImagedRegion:
     arm_separation: float = 10e-2# in m
     particles: pd.DataFrame = None
 
+    @property
+    def xlims(self):
+        array_length = self.amplitude.pixel_size * self.amplitude.field.shape[0]
+        return self.detector_position[0] + np.array([-array_length/2, array_length/2])
+
+
     def get_frames_to_measure(self, spec, **kwargs) -> list[tuple[tuple[float, float], IntensityField]]:
         if not np.all([image_filter(self) for image_filter in spec.filters]):
             raise ValueError("Image does not pass filters; it shouldn't have got this far...")
@@ -107,16 +114,9 @@ class ImagedRegion:
         frames = [((self.y_values[istart], self.y_values[istart+frame.field.shape[1]]), frame) for istart, frame in frames]
         return frames
     
-    def measure_diameters(self, spec: DiameterSpec, **kwargs):
-        frames = self.get_frames_to_measure(spec, **kwargs)
-
-        kwargs["bounded"] = spec.bound
-        kwargs["filled"] = spec.filled
-
-        detected_particles = {}
-        for _, frame in frames:
-            detected_particles = detected_particles | frame.measure_diameters(diameter_method=spec.diameter_method, **kwargs)
-
+    def measure_diameters(self, spec: DiameterSpec = DiameterSpec(), **kwargs):
+        logging.warn("ImagedRegion.measure_diameters only considers one image at a time; use DetectorRun.measure_diameters to consider inter-image separation.")
+        detected_particles = measure_diameters(self, spec, **kwargs)
         return detected_particles
     
     def plot(self, detector=None, cloud=None, plot_outlines=False,**kwargs):

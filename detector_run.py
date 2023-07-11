@@ -3,6 +3,7 @@
 # Date: 29/06/2023
 
 import logging
+from charset_normalizer import detect
 
 import numpy as np
 import pandas as pd
@@ -12,6 +13,7 @@ import pickle
 
 from ast_model import plot_outline, AmplitudeField, IntensityField
 from detector_model import Detector, ImageFilter, DiameterSpec, ImagedRegion
+from diameters import measure_diameters
 
 
 @dataclass
@@ -33,7 +35,16 @@ class DetectorRun:
 
         return run
     
-    def get_frames_to_measure(self, spec, **kwargs) -> list[ImagedRegion]:
+    @property
+    def xlims(self):
+        array_length = self.detector.pixel_size * self.detector.n_pixels
+        return self.detector_position[0] + np.array([-array_length/2, array_length/2])
+    
+    @property
+    def detector_position(self):
+        return self.detector.position
+    
+    def get_frames_to_measure(self, spec, **kwargs) -> list[tuple[float,float],IntensityField]:
         """Returns a list of frames to measure, with the y extent of the frame and the frame itself."""
         frames = []
         image_filters = spec.filters
@@ -45,33 +56,8 @@ class DetectorRun:
         return frames
 
     def measure_diameters(self, spec=DiameterSpec(), **kwargs):
-        frames = self.get_frames_to_measure(spec, **kwargs)
-
-        frames.sort(key=lambda x: x[0][0])
-        to_remove = []
-
-        if spec.min_sep is not None:
-            for i, ((ymin, ymax), frame) in enumerate(frames):
-                    if i == 0:
-                        continue
-                    if ymin - frames[i-1][0][1] < spec.min_sep:
-                        # mark for removal
-                        to_remove.append(i)
-                        to_remove.append(i-1)
-            # remove duplicates
-            to_remove = list(set(to_remove))
-            for i in sorted(to_remove, reverse=True):
-                del frames[i]
-
-        kwargs["bounded"] = spec.bound
-        kwargs["filled"] = spec.filled
-
-        detected_particles = {}
-        for (_,_), frame in frames:
-            detected_particles = detected_particles | frame.measure_diameters(diameter_method=spec.diameter_method, **kwargs)
-
-        diameters = list(detected_particles.values())
-        return diameters
+        detected_particles = measure_diameters(self, spec, **kwargs)
+        return detected_particles
 
     def plot(self, image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
         images_to_plot = [image for image in self.images if np.all([image_filter(image) for image_filter in image_filters])]
