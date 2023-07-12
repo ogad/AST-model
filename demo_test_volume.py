@@ -62,7 +62,7 @@ plt.colorbar()
 
 # %%
 from psd_ast_model import CrystalModel
-redo_detections = True
+redo_detections = False
 shape = "spheres"
 distance = 999
 n_px = 128
@@ -117,7 +117,7 @@ for label, diameters in diameter_series.items():
 
 # plt.show()
 # %%
-retrieval = Retrieval(run, DiameterSpec(min_sep=0.1))
+retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.001, filled=True))
 retrieval2 = Retrieval(run, DiameterSpec(min_sep=0.1, z_confinement=True))
 
 # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
@@ -136,6 +136,34 @@ fit2.plot(plt.gca(), label="Fit2")
 plt.xlim(0, 5e-4)
 plt.legend()
 plt.show()
+
+# %%
+def continuous_int_input():
+    while True:
+        try:
+            inp = input("Enter a number, or 'q' to quit:")
+            if inp == "q":
+                break
+            yield int(inp)
+        except ValueError:
+            print("Please enter a number")
+
+# %%
+coord = list(retrieval.detected_particles.keys())[7]
+cloud.plot_from_run(run, 1e-6*np.array(coord), grayscale_bounds=[.5])
+
+locations = [coord for coord, diameter in retrieval.detected_particles.items() if diameter < 50]
+
+fig, axs = plt.subplots(len(locations), 2, figsize=(7, 4*len(locations)))
+for i, location in enumerate(locations):
+    cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][0], colorbar=True)
+    cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][1], grayscale_bounds=[.5], plot_outlines=True, cloud=cloud)
+plt.tight_layout()
+plt.show()
+
+locations_to_remove = [locations[i] for i in continuous_int_input()]
+retrieval.remove_particles(locations_to_remove)
+
 
 # %%
 # Plan of attack:

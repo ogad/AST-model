@@ -2,8 +2,10 @@
 # Author: Oliver Driver
 # Date: 13/06/2023
 
+from copy import deepcopy
 from dataclasses import dataclass
 import random
+from tkinter import Image
 import pandas as pd
 import logging
 import numpy as np
@@ -31,6 +33,21 @@ class CloudVolume:
         zs = rng.integers(0, int(self.dimensions[2]//resolution), size=(n_particles))
         return np.array([xs, ys, zs]).T * resolution
     
+    def plot_from_run(self, run: DetectorRun, near_coord=None, near_length=2e-3, ylims=None, ax=None, **kwargs):
+
+        new_detector_y = np.min(ylims) if ylims is not None else near_coord[1] - near_length/2
+        distance = abs(ylims[0] - ylims[1]) if ylims is not None else near_length
+
+        # take the image
+        detector = deepcopy(run.detector)
+        detector.position[1] = new_detector_y
+        image = self.take_image(detector, distance=distance)
+
+        # plot the image
+        if ax is None:
+            ax = plt.gca()
+        image.plot(ax=ax, **kwargs)
+
     def __post_init__(self):
         logging.info("Initialising cloud volume")
         self.random_state = random.getstate()
@@ -71,7 +88,7 @@ class CloudVolume:
     def volume(self):
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
     
-    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None):
+    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None) -> DetectorRun | ImagedRegion:
         """Take an image using repeated detections along the y-axis.
 
         Detector is aligned with x-axis, and the y-axis is the direction of travel.
@@ -100,14 +117,16 @@ class CloudVolume:
         if not in_illuminated_region.any():
             # No particles are in the illuminated region.
             return None
+        
+        particles_to_model = self.particles[in_illuminated_region]
+        if primary_only:
+            particles_to_model = particles_to_model[particles_to_model.primary]
 
         if separate_particles: #TODO: This should be default behaviour
             # take an image of each particle individually
             images = []
-            length_iterations = len(self.particles[in_illuminated_region])
-            for particle in tqdm(self.particles[in_illuminated_region].itertuples(), total=length_iterations, leave=False):
-                if primary_only and not particle.primary:
-                    continue
+            length_iterations = len(particles_to_model)
+            for particle in tqdm(particles_to_model, total=length_iterations, leave=False):
                 y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
                 z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0
                 particle_image = self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus)
@@ -117,17 +136,12 @@ class CloudVolume:
                     images.append(particle_image)
 
             run = DetectorRun(detector, images, distance)
-
-            # particles = self.particles[in_illuminated_region].copy()
-            # run = DetectorRun(detector, images, particles, distance)
             return run 
-        
-
 
         # get the intensity profile at the given z value for each illuminated particle
         total_amplitude = AmplitudeField(np.ones((detector.n_pixels, n_images), dtype=np.complex128), pixel_size=detector.pixel_size)
         
-        particles = self.particles[in_illuminated_region].copy()
+        particles = particles_to_model.copy()
         particles["x_index"] = particles.apply(
             lambda particle: int((particle["position"] - detector_position)[0] / total_amplitude.pixel_size) + int(total_amplitude.field.shape[0]/2),
             axis=1)
@@ -138,7 +152,10 @@ class CloudVolume:
         for particle in particles.itertuples():
             model_generator = particle.model.get_generator() if particle.model is not None else model_generator
             ast_model = model_generator(particle.diameter * 1e6, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
-            amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
+            if use_focus:
+                amplitude_at_particle_xy = ast_model.process(0)
+            else:
+                amplitude_at_particle_xy = ast_model.process(particle.position[2] - detector_position[2] - detector.arm_separation/2)
 
             total_amplitude.embed(amplitude_at_particle_xy, particle, detector_position)
         
