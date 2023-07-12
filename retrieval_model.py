@@ -16,17 +16,17 @@ class Retrieval:
 
         # initialise bins
         array_length = run.detector.n_pixels * run.detector.pixel_size
-        self.bins = bins if bins is not None else np.linspace(0, array_length, run.detector.n_pixels+1)
+        self.bins = bins if bins is not None else np.linspace(0, array_length - run.detector.pixel_size, run.detector.n_pixels)
 
         self.detected_particles = run.measure_diameters(spec)
         self.diameters = np.array(list(self.detected_particles.values())) * 1e-6
 
         self.midpoints = (self.bins[:-1] + self.bins[1:]) / 2
-        bin_widths = self.bins[1:] - self.bins[:-1]
+        self.bin_widths = self.bins[1:] - self.bins[:-1]
 
-        volumes = run.volume(self.midpoints, spec=spec)
+        self.volumes = run.volume(self.midpoints, spec=spec)
 
-        self.dn_dd_measured = np.histogram(self.diameters, bins=self.bins)[0] / (bin_widths * volumes)
+        self.dn_dd_measured = np.histogram(self.diameters, bins=self.bins)[0] / (self.bin_widths * self.volumes)
 
 
     def plot(self, ax=None, label=None, **plot_kwargs):
@@ -61,3 +61,9 @@ class Retrieval:
         intercept = intercept_l_mcb * 1e6
 
         return GammaPSD(intercept, slope, shape)
+    
+    def remove_particles(self, locations):
+        for location in locations:
+            self.detected_particles.pop(location)
+        self.diameters = np.array(list(self.detected_particles.values())) * 1e-6
+        self.dn_dd_measured = np.histogram(self.diameters, bins=self.bins)[0] / (self.bin_widths * self.volumes)
