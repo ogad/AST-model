@@ -127,7 +127,8 @@ class ImagedRegion:
             ax=kwargs.get("ax")
             if ax is None:
                 ax = plt.gca()
-            plot_outline(self.get_focused_image(cloud, detector).amplitude.intensity.field.T<0.1, ax)
+            for image in self.get_focused_image(cloud, detector):
+                plot_outline(image.amplitude.intensity.field.T<0.1, ax)
 
         return plot
     
@@ -140,12 +141,18 @@ class ImagedRegion:
         else:
             detector.position = self.detector_position
 
-        primary_index = self.particles[self.particles.primary].index[0]
-        cloud.particles["primary"] = cloud.particles.index == primary_index
-        focused_run = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
-        del cloud.particles["primary"]
-
-        return focused_run.images[0]
+        if "primary" in self.particles.columns:
+            primary_index = self.particles[self.particles.primary].index[0]
+            cloud.particles["primary"] = cloud.particles.index == primary_index
+            focused_run = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
+            cloud.particles.drop("primary", axis=1, inplace=True)
+            yield focused_run.images[0]
+        else:
+            for particle in self.particles.index:
+                cloud.particles.loc[particle, "primary"] = True
+            focused_image = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, primary_only=True)
+            cloud.particles.drop("primary", axis=1, inplace=True)
+            yield focused_image
 
     @property
     def distance(self):
