@@ -20,8 +20,8 @@ if __name__ == "__main__":
     image = np.where(im.max(axis=2), 1, 0)
 
     # # create the model
-    model = ASTModel(opaque_shape=image)
-    # model = ASTModel.from_diameter(150, pixel_size=5e-6)
+    # model = ASTModel(opaque_shape=image)
+    model = ASTModel.from_diameter(150, pixel_size=5e-6)
 
     # calculate the intensity at different z values
     z_values = [0, 5e-3, 10e-3, 20e-3]  # in metres

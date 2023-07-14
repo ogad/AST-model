@@ -160,11 +160,16 @@ class IntensityField:
         """
         if axis_length is not None:
             axis_length_px = axis_length * 1e-6 // self.pixel_size
-            to_plot = self.field[
-                int((self.field.shape[0] - axis_length_px) //
-                    2):int((self.field.shape[0] + axis_length_px) // 2),
-                int((self.field.shape[1] - axis_length_px) //
-                    2):int((self.field.shape[1] + axis_length_px) // 2),
+            if axis_length_px > min(self.field.shape):
+                to_plot = np.pad(self.field, int(axis_length_px - min(self.field.shape)), "constant", constant_values=(1,1))
+            else:
+                to_plot = self.field
+            
+            to_plot = to_plot[
+                int((to_plot.shape[0] - axis_length_px) //
+                    2):int((to_plot.shape[0] + axis_length_px) // 2),
+                int((to_plot.shape[1] - axis_length_px) //
+                    2):int((to_plot.shape[1] + axis_length_px) // 2),
             ]
         else:
             to_plot = self.field
@@ -334,6 +339,7 @@ class ASTModel:
     def __post_init__(self):
         self.amplitudes = {}  # z: phase grid
         self.diameters = {}
+        self.wavelength = 2 * np.pi / self.wavenumber
 
         # trim opaque shape of zero-valued rows and columns
         nonzero_x = np.arange(
@@ -499,8 +505,10 @@ class ASTModel:
 
         object_plane = np.pad(
             self.opaque_shape,
-            max(self.opaque_shape.shape) *
-            10,  # arbitrarily 10 times the size of the object
+            # int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),
+            max(
+                10*int(1.22 * self.wavelength * z_val/(max(self.opaque_shape.shape)*self.pixel_size) / self.pixel_size),
+                10),  # arbitrarily 10 times the size of the object
             "constant",
             constant_values=(0, 0),
         )
