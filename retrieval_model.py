@@ -60,6 +60,8 @@ class Retrieval:
         intercept_l_mcb, slope, shape = results[0]
         intercept = intercept_l_mcb * 1e6
 
+        logging.info(results[3])
+
         return GammaPSD(intercept, slope, shape)
     
     def remove_particles(self, locations):

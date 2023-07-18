@@ -62,8 +62,8 @@ plt.colorbar()
 
 # %%
 from psd_ast_model import CrystalModel
-redo_detections = False
-shape = "spheres"
+redo_detections = True
+shape = "rects"
 distance = 999
 n_px = 128
 if redo_detections:
@@ -117,24 +117,30 @@ for label, diameters in diameter_series.items():
 
 # plt.show()
 # %%
-retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.001, filled=True))
-retrieval2 = Retrieval(run, DiameterSpec(min_sep=0.1, z_confinement=True))
+retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
+retrieval = Retrieval(run, DiameterSpec(min_sep=0.1))
 
 # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
 fit = retrieval.fit_gamma(min_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
 fit2 = retrieval2.fit_gamma(min_diameter = 20e-6)
 
 # %%
-retrieval.plot(label="Retrieved")
-retrieval2.plot(label="Retrieved2")
-gamma_dist.plot(plt.gca(), label="True")
-fit.plot(plt.gca(), label="Fit")
-fit2.plot(plt.gca(), label="Fit2")
+fig, axs = plt.subplots(1, 2, width_ratios=[1, 5], figsize=(10, 5))
+
+for ax in axs:
+    retrieval.plot(label="Retrieved (Circ. equiv.)", ax=ax)
+    retrieval2.plot(label="Retrieved (XY)", ax=ax)
+    gamma_dist.plot(ax, label=f"True\n{gamma_dist.parameter_description()}")
+    fit.plot(ax, label=f"Fit (Circ. equiv.)\n{fit.parameter_description()}")
+    fit2.plot(ax, label=f"Fit (XY)\n{fit2.parameter_description()}")
 
 # plt.yscale("log")
-# plt.ylim(0, 0.5e9)
-plt.xlim(0, 5e-4)
-plt.legend()
+axs[0].set_xlim(0, 1e-4)
+axs[0].set_xticks([0, 1e-4])
+axs[1].set_ylim(0, 0.5e9)
+axs[1].set_xlim(0, 5e-4)
+axs[1].legend()
+axs[0].get_legend().remove()
 plt.show()
 
 # %%
@@ -149,20 +155,20 @@ def continuous_int_input():
             print("Please enter a number")
 
 # %%
-coord = list(retrieval.detected_particles.keys())[7]
-cloud.plot_from_run(run, 1e-6*np.array(coord), grayscale_bounds=[.5])
+# coord = list(retrieval.detected_particles.keys())[7]
+# cloud.plot_from_run(run, 1e-6*np.array(coord), grayscale_bounds=[.5])
 
-locations = [coord for coord, diameter in retrieval.detected_particles.items() if diameter < 50]
+# locations = [coord for coord, diameter in retrieval.detected_particles.items() if diameter < 50]
 
-fig, axs = plt.subplots(len(locations), 2, figsize=(7, 4*len(locations)))
-for i, location in enumerate(locations):
-    cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][0], colorbar=True)
-    cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][1], grayscale_bounds=[.5], plot_outlines=True, cloud=cloud)
-plt.tight_layout()
-plt.show()
+# fig, axs = plt.subplots(len(locations), 2, figsize=(7, 4*len(locations)))
+# for i, location in enumerate(locations):
+#     cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][0], colorbar=True)
+#     cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][1], grayscale_bounds=[.5], plot_outlines=True, cloud=cloud)
+# plt.tight_layout()
+# plt.show()
 
-locations_to_remove = [locations[i] for i in continuous_int_input()]
-retrieval.remove_particles(locations_to_remove)
+# locations_to_remove = [locations[i] for i in continuous_int_input()]
+# retrieval.remove_particles(locations_to_remove)
 
 
 # %%

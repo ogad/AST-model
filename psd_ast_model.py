@@ -30,7 +30,6 @@ class CrystalModel(Enum):
             return lambda diameter, **kwargs: ASTModel.from_diameter_rosette(diameter, 3, **kwargs)
         else:
             raise ValueError("Crystal model not recognised.")
-    
 
 def rejection_sampler(p, xbounds, pmax):
     """Returns a value sampled from a bounded probability distribution.
@@ -94,7 +93,7 @@ class PSD(ABC):
         # ax.set_xscale('log')
         # ax.set_yscale('log')
         ax.set_xlabel('Diameter (m)')
-        ax.set_ylabel('PSD ($\mathrm{m}^-3\,\mathrm{m}^-1$)')
+        ax.set_ylabel('PSD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)')
 
 class CompositePSD(PSD):
     """A composite particle size distribution object.
@@ -160,6 +159,9 @@ class GammaPSD(PSD):
 
     def __str__(self) -> str:
         return super().__str__() + f"GammaPSD({self.intercept}, {self.slope}, {self.shape})"
+
+    def parameter_description(self) -> str:
+        return f"$N_0={self.intercept:.2e}$, $\lambda={self.slope:.2e}$, $\mu={self.shape:.2f}$"
 
     @classmethod
     def from_concentration(cls, number_concentration, slope, shape, **kwargs):
@@ -402,7 +404,7 @@ class SamplingModel: # NOTE: Not really used.
         # summing with an empty list flattens the list of lists
         return np.array(sum(diameters_measured.values(), [])) 
     
-def fit_gamma_distribution(diameters, bins):
+def fit_gamma_distribution(diameters, bins): # NOTE: Not really used anymore
     """Fit a gamma distribution to a set of diameters.
 
     Args:
@@ -413,7 +415,7 @@ def fit_gamma_distribution(diameters, bins):
         np.ndarray: The fitted gamma distribution.
     """
     counts, _ = np.histogram(diameters, bins=bins)
-    dN_dr = counts / (bins[1:] - bins[:-1]) # TODO: Need to divide by sample volume.... but we don't know what it is.
+    dN_dr = counts / (bins[1:] - bins[:-1]) # TODO: Need to divide by sample volume.
     bins = bins[:-1]
     bins = bins[counts > 0]
     dN_dr = dN_dr[counts > 0]
