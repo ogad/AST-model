@@ -126,7 +126,7 @@ class CloudVolume:
             # take an image of each particle individually
             images = []
             length_iterations = len(particles_to_model)
-            for particle in tqdm(particles_to_model, total=length_iterations, leave=False):
+            for particle in tqdm(particles_to_model.itertuples(), total=length_iterations, leave=False):
                 y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
                 z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0
                 particle_image = self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus)
