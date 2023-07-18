@@ -507,7 +507,7 @@ class ASTModel:
             self.opaque_shape,
             # int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),
             max(
-                abs(100 * int(1.22 * self.wavelength * z_val/(max(self.opaque_shape.shape)*self.pixel_size) / self.pixel_size)),
+                abs(10 * int(1.22 * self.wavelength * z_val/(max(self.opaque_shape.shape)*self.pixel_size) / self.pixel_size)),
                 10),  # arbitrarily 10 times the size of the object
             "constant",
             constant_values=(0, 0),
