@@ -4,6 +4,7 @@
 
 from copy import deepcopy
 from dataclasses import dataclass
+import datetime
 import random
 from tkinter import Image
 import pandas as pd
@@ -18,7 +19,7 @@ from psd_ast_model import GammaPSD
 from ast_model import ASTModel, AmplitudeField
 from detector_model import Detector, ImagedRegion
 from detector_run import DetectorRun
-
+from profiler import profile
 
 @dataclass
 class CloudVolume:
@@ -32,6 +33,16 @@ class CloudVolume:
         ys = rng.integers(0, int(self.dimensions[1]//resolution), size=(n_particles))
         zs = rng.integers(0, int(self.dimensions[2]//resolution), size=(n_particles))
         return np.array([xs, ys, zs]).T * resolution
+    
+    def _generate_angles(self, n_particles):
+        """Generate a random angle for each particle."""
+        rng = np.random.default_rng()
+        thetas = rng.uniform(0, 2*np.pi, size=(n_particles))
+        # generate phis weighted by sin(theta)
+        sin_phis = rng.uniform(0, 1, size=(n_particles))
+        phis = np.arcsin(sin_phis)
+
+        return np.array([thetas, phis]).T
     
     def plot_from_run(self, run: DetectorRun, near_coord=None, near_length=2e-3, ylims=None, ax=None, **kwargs):
 
@@ -74,7 +85,9 @@ class CloudVolume:
         positions = self._generate_positions(2e-6, self.n_particles)
         diameters, models = self.psd.generate_diameters(self.n_particles)
 
-        self.particles = pd.DataFrame({"diameter": diameters, "position":list(map(tuple, positions)), "model": models})
+        angles = self._generate_angles(self.n_particles)
+
+        self.particles = pd.DataFrame({"diameter": diameters, "position":list(map(tuple, positions)), "angle":list(map(tuple, angles)), "model": models})
         # for i in tqdm(range(self.n_particles), total=self.n_particles):
         #     particle = [diameters_models[i][0], positions[i, :], diameters_models[i][1]]
         #     self.particles.loc[i] = particle
@@ -151,7 +164,7 @@ class CloudVolume:
 
         for particle in particles.itertuples():
             model_generator = particle.model.get_generator() if particle.model is not None else model_generator
-            ast_model = model_generator(particle.diameter * 1e6, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
+            ast_model = model_generator(particle, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
             if use_focus:
                 amplitude_at_particle_xy = ast_model.process(0)
             else:

@@ -20,14 +20,17 @@ class CrystalModel(Enum):
     SPHERE = 1
     RECT_AR5 = 2
     ROS_6 = 3
+    COL_AR5_ROT = 4
 
     def get_generator(self):
         if self == CrystalModel.SPHERE:
             return ASTModel.from_diameter
         elif self == CrystalModel.RECT_AR5:
-            return lambda diameter, **kwargs: ASTModel.from_diameter_rectangular(diameter, 5, **kwargs)
+            return lambda particle, **kwargs: ASTModel.from_diameter_rectangular(particle.diameter*1e6, 5, **kwargs)
+        elif self == CrystalModel.COL_AR5_ROT:
+            return lambda particle, **kwargs: ASTModel.from_diameter_rectangular(particle.diameter*1e6, 5, angle=particle.angle, **kwargs)
         elif self == CrystalModel.ROS_6:
-            return lambda diameter, **kwargs: ASTModel.from_diameter_rosette(diameter, 3, **kwargs)
+            return lambda particle, **kwargs: ASTModel.from_diameter_rosette(particle.diameter*1e6, 3, **kwargs)
         else:
             raise ValueError("Crystal model not recognised.")
 
@@ -89,11 +92,12 @@ class PSD(ABC):
     
     def plot(self, ax, **kwargs):
         """Plot the PSD value against diameter."""
-        ax.plot(self.bins[1:], self.dn_dd(self.bins[1:]), **kwargs)
+        handle = ax.plot(self.bins[1:], self.dn_dd(self.bins[1:]), **kwargs)
         # ax.set_xscale('log')
         # ax.set_yscale('log')
         ax.set_xlabel('Diameter (m)')
         ax.set_ylabel('PSD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)')
+        return handle
 
 class CompositePSD(PSD):
     """A composite particle size distribution object.
@@ -261,7 +265,7 @@ class TwoMomentGammaPSD(PSD):
     def characteristic_diameter(self):
         return self.m3 / self.m2
 
-class SamplingModel: # NOTE: Not really used.
+class SamplingModel: # NOTE: Not really used anymore; deprecated in favour of CloudModel, DetectorRun, and Retrieval
     """Particle size distribution model.
 
     A modelling class that contains a PSD object, and simulates particle
@@ -404,22 +408,22 @@ class SamplingModel: # NOTE: Not really used.
         # summing with an empty list flattens the list of lists
         return np.array(sum(diameters_measured.values(), [])) 
     
-def fit_gamma_distribution(diameters, bins): # NOTE: Not really used anymore
-    """Fit a gamma distribution to a set of diameters.
+# def fit_gamma_distribution(diameters, bins): # NOTE: Not really used anymore
+#     """Fit a gamma distribution to a set of diameters.
 
-    Args:
-        diameters (np.ndarray): The diameters to fit.
-        bins (np.ndarray): The bins to fit over.
+#     Args:
+#         diameters (np.ndarray): The diameters to fit.
+#         bins (np.ndarray): The bins to fit over.
 
-    Returns:
-        np.ndarray: The fitted gamma distribution.
-    """
-    counts, _ = np.histogram(diameters, bins=bins)
-    dN_dr = counts / (bins[1:] - bins[:-1]) # TODO: Need to divide by sample volume.
-    bins = bins[:-1]
-    bins = bins[counts > 0]
-    dN_dr = dN_dr[counts > 0]
-    popt, pcov = curve_fit(
-        lambda d, intercept, slope: GammaPSD._dn_gamma_dd(d, intercept, slope, 2.5), 
-        bins, dN_dr,p0=[1e10, 1e4])
-    return popt, pcov
+#     Returns:
+#         np.ndarray: The fitted gamma distribution.
+#     """
+#     counts, _ = np.histogram(diameters, bins=bins)
+#     dN_dr = counts / (bins[1:] - bins[:-1]) # TODO: Need to divide by sample volume.
+#     bins = bins[:-1]
+#     bins = bins[counts > 0]
+#     dN_dr = dN_dr[counts > 0]
+#     popt, pcov = curve_fit(
+#         lambda d, intercept, slope: GammaPSD._dn_gamma_dd(d, intercept, slope, 2.5), 
+#         bins, dN_dr,p0=[1e10, 1e4])
+#     return popt, pcov

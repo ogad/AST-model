@@ -387,29 +387,44 @@ class ASTModel:
         return model
 
     @staticmethod
-    def rectangle(px_height, px_width, angle=0):
+    def rectangle(px_height, px_width, angle:float|tuple[float,float]=0.):
         r"""Create a rectangular opaque object.
 
         Args:
             px_height (int): The height of the opaque object in pixels.
             px_width (int): The width of the opaque object in pixels.
-            angle (float, optional): The angle of the opaque object in degrees. Defaults to 0.
+            angle (float|tuple[float,float], optional): The angle of the opaque object in degrees. Defaults to 0.
 
         Returns:
             np.ndarray: The shape of the opaque object.
         """
-        # create the opaque shape
+        # if a tuple of angles are given, rotate in 3D.
+        if isinstance(angle, tuple):
+            angle_in_plane = angle[0]
+            angle_out_of_plane = angle[1]
+        else:
+            angle_in_plane = angle
+            angle_out_of_plane = 0.
+
+        # rotation approximated by shortening the longer side
+        if angle_out_of_plane != 0.:
+            if px_height > px_width:
+                px_width = px_width * np.cos(angle_out_of_plane)
+            else:
+                px_height = px_height * np.cos(angle_out_of_plane)
+
         # create the opaque shape
         px_height = int(round(px_height))
         px_width = int(round(px_width))
         shape = np.ones((px_width, px_height))
+
+        # rotate the shape
+        shape = ndimage.rotate(shape, angle_in_plane * 180/np.pi)
         
-        # rotate the opaque shape
-        shape = ndimage.rotate(shape, angle)
         return shape
     
     @classmethod
-    def from_rectangle(cls, width: float, height: float, angle: float=0, wavenumber: float=None, pixel_size: float=None):
+    def from_rectangle(cls, width: float, height: float, angle: float|tuple[float,float]=0, wavenumber: float=None, pixel_size: float=None):
         r"""Create a model for a rectangular opaque object.
         
         Args:
