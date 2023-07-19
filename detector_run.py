@@ -59,9 +59,14 @@ class DetectorRun:
         detected_particles = measure_diameters(self, spec, **kwargs)
         return detected_particles
 
-    def plot(self, image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
+    def plot(self, n_images:int=None, image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
+        """Plot the images in the run."""
+
         images_to_plot = [image for image in self.images if np.all([image_filter(image) for image_filter in image_filters])]
         
+        if n_images is not None:
+            images_to_plot = images_to_plot[:n_images]
+
         n_plots = len(images_to_plot)
         n_cols = 3
         n_rows = int(np.ceil(n_plots / n_cols))
