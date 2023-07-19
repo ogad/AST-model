@@ -21,12 +21,15 @@ class CrystalModel(Enum):
     RECT_AR5 = 2
     ROS_6 = 3
     COL_AR5_ROT = 4
+    RECT_AR5_ROT = 5
 
     def get_generator(self):
         if self == CrystalModel.SPHERE:
-            return ASTModel.from_diameter
+            return lambda particle, **kwargs: ASTModel.from_diameter(particle.diameter*1e6, **kwargs)
         elif self == CrystalModel.RECT_AR5:
             return lambda particle, **kwargs: ASTModel.from_diameter_rectangular(particle.diameter*1e6, 5, **kwargs)
+        elif self == CrystalModel.RECT_AR5_ROT:
+            return lambda particle, **kwargs: ASTModel.from_diameter_rectangular(particle.diameter*1e6, 5, angle=particle.angle[0], **kwargs)
         elif self == CrystalModel.COL_AR5_ROT:
             return lambda particle, **kwargs: ASTModel.from_diameter_rectangular(particle.diameter*1e6, 5, angle=particle.angle, **kwargs)
         elif self == CrystalModel.ROS_6:

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import datetime
 
 from ast_model import plot_outline
-from psd_ast_model import GammaPSD, TwoMomentGammaPSD
+from psd_ast_model import GammaPSD, TwoMomentGammaPSD, CrystalModel
 from cloud_model import CloudVolume, Detector
 from detector_model import Detector, ImagedRegion, ImageFilter, DiameterSpec
 from retrieval_model import Retrieval
@@ -66,17 +66,16 @@ def take_image(detector, distance, cloud: CloudVolume, separate_particles):
     return cloud.take_image(detector, distance=distance, separate_particles=separate_particles)
 
 
-from psd_ast_model import CrystalModel
 redo_detections = True
-shape = "cols"
-distance = 100
+shape = CrystalModel.RECT_AR5_ROT
+distance = 999
 n_px = 128
 if redo_detections:
     detector = Detector(np.array([0.05, 0.1, 0]), n_pixels=n_px)
-    cloud.particles.loc[:, "model"] = CrystalModel.COL_AR5_ROT if shape == "cols" else CrystalModel.SPHERE
+    cloud.particles.loc[:, "model"] = shape
     # run = cloud.take_image(detector, distance=distance, separate_particles=True)
     run = take_image(detector, distance, cloud, True)
-    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{n_px}px_{shape}_run.pkl")
+    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{n_px}px_{shape.name}_run.pkl")
 else:
     run = DetectorRun.load("../data/2023-07-11_999_spheres_run.pkl")
     # run = DetectorRun.load("../data/2023-07-06_999_rects_run.pkl")
