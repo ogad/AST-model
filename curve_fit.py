@@ -2,6 +2,7 @@
 import pandas as pd
 from psd_ast_model import GammaPSD
 from scipy.optimize import curve_fit
+import numpy as np
 
 import matplotlib.pyplot as plt
 
@@ -15,7 +16,7 @@ df["dn_dd"] *= 1e6
 
 popt, pcov = curve_fit(
         lambda d, intercept, slope, shape: GammaPSD._dn_gamma_dd(d, intercept, slope, shape), 
-        df["size"], df["dn_dd"],p0=[1, 1, 1], maxfev=10000)
+        df["size"], df["dn_dd"],p0=[1, 1, 1], maxfev=10000, bounds=([0, 0, 0], [np.inf, np.inf, 9]))
 
 
 fig, ax = plt.subplots()
