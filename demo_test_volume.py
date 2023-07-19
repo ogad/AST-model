@@ -24,12 +24,6 @@ logging.basicConfig(level=logging.INFO)
 seed(42)
 np.random.seed(42)
 
-# O'Shea 2021 Fig. 18(c)
-# N_0 = 10e4 L-1 cm-1; µ = 2; @lambda = 200 cm-1
-# gamma_dist = OSheaGammaPSD(1e4 * 1e3 * 1e2, 200 * 1e2, 2)
-
-# gamma_dist = OSheaGammaPSD(102 * 1e3 * 1e2, 4.82 * 1e2, 2.07, bins=np.logspace(-8, -2, 10000))
-# gamma_dist = TwoMomentGammaPSD.from_m2_tc(8e-4, -40, bins=np.logspace(-8, -1, 10000))
 gamma_dist = GammaPSD(1.17e43, 8.31e4, 7.86)
 
 fig, ax = plt.subplots()
@@ -65,21 +59,20 @@ plt.colorbar()
 def take_image(detector, distance, cloud: CloudVolume, separate_particles):
     return cloud.take_image(detector, distance=distance, separate_particles=separate_particles)
 
-
+detector_run_version=1
 redo_detections = True
 shape = CrystalModel.RECT_AR5_ROT
 distance = 999
 n_px = 128
-if redo_detections:
+
+try:
+    run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+except FileNotFoundError:
     detector = Detector(np.array([0.05, 0.1, 0]), n_pixels=n_px)
     cloud.particles.loc[:, "model"] = shape
     # run = cloud.take_image(detector, distance=distance, separate_particles=True)
     run = take_image(detector, distance, cloud, True)
-    run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_{n_px}px_{shape.name}_run.pkl")
-else:
-    run = DetectorRun.load("../data/2023-07-11_999_spheres_run.pkl")
-    # run = DetectorRun.load("../data/2023-07-06_999_rects_run.pkl")
-# objects, _ = cloud.take_image(detector, distance=10, separate_particles=True, use_focus=True)
+    run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
 
 # detections.amplitude.intensity.plot()
 # %%
@@ -93,37 +86,8 @@ if run.distance <= 100:
     plt.tight_layout()
 
 # %%
-
-diameter_series = {}
-# diameter_series["50%"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", edge_filter=False, framed=False, bound=False))
-# diameter_series["50% framed"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", edge_filter=False, bound=False))
-# diameter_series["50% no edge"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy",  bound=False, framed=False))
-# diameter_series["50% no edge bounded"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", filled=True, framed=False))
-# diameter_series["50% no edge bounded unfilled"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", framed=False))
-# diameter_series["50% no edge bounded framed"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", filled=True))
-diameter_series["50% no edge bounded framed minsep"] = run.measure_diameters(spec=DiameterSpec(diameter_method="xy", min_sep=0.001, filled=True))
-# diameter_series["50% no edge, circle equiv. bounded unfilled framed"] = run.measure_diameters(spec=DiameterSpec(min_sep=0.001))
-
-bins = np.linspace(0, 5e-4, 50)
-
-# gamma_dist.plot(plt.gca(), label="True")
-
-for label, diameters in diameter_series.items():
-    diameters = list(diameters.values())
-    plt.stairs(np.histogram(np.array(diameters) * 1e-6, bins=bins)[0] / (np.diff(bins) * run.volume(bins[1:])), bins, label=label)
-# plt.legend()
-# plt.xlim(0,5e-4)
-# # plt.yscale("log")
-
-# plt.xlabel("Diameter (m)")
-# plt.ylabel("dN/dD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)")#, color="C0")
-# plt.ylim(0, 0.5e9)
-# plt.yticks(color="C0")
-
-# plt.show()
-# %%
-retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
-retrieval = Retrieval(run, DiameterSpec(min_sep=0.1))
+retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=5e-4, filled=True))
+retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4))
 
 # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
 fit = retrieval.fit_gamma(min_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
@@ -157,39 +121,4 @@ axs[1][1].set_ylabel("Count")
 axs[1,0].remove()
 # plt.show()
 
-# %%
-def continuous_int_input():
-    while True:
-        try:
-            inp = input("Enter a number, or 'q' to quit:")
-            if inp == "q":
-                break
-            yield int(inp)
-        except ValueError:
-            print("Please enter a number")
-
-# %%
-# coord = list(retrieval.detected_particles.keys())[7]
-# cloud.plot_from_run(run, 1e-6*np.array(coord), grayscale_bounds=[.5])
-
-# locations = [coord for coord, diameter in retrieval.detected_particles.items() if diameter < 50]
-
-# fig, axs = plt.subplots(len(locations), 2, figsize=(7, 4*len(locations)))
-# for i, location in enumerate(locations):
-#     cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][0], colorbar=True)
-#     cloud.plot_from_run(run, 1e-6*np.array(location), ax=axs[i][1], grayscale_bounds=[.5], plot_outlines=True, cloud=cloud)
-# plt.tight_layout()
-# plt.show()
-
-# locations_to_remove = [locations[i] for i in continuous_int_input()]
-# retrieval.remove_particles(locations_to_remove)
-
-
-# %%
-# Plan of attack:
-# Bucket our diameters into bins (which bins?)
-# Work out a SVol for each bin (EAW approx constant with z)
-# Work out a number density for each bin, and then divide by the bin width to give an instantanous dN/dD
-# %%
-# sebs papers size metric z invariant ish. circ equivalent.
 # %%
