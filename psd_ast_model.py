@@ -57,7 +57,8 @@ class PSD(ABC):
     """Base class for particle size distribution objects."""
     def __init__(self, bins: list[float] = None, model: CrystalModel = CrystalModel.SPHERE):
         if bins is None and getattr(self,"xlim", None) is not None:
-            bins = np.logspace(np.log10(max(self.xlim[0], 10e-6)), np.log10(self.xlim[1]), 100)
+            lower_lim = -7 if self.xlim[0] == 0 else np.log10(self.xlim[0])
+            bins = np.logspace(lower_lim, np.log10(self.xlim[1]), 100)
         elif bins is None:
             bins = np.logspace(-7, -3, 100)
         self.bins = bins
@@ -77,7 +78,8 @@ class PSD(ABC):
         Returns:
             np.ndarray: The number of particles in each bin.
         """
-        return self.dn_dd(self.bins[1:]) * (np.diff(self.bins))
+        midpoints = (self.bins[1:] + self.bins[:-1]) / 2
+        return self.dn_dd(midpoints) * (np.diff(self.bins))
     
     def generate_diameters(self, n_particles) -> tuple[list[float], list[ASTModel]]:
         """Generate a particle diameter from the PSD."""
@@ -161,6 +163,8 @@ class GammaPSD(PSD):
         self.shape = shape
 
         self.xlim = self.mean + ( 10 * np.sqrt(self.variance) * np.array([-1,1]) )
+        self.xlim[0] = max(self.xlim[0], 0)
+        self.xlim[1] = max(self.xlim[1], 5e-4)
 
         super().__init__(bins, model)
 
