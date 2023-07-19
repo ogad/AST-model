@@ -59,66 +59,62 @@ plt.colorbar()
 def take_image(detector, distance, cloud: CloudVolume, separate_particles):
     return cloud.take_image(detector, distance=distance, separate_particles=separate_particles)
 
-detector_run_version=1
-redo_detections = True
-shape = CrystalModel.RECT_AR5_ROT
-distance = 999
-n_px = 128
 
-try:
-    run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
-except FileNotFoundError:
-    detector = Detector(np.array([0.05, 0.1, 0]), n_pixels=n_px)
-    cloud.particles.loc[:, "model"] = shape
-    # run = cloud.take_image(detector, distance=distance, separate_particles=True)
-    run = take_image(detector, distance, cloud, True)
-    run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+def make_run(shape, distance, n_px):
+    detector_run_version=1
+    
+    try:
+        run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+    except FileNotFoundError:
+        detector = Detector(np.array([0.05, 0.1, 0]), n_pixels=n_px)
+        cloud.particles.loc[:, "model"] = shape
+        # run = cloud.take_image(detector, distance=distance, separate_particles=True)
+        run = take_image(detector, distance, cloud, True)
+        run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+
+    return run
 
 # detections.amplitude.intensity.plot()
-# %%
-# colormap from red to transparent
-from matplotlib.colors import LinearSegmentedColormap
-object_cmap = LinearSegmentedColormap.from_list("red_transparent", [(1, 0, 0, 1), (1, 0, 0, 0)])
-object_norm = plt.Normalize(0, 1)
 
-if run.distance <= 100:
-    run.plot(grayscale_bounds=[0.25, 0.5, 0.75], plot_outlines=True,  cloud=cloud)
-    plt.tight_layout()
+def make_and_plot_retrievals(run):
+    retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=5e-4, filled=True))
+    retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4))
 
-# %%
-retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=5e-4, filled=True))
-retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4))
+    # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
+    fit = retrieval.fit_gamma(min_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+    fit2 = retrieval2.fit_gamma(min_diameter = 20e-6)
 
-# retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
-fit = retrieval.fit_gamma(min_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
-fit2 = retrieval2.fit_gamma(min_diameter = 20e-6)
+    fig, axs = plt.subplots(2, 2, width_ratios=[1, 5], height_ratios=[3,1], figsize=(10, 7), sharex='col')
 
-# %%
-fig, axs = plt.subplots(2, 2, width_ratios=[1, 5], height_ratios=[3,1], figsize=(10, 7), sharex='col')
+    psd_axs = axs[0,:]
 
-psd_axs = axs[0,:]
+    for ax in psd_axs:
+        true = gamma_dist.plot(ax, label=f"True\n{gamma_dist.parameter_description()}")
+        retrieval.plot(label="Retrieved (Circ. equiv.)", ax=ax, color="C1")
+        retrieval2.plot(label="Retrieved (XY)", ax=ax, color="C2")
+        fit_ce = fit.plot(ax, label=f"Circle equivalent\n{fit.parameter_description()}", color="C1")
+        fit_xy = fit2.plot(ax, label=f"XY mean\n{fit2.parameter_description()}", color="C2")
 
-for ax in psd_axs:
-    true = gamma_dist.plot(ax, label=f"True\n{gamma_dist.parameter_description()}")
-    retrieval.plot(label="Retrieved (Circ. equiv.)", ax=ax, color="C1")
-    retrieval2.plot(label="Retrieved (XY)", ax=ax, color="C2")
-    fit_ce = fit.plot(ax, label=f"Circle equivalent\n{fit.parameter_description()}", color="C1")
-    fit_xy = fit2.plot(ax, label=f"XY mean\n{fit2.parameter_description()}", color="C2")
+    # plt.yscale("log")
+    psd_axs[0].set_xlim(0, 1e-4)
+    psd_axs[0].set_xticks([0, 1e-4])
+    psd_axs[1].set_ylim(0, 0.5e9)
+    psd_axs[1].set_xlim(0, 5e-4)
+    psd_axs[1].legend(handles=true+fit_ce+fit_xy)
+    psd_axs[0].get_legend().remove()
 
-# plt.yscale("log")
-psd_axs[0].set_xlim(0, 1e-4)
-psd_axs[0].set_xticks([0, 1e-4])
-psd_axs[1].set_ylim(0, 0.5e9)
-psd_axs[1].set_xlim(0, 5e-4)
-psd_axs[1].legend(handles=true+fit_ce+fit_xy)
-psd_axs[0].get_legend().remove()
+    axs[1][1].bar(retrieval.midpoints, np.histogram(retrieval.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C1", alpha=0.2)
+    axs[1][1].bar(retrieval2.midpoints, np.histogram(retrieval2.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C2", alpha=0.2)
+    axs[1][1].set_xlabel("Diameter (m)")
+    axs[1][1].set_ylabel("Count")
 
-axs[1][1].bar(retrieval.midpoints, np.histogram(retrieval.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C1", alpha=0.2)
-axs[1][1].bar(retrieval2.midpoints, np.histogram(retrieval2.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C2", alpha=0.2)
-axs[1][1].set_xlabel("Diameter (m)")
-axs[1][1].set_ylabel("Count")
+    axs[1,0].remove()
 
-axs[1,0].remove()
-# plt.show()
+    fig.suptitle(f"{shape.__str__()}\n{n_px}x{run.detector.pixel_size*1e6:.0f} µm pixels, {distance} m distance")
+    return fig, [retrieval, retrieval2]
+
+
 
 # %%
+run = make_run(shape=CrystalModel.COL_AR5_ROT, distance=999, n_px=128)
+fig, retrievals = make_and_plot_retrievals(run)
