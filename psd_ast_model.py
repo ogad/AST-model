@@ -23,6 +23,19 @@ class CrystalModel(Enum):
     COL_AR5_ROT = 4
     RECT_AR5_ROT = 5
 
+    def __init__(self, *args) -> None:
+        self.model_names = {
+            1: "Sphere",
+            2: "Rectangular with aspect ratio 5",
+            3: "Rosette with 6 arms, 100µm width",
+            4: "Rectangular with aspect ratio 5, rotated in 3D",
+            5: "Rectangular with aspect ratio 5, rotated in plane"
+        }
+        super().__init__(*args)
+
+    def __str__(self):
+        return self.model_names[self.value]
+
     def get_generator(self):
         if self == CrystalModel.SPHERE:
             return lambda particle, **kwargs: ASTModel.from_diameter(particle.diameter*1e6, **kwargs)
@@ -36,6 +49,7 @@ class CrystalModel(Enum):
             return lambda particle, **kwargs: ASTModel.from_diameter_rosette(particle.diameter*1e6, 3, **kwargs)
         else:
             raise ValueError("Crystal model not recognised.")
+    
 
 def rejection_sampler(p, xbounds, pmax):
     """Returns a value sampled from a bounded probability distribution.
