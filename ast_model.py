@@ -14,7 +14,9 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from scipy import ndimage
 from skimage.transform import rescale
-
+from shapely.geometry import Point
+from affine import Affine
+from rasterio.features import rasterize
 
 def plot_outline(mapimg, ax=None):
     """From https://stackoverflow.com/questions/24539296/outline-a-region-in-a-graph/24540564#24540564"""
@@ -375,10 +377,14 @@ class ASTModel:
         # create the opaque shape
         radius_m = diameter * 1e-6 / 2
         radius_px = radius_m / pixel_size
-        x = np.arange(-radius_px, radius_px)
-        y = np.arange(-radius_px, radius_px)
-        x_val_grid, y_val_grid = np.meshgrid(x, y)
-        opaque_shape = np.where(x_val_grid**2 + y_val_grid**2 <= radius_px**2, 1, 0)
+        # x = np.arange(-radius_px, radius_px)
+        # y = np.arange(-radius_px, radius_px)
+        # x_val_grid, y_val_grid = np.meshgrid(x, y)
+        # opaque_shape = np.where(x_val_grid**2 + y_val_grid**2 <= radius_px**2, 1, 0)
+
+        particle_shapely = Point(0,0).buffer(radius_m)
+        output_len = int(2*radius_px + 5)
+        opaque_shape = rasterize([particle_shapely], out_shape=(output_len,output_len), transform=Affine.scale(pixel_size) * Affine.translation(-output_len/2, -output_len/2))
 
         # create the model
         model = cls(opaque_shape, wavenumber, pixel_size)
