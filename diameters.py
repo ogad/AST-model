@@ -2,10 +2,20 @@
 # Oliver Driver
 # 11/07/2023
 
-from __future__ import annotations
+#TODO: this has become a mess... split this out so that it's easier for IntensityField and AmplitudeField measurements.
+def measure_diameters(detection: "ImagedRegion|DetectorRun|IntensityField", spec, **kwargs):
+    if hasattr(detection, "get_frames_to_measure"):
+        frames = detection.get_frames_to_measure(spec, **kwargs)
+        xlims = detection.xlims
+    elif hasattr(detection, "frames"):
+        frames = [((istart, istart), field) for istart, field in detection.frames()]
+        xlims = (0, detection.field.shape[0])
+    else:
+        frames = [((istart, istart), field) for istart, field in detection.intensity.frames()]
+        xlims = (0, detection.intensity.field.shape[0])
 
-def measure_diameters(detection, spec, **kwargs):
-    frames = detection.get_frames_to_measure(spec, **kwargs)
+    if len(frames) == 0:
+        return {}
 
     frames.sort(key=lambda x: x[0][0])
     to_remove = []
@@ -30,7 +40,7 @@ def measure_diameters(detection, spec, **kwargs):
     for ylims, frame_intensity in frames:
         frame_detections = frame_intensity.measure_diameters(diameter_method=spec.diameter_method, **kwargs)
         # transform keys to global coordinates
-        frame_detections = {(detection.xlims[0]*1e6 + x_frame, ylims[0]*1e6 + y_frame): diameter for (x_frame, y_frame), diameter in frame_detections.items()}
+        frame_detections = {(xlims[0]*1e6 + x_frame, ylims[0]*1e6 + y_frame): diameter for (x_frame, y_frame), diameter in frame_detections.items()}
         detected_particles = detected_particles | frame_detections
 
     diameters = list(detected_particles.values())

@@ -87,7 +87,7 @@ class ImagedRegion:
             # split image into "frames" separated by empty rows.
             frames = list(self.amplitude.intensity.frames())
         else:
-            frames = [(0, self.amplitude.intensity)]
+            frames = [((0,0), self.amplitude.intensity)]
 
         # Remove frames that aren't separated by at least min_sep (distance in m) #TODO: check units
         if spec.min_sep is not None:

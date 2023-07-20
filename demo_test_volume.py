@@ -1,5 +1,5 @@
 # %%
-import logging
+import logging 
 from random import seed
 import pickle
 
@@ -30,7 +30,7 @@ fig, ax = plt.subplots()
 gamma_dist.plot(ax)
 # %%
 # psd.plot(ax)
-cloud_len = 1000
+cloud_len = 1500
 try:
     with open(f"cloud_01_{cloud_len}_01.pkl", "rb") as f:
         cloud = pickle.load(f)
@@ -60,19 +60,23 @@ def take_image(detector, distance, cloud: CloudVolume, separate_particles):
     return cloud.take_image(detector, distance=distance, separate_particles=separate_particles)
 
 
-def make_run(shape, distance, n_px):
-    detector_run_version=1
+def make_run(shape, distance, n_px, plot=True):
+    detector_run_version=2
+    cloud.set_model(shape)
     
     try:
         run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
     except FileNotFoundError:
         detector = Detector(np.array([0.05, 0.1, 0]), n_pixels=n_px)
-        cloud.particles.loc[:, "model"] = shape
         # run = cloud.take_image(detector, distance=distance, separate_particles=True)
         run = take_image(detector, distance, cloud, True)
         run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
 
-    return run
+    if plot:
+        fig, retrievals = make_and_plot_retrievals(run)
+        fig.suptitle(f"{shape.__str__()}\n{n_px}x{run.detector.pixel_size*1e6:.0f} µm pixels, {distance} m distance")
+
+    return run, retrievals
 
 # detections.amplitude.intensity.plot()
 
@@ -81,15 +85,17 @@ def make_and_plot_retrievals(run):
     retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4))
 
     # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
-    fit = retrieval.fit_gamma(min_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
-    fit2 = retrieval2.fit_gamma(min_diameter = 20e-6)
+    fit = GammaPSD.fit(retrieval.midpoints, retrieval.dn_dd_measured, min_considered_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+    fit2 = GammaPSD.fit(retrieval2.midpoints, retrieval2.dn_dd_measured, min_considered_diameter = 20e-6)
 
     fig, axs = plt.subplots(2, 2, width_ratios=[1, 5], height_ratios=[3,1], figsize=(10, 7), sharex='col')
 
     psd_axs = axs[0,:]
 
     for ax in psd_axs:
-        true = gamma_dist.plot(ax, label=f"True\n{gamma_dist.parameter_description()}")
+        true = cloud.psd.plot(ax, label=f"True\n{gamma_dist.parameter_description()}")
+        cloud.psd.plot(ax, label=f"True\n{gamma_dist.parameter_description()}", retrieval=retrieval, color="C1", linestyle="dotted")
+        cloud.psd.plot(ax, label=f"True\n{gamma_dist.parameter_description()}", retrieval=retrieval2, color="C2", linestyle="dotted")
         retrieval.plot(label="Retrieved (Circ. equiv.)", ax=ax, color="C1")
         retrieval2.plot(label="Retrieved (XY)", ax=ax, color="C2")
         fit_ce = fit.plot(ax, label=f"Circle equivalent\n{fit.parameter_description()}", color="C1")
@@ -110,11 +116,11 @@ def make_and_plot_retrievals(run):
 
     axs[1,0].remove()
 
-    fig.suptitle(f"{shape.__str__()}\n{n_px}x{run.detector.pixel_size*1e6:.0f} µm pixels, {distance} m distance")
-    return fig, [retrieval, retrieval2]
+    return fig, (retrieval, retrieval2)
 
 
 
 # %%
-run = make_run(shape=CrystalModel.COL_AR5_ROT, distance=999, n_px=128)
-fig, retrievals = make_and_plot_retrievals(run)
+for shape in CrystalModel:
+    run, retrievals = make_run(shape, 999, 128)
+# %%

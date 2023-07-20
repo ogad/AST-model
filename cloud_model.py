@@ -15,7 +15,7 @@ from enum import Enum
 
 import matplotlib.pyplot as plt
 
-from psd_ast_model import GammaPSD
+from psd_ast_model import CrystalModel, GammaPSD
 from ast_model import ASTModel, AmplitudeField
 from detector_model import Detector, ImagedRegion
 from detector_run import DetectorRun
@@ -26,11 +26,21 @@ class CloudVolume:
     psd: GammaPSD
     dimensions: tuple[float, float, float] # (x, y, z) in m
 
-    def _generate_positions(self, resolution, n_particles):
+    def _generate_positions(self, resolution, n_particles, y_offset=0):
         """Generate a random position within the cloud volume."""
+        if self.dimensions[0] > 1e3 or self.dimensions[2] > 1e3:
+            raise Exception("X and Z dimensions cannot be extended beyond 1km.")
+        elif self.dimensions[1] > 1e3:
+            possible_offsets = np.arange(0, self.dimensions[1], 1e3)
+            weights = np.diff(possible_offsets)
+            weights = np.append(weights, self.dimensions[1])
+            y_offset = np.random.choice(possible_offsets, p=weights/np.sum(weights), size=(n_particles))
+        else:
+            y_offset = np.zeros((n_particles))
+
         rng = np.random.default_rng()
         xs = rng.integers(0, int(self.dimensions[0]//resolution), size=(n_particles))
-        ys = rng.integers(0, int(self.dimensions[1]//resolution), size=(n_particles))
+        ys = rng.integers(0, int(self.dimensions[1]//resolution), size=(n_particles)) + y_offset
         zs = rng.integers(0, int(self.dimensions[2]//resolution), size=(n_particles))
         return np.array([xs, ys, zs]).T * resolution
     
@@ -74,9 +84,8 @@ class CloudVolume:
 
         logging.info(f"Generating grid of dimensions: {[int(dim / 1e-6) for dim in self.dimensions]} points.")
         # raise warning if any dimension will have more than 2e9 points
-        if any([dim > 2e3 for dim in self.dimensions]):
+        if any([dim > 1e3 for dim in self.dimensions]):
             logging.warn("One or more dimensions is too great to grid at 2µm resolution.")
-        dim_grids = [np.arange(0, dim, 2e-6) for dim in self.dimensions]
 
         # Generate the particles
         # self.particles = pd.DataFrame(columns=["diameter", "position", "model"])
@@ -174,3 +183,7 @@ class CloudVolume:
         
         image = ImagedRegion(detector_position, total_amplitude, particles=particles)
         return image
+
+    def set_model(self, shape:CrystalModel):
+        self.particles["model"] = shape
+        self.psd.model = shape

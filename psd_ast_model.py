@@ -2,9 +2,11 @@
 # Author: Oliver Driver
 # Date: 01/06/2023
 
+from collections import namedtuple
 from random import choices
 from abc import ABC, abstractmethod
 from enum import Enum
+import logging
 
 import numpy as np
 from numpy.random import randint
@@ -13,6 +15,8 @@ from scipy.optimize import curve_fit
 
 
 from ast_model import ASTModel
+from diameters import measure_diameters
+from retrieval_model import Retrieval
 
 
 class CrystalModel(Enum):
@@ -109,14 +113,35 @@ class PSD(ABC):
         # return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1) 
         return self.binned_distribution.sum()
     
-    def plot(self, ax, **kwargs):
+    def plot(self, ax, retrieval:Retrieval=None, **kwargs):
         """Plot the PSD value against diameter."""
-        handle = ax.plot(self.bins[1:], self.dn_dd(self.bins[1:]), **kwargs)
+        if retrieval is None: # Don't adjust
+            x_vals = self.bins
+        else:
+            x_vals = self.adjusted_bins(retrieval)
+        handle = ax.plot(x_vals, self.dn_dd(self.bins), **kwargs)
         # ax.set_xscale('log')
         # ax.set_yscale('log')
         ax.set_xlabel('Diameter (m)')
         ax.set_ylabel('PSD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)')
         return handle
+    
+    def adjusted_bins(self, retrieval):
+        # for each bin edge, calculate the focused diameter
+        adjusted_bins = []
+        Particle = namedtuple("Particle", ["diameter", "angle", "model"])
+        for diameter in self.bins:
+            particle = Particle(diameter, (0,0), self.model)
+            model = self.model.get_generator()(particle,  wavenumber=2*np.pi/retrieval.run.detector.wavelength, pixel_size=retrieval.run.detector.pixel_size)
+            focused_amp = model.process(0)
+            diameter = measure_diameters(focused_amp, retrieval.spec)
+            if len(diameter) > 1:
+                raise ValueError("Multiple diameters found in focused image... Something is very wrong.")
+            elif len(diameter) == 0:
+                adjusted_bins.append(0)
+            else:
+                adjusted_bins.append(next(iter(diameter.values())))
+        return np.array(adjusted_bins) * 1e-6
 
 class CompositePSD(PSD):
     """A composite particle size distribution object.
@@ -242,6 +267,35 @@ class GammaPSD(PSD):
         slope = mean / variance
         shape = (mean * slope) + 1
         return cls.from_concentration(number_concentration, slope, shape, **kwargs)
+    
+    @classmethod
+    def fit(cls, diameters, dn_dd, min_considered_diameter=50e-6):
+        from scipy.optimize import curve_fit
+
+        diameter_vals = diameters[(dn_dd != 0) & (diameters >= min_considered_diameter)]
+        dn_dd_vals = dn_dd[(dn_dd != 0) & (diameters >= min_considered_diameter)]
+
+        # expon = lambda d, intercept, slope: intercept * np.exp(-1 * slope * d)
+
+        # log_gamma = lambda d, intercept, slope, shape: np.log10(GammaPSD._dn_gamma_dd(d, intercept, slope, shape))
+
+        fit_gamma = lambda d, intercept, slope, shape: GammaPSD._dn_gamma_dd(d, intercept, slope, shape)
+
+        results = curve_fit(GammaPSD._dn_gamma_dd, diameter_vals, dn_dd_vals / 1e6, 
+                                p0=[1, 1, 1], 
+                                maxfev=10000,
+                                bounds=([0, 0, 1], [np.inf, np.inf, np.inf]),
+                                # method='dogbox',
+                                full_output=True
+                               ) 
+        
+        intercept_l_mcb, slope, shape = results[0]
+        intercept = intercept_l_mcb * 1e6
+
+        logging.info(results[3])
+
+        return cls(intercept, slope, shape)
+
 
 
 class OSheaGammaPSD(GammaPSD):
