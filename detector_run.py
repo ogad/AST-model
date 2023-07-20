@@ -84,7 +84,7 @@ class DetectorRun:
                 ax.remove()
         return fig, axs
     
-    def volume(self, diameter, spec:DiameterSpec=None, c=8):
+    def volume(self, diameter, spec:DiameterSpec=None, c=8): # m^3
         # TODO: in theory, parallel diameter can be different to DOF diameter (!)
         max_dof = self.detector.pixel_size * self.detector.n_pixels / 2 if spec is not None and spec.z_confinement else np.inf
         sample_length = self.distance # m

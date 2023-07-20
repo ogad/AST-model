@@ -23,14 +23,14 @@ class Retrieval:
         self.bins = bins if bins is not None else np.linspace(0, array_length - run.detector.pixel_size, run.detector.n_pixels)
 
         self.detected_particles = run.measure_diameters(spec)
-        self.diameters = np.array(list(self.detected_particles.values())) * 1e-6
+        self.diameters = np.array(list(self.detected_particles.values())) * 1e-6 # m
 
         self.midpoints = (self.bins[:-1] + self.bins[1:]) / 2
         self.bin_widths = self.bins[1:] - self.bins[:-1]
 
-        self.volumes = run.volume(self.midpoints, spec=spec)
+        self.volumes = run.volume(self.midpoints, spec=spec) # m^3
 
-        self.dn_dd_measured = np.histogram(self.diameters, bins=self.bins)[0] / (self.bin_widths * self.volumes)
+        self.dn_dd_measured = np.histogram(self.diameters, bins=self.bins)[0] / (self.bin_widths * self.volumes) # m^-3 m^-1
 
 
     def plot(self, ax=None, label=None, **plot_kwargs):
@@ -46,3 +46,12 @@ class Retrieval:
             self.detected_particles.pop(location)
         self.diameters = np.array(list(self.detected_particles.values())) * 1e-6
         self.dn_dd_measured = np.histogram(self.diameters, bins=self.bins)[0] / (self.bin_widths * self.volumes)
+
+    
+    def iwc(self, as_volume=False):
+        sphere_volumes = 1/6 * np.pi * self.midpoints**3 # Assumption that retrieved diamaeter is volume equivalent sphere diameter
+        integrated_volume = np.sum(self.dn_dd_measured * sphere_volumes * self.bin_widths) # ∫(m^-3 m^-1)(m^3) (dm) = m^3(water) m^-3(cloud) 
+        if as_volume:
+            return integrated_volume # m^3(water) m^-3(cloud)
+        else:
+            return integrated_volume * 917 # kg(water) m^-3(cloud)
