@@ -28,13 +28,13 @@ class ImageFilter(Enum):
     NO_EDGE_HALF_INTENSITY = 2
     PRIMARY_Z_CONFINED = 3
 
-    def __call__(self, image: 'ImagedRegion'):
+    def __call__(self, image: 'IntensityField'):
         if self == ImageFilter.PRESENT_HALF_INTENSITY:
-            return image.amplitude.intensity.field.min() <= 0.5
+            return image.field.min() <= 0.5
         elif self == ImageFilter.NO_EDGE_HALF_INTENSITY:
-            return np.concatenate([image.amplitude.intensity.field[0,:], image.amplitude.intensity.field[-1,:]]).min() > 0.5
-        elif self == ImageFilter.PRIMARY_Z_CONFINED:
-            return abs(image.particles.position[image.particles.primary].iloc[0][2] - image.detector_position[2]) < (image.amplitude.pixel_size * image.amplitude.field.shape[0] / 2)
+            return np.concatenate([image.field[0,:], image.field[-1,:]]).min() > 0.5
+        # elif self == ImageFilter.PRIMARY_Z_CONFINED:
+        #     return abs(image.particles.position[image.particles.primary].iloc[0][2] - image.detector_position[2]) < (image.amplitude.pixel_size * image.amplitude.field.shape[0] / 2)
         else:
             raise NotImplementedError(f"Image filter {self} not implemented")
 
@@ -80,14 +80,14 @@ class ImagedRegion:
 
 
     def get_frames_to_measure(self, spec, **kwargs) -> list[tuple[tuple[float, float], IntensityField]]:
-        if not np.all([image_filter(self) for image_filter in spec.filters]):
-            raise ValueError("Image does not pass filters; it shouldn't have got this far...")
-
         if spec.framed:
             # split image into "frames" separated by empty rows.
             frames = list(self.amplitude.intensity.frames())
         else:
-            frames = [((0,0), self.amplitude.intensity)]
+            frames = [(0, self.amplitude.intensity)]
+
+        if frames == []:
+            return frames
 
         # Remove frames that aren't separated by at least min_sep (distance in m) #TODO: check units
         if spec.min_sep is not None:
@@ -144,7 +144,7 @@ class ImagedRegion:
         if "primary" in self.particles.columns:
             primary_index = self.particles[self.particles.primary].index[0]
             cloud.particles["primary"] = cloud.particles.index == primary_index
-            focused_run = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, separate_particles=True, primary_only=True)
+            focused_run = cloud.take_image(detector, distance=self.amplitude.field.shape[1] * self.amplitude.pixel_size, use_focus=True, primary_only=True)
             cloud.particles.drop("primary", axis=1, inplace=True)
             yield focused_run.images[0]
         else:

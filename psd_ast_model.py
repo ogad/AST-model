@@ -19,6 +19,8 @@ from diameters import measure_diameters
 from retrieval_model import Retrieval
 
 
+Particle = namedtuple("Particle", ["diameter", "angle", "model"])
+
 class CrystalModel(Enum):
     """Enum for crystal types."""
     SPHERE = 1
@@ -53,7 +55,21 @@ class CrystalModel(Enum):
             return lambda particle, **kwargs: ASTModel.from_diameter_rosette(particle.diameter*1e6, 3, **kwargs)
         else:
             raise ValueError("Crystal model not recognised.")
-    
+        
+    def min_diameter(self, pixel_size):
+        model_generator = self.get_generator()
+        
+        diameter = 0
+        while True:
+            model = model_generator(Particle(diameter,(0,0),self), pixel_size=pixel_size)
+            if model.opaque_shape.any():
+                break
+            diameter += pixel_size/10
+        
+        return diameter
+
+
+
 
 def rejection_sampler(p, xbounds, pmax):
     """Returns a value sampled from a bounded probability distribution.
@@ -129,12 +145,12 @@ class PSD(ABC):
     def adjusted_bins(self, retrieval):
         # for each bin edge, calculate the focused diameter
         adjusted_bins = []
-        Particle = namedtuple("Particle", ["diameter", "angle", "model"])
+        
         for diameter in self.bins:
             particle = Particle(diameter, (0,0), self.model)
             model = self.model.get_generator()(particle,  wavenumber=2*np.pi/retrieval.run.detector.wavelength, pixel_size=retrieval.run.detector.pixel_size)
             focused_amp = model.process(0)
-            diameter = measure_diameters(focused_amp, retrieval.spec)
+            diameter = measure_diameters(focused_amp, retrieval.spec, force_nominsep=True)
             if len(diameter) > 1:
                 raise ValueError("Multiple diameters found in focused image... Something is very wrong.")
             elif len(diameter) == 0:
