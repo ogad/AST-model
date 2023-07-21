@@ -2,6 +2,7 @@
 import logging 
 from random import seed
 import pickle
+from typing import is_typeddict
 
 from tqdm import tqdm
 import numpy as np
@@ -30,12 +31,12 @@ fig, ax = plt.subplots()
 gamma_dist.plot(ax)
 # %%
 # psd.plot(ax)
-cloud_len = 1500
+cloud_len = 5001
 try:
     with open(f"cloud_01_{cloud_len}_01.pkl", "rb") as f:
         cloud = pickle.load(f)
 except (FileNotFoundError, ModuleNotFoundError):
-    cloud = CloudVolume(gamma_dist, (0.1, cloud_len, 0.1))
+    cloud = CloudVolume(gamma_dist, (0.01, cloud_len, 0.1))
     with open(f"cloud_01_{cloud_len}_01.pkl", "wb") as f:
         pickle.dump(cloud, f)
 
@@ -48,7 +49,7 @@ n_pixels = 128
 
 detector_1 = Detector(detector_location, n_pixels=n_pixels)
 
-image = cloud.take_image(detector_1, distance=30* pcle.diameter).amplitude.intensity.field
+image = cloud.take_image(detector_1, distance=30* pcle.diameter).images[0].amplitude.intensity.field
 plt.imshow(image)
 plt.scatter(0, n_pixels / 2, c="r")
 plt.colorbar()
@@ -56,8 +57,8 @@ plt.colorbar()
 
 # %%
 @profile(f"../data/profile__take_image__{datetime.datetime.now():%Y-%m-%d_%H%M}.prof")
-def take_image(detector, distance, cloud: CloudVolume, separate_particles):
-    return cloud.take_image(detector, distance=distance, separate_particles=separate_particles)
+def take_image(detector, distance, cloud: CloudVolume, single_image=False):
+    return cloud.take_image(detector, distance=distance, single_image = single_image)
 
 
 def make_run(shape, distance, n_px, plot=True):
@@ -67,9 +68,9 @@ def make_run(shape, distance, n_px, plot=True):
     try:
         run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
     except FileNotFoundError:
-        detector = Detector(np.array([0.05, 0.1, 0]), n_pixels=n_px)
+        detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06)
         # run = cloud.take_image(detector, distance=distance, separate_particles=True)
-        run = take_image(detector, distance, cloud, True)
+        run = take_image(detector, distance, cloud)
         run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
 
     if plot:

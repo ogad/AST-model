@@ -49,8 +49,6 @@ class DetectorRun:
         frames = []
         image_filters = spec.filters
         for image in self.images:
-            if not np.all([image_filter(image) for image_filter in image_filters]):
-                continue
             frames = frames + list(image.get_frames_to_measure(spec, **kwargs))
 
         return frames
@@ -62,7 +60,7 @@ class DetectorRun:
     def plot(self, n_images:int=None, image_filters: list[ImageFilter]=[ImageFilter.PRESENT_HALF_INTENSITY], **kwargs):
         """Plot the images in the run."""
 
-        images_to_plot = [image for image in self.images if np.all([image_filter(image) for image_filter in image_filters])]
+        images_to_plot = [image for image in self.images if np.all([image_filter(image.amplitude.intensity) for image_filter in image_filters])]
         
         if n_images is not None:
             images_to_plot = images_to_plot[:n_images]

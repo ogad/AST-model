@@ -384,7 +384,11 @@ class ASTModel:
 
         particle_shapely = Point(0,0).buffer(radius_m)
         output_len = int(2*radius_px + 5)
-        opaque_shape = rasterize([particle_shapely], out_shape=(output_len,output_len), transform=Affine.scale(pixel_size) * Affine.translation(-output_len/2, -output_len/2))
+        if radius_m == 0:
+            opaque_shape = np.zeros((1,1))
+        else:
+            opaque_shape = rasterize([particle_shapely], out_shape=(output_len,output_len), transform=Affine.scale(pixel_size) * Affine.translation(-(output_len+1)/2, -(output_len+1)/2)) #place centre on a vertex not a pixel centre
+
 
         # create the model
         model = cls(opaque_shape, wavenumber, pixel_size)
@@ -422,6 +426,7 @@ class ASTModel:
         # create the opaque shape
         px_height = int(round(px_height))
         px_width = int(round(px_width))
+
         shape = np.ones((px_width, px_height))
 
         # rotate the shape
@@ -451,10 +456,12 @@ class ASTModel:
         width_px = width * 1e-6 / pixel_size
 
         opaque_shape = cls.rectangle(height_px, width_px, angle)
+        if opaque_shape.size == 0:
+            opaque_shape = np.zeros((1,1))
         
         # create the model
         model = cls(opaque_shape, wavenumber, pixel_size)
-        model.diameters["true"] = width * 1e-6
+        model.diameters["true"] = (4*sum(opaque_shape) * pixel_size**2 / np.pi)**0.5
         
         return model
 
@@ -524,15 +531,18 @@ class ASTModel:
         if z_val in self.amplitudes:
             return self.amplitudes[z_val]
 
-        object_plane = np.pad(
-            self.opaque_shape,
-            # int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),
-            max(
-                abs(10 * int(1.22 * self.wavelength * z_val/(max(self.opaque_shape.shape)*self.pixel_size) / self.pixel_size)),
-                10),  # arbitrarily 10 times the size of the object
-            "constant",
-            constant_values=(0, 0),
-        )
+        if self.opaque_shape.size == 0:
+            object_plane = np.zeros((1, 1))
+        else:
+            object_plane = np.pad(
+                self.opaque_shape,
+                # int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),
+                max(
+                    abs(10 * int(1.22 * self.wavelength * z_val/(max(self.opaque_shape.shape)*self.pixel_size) / self.pixel_size)),
+                    10),  # arbitrarily 10 times the size of the object
+                "constant",
+                constant_values=(0, 0),
+            )
 
         # calculate the transmission function (1 outside the shape, 0 inside)
         transmission_function = np.where(object_plane, 0, 1)

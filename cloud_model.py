@@ -5,6 +5,7 @@
 from copy import deepcopy
 from dataclasses import dataclass
 import datetime
+from pyexpat import model
 import random
 from tkinter import Image
 import pandas as pd
@@ -110,19 +111,10 @@ class CloudVolume:
     def volume(self):
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
     
-    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0])  ,separate_particles: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None) -> DetectorRun | ImagedRegion:
-        """Take an image using repeated detections along the y-axis.
-
-        Detector is aligned with x-axis, and the y-axis is the direction of travel.
-        The z-axis is the focal axis.
-        The detector position is the position of the detector centre during the final detection.
-        The model_generator is a callable taking the diameter of the particle in microns and returning an ASTModel.
-        
-        """
-
+    def particles_in_illuminated_region(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0]) ):
         detector_position = detector.position + offset
 
-        n_images = int(distance / detector.pixel_size)
+        
         beam_width = 8e-3 - (128 * 10e-6) + (detector.n_pixels * detector.pixel_size) # leave the same padding
         beam_length = 2e-3 - (10e-6) + (detector.pixel_size) # leave the same padding
 
@@ -132,7 +124,7 @@ class CloudVolume:
         particle_from_detector = np.stack(self.particles.position.values) - detector_position
 
         is_in_illuminated_region_x = abs(particle_from_detector[:,0]) < (beam_width/2)
-        is_in_illuminated_region_y = (particle_from_detector[:,1] < (beam_length/2 + n_images * detector.pixel_size)) & (particle_from_detector[:,1] > -1*beam_length/2)
+        is_in_illuminated_region_y = (particle_from_detector[:,1] < (beam_length/2 + distance)) & (particle_from_detector[:,1] > -1*beam_length/2)
         is_in_illuminated_region_z = (particle_from_detector[:,2]< detector.arm_separation) & (particle_from_detector[:,2] > 0 )
 
         in_illuminated_region = is_in_illuminated_region_x & is_in_illuminated_region_y & is_in_illuminated_region_z
@@ -140,40 +132,111 @@ class CloudVolume:
             # No particles are in the illuminated region.
             return None
         
-        particles_to_model = self.particles[in_illuminated_region]
+        return self.particles[in_illuminated_region]
+        
+    
+    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0]), single_image: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None) -> DetectorRun | ImagedRegion:
+        """Take an image using repeated detections along the y-axis.
+
+        Detector is aligned with x-axis, and the y-axis is the direction of travel.
+        The z-axis is the focal axis.
+        The detector position is the position of the detector centre during the final detection.
+        The model_generator is a callable taking the diameter of the particle in microns and returning an ASTModel.
+        
+        """
+        detector_position = detector.position + offset
+
+        particles_to_model = self.particles_in_illuminated_region(detector, distance, offset).copy()
         if primary_only:
             particles_to_model = particles_to_model[particles_to_model.primary]
 
-        if separate_particles: #TODO: This should be default behaviour
-            # take an image of each particle individually
-            images = []
-            length_iterations = len(particles_to_model)
-            for particle in tqdm(particles_to_model.itertuples(), total=length_iterations, leave=False):
-                y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
-                z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0
-                particle_image = self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus)
-                if particle_image is not None:
-                    particle_image.particles["primary"] = particle_image.particles.index == particle.Index
+        # define images to take based on particles' separation in y
+        particles_to_model["y_value"] = particles_to_model.position.apply(lambda pos: pos[1])
+        particles_to_model = particles_to_model.sort_values(by="y_value", inplace=False)
+        particles_to_model["y_separation"] = particles_to_model["y_value"].diff()
+        
+        # for dense or large image regions, do some filtering to reduce the number of particles to model
+        if len(particles_to_model) > 10: 
+            models = particles_to_model.model.unique()
+            min_diameter = {model: model.min_diameter(pixel_size=detector.pixel_size) for model in models}
+            particles_to_model = particles_to_model[particles_to_model.apply(lambda particle: particle.diameter >= min_diameter[particle.model], axis=1)]
 
-                    images.append(particle_image)
 
-            run = DetectorRun(detector, images, distance)
-            return run 
+        if single_image:
+            return DetectorRun(detector, [self.process_imaged_region(particles_to_model, detector, distance, offset, use_focus=use_focus)], distance)
+        
+        image_nos = []
+        for particle in particles_to_model.itertuples():
+            if np.isnan(particle.y_separation):
+                image_nos.append(0)
+                prev_diameter = particle.diameter
+                continue
+
+            if particle.y_separation  < min(10*prev_diameter, 10*particle.diameter):
+                image_nos.append(image_nos[-1])
+            else:
+                image_nos.append(image_nos[-1] + 1)
+
+            prev_diameter = particle.diameter
+
+        particles_to_model["image_no"] = image_nos
+
+        
+        images = [] 
+        for image_no in range(image_nos[-1]+1):
+            particles_in_image = particles_to_model[particles_to_model["image_no"]==image_no]
+
+            # offset detector s.t. the end is 5*last_particle.diameter after the "last" particle, and the start is 5*first_particle.diameter before the first particle
+            last_y = particles_in_image.iloc[0].y_value # low
+            last_diameter = particles_in_image.iloc[0].diameter
+            first_y = particles_in_image.iloc[-1].y_value # high
+            first_diameter = particles_in_image.iloc[-1].diameter
+            new_detector_y = last_y - 5*last_diameter
+            new_distance = (first_y + 5*first_diameter) - (last_y - 5*last_diameter)
+            y_offset = new_detector_y - detector_position[1]
+            z_offset = particles_in_image.iloc[0].position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0 #TODO: check this after refactoring to own function
+            image = self.process_imaged_region(particles_to_model[particles_to_model["image_no"]==image_no], detector, new_distance, offset=np.array([0, y_offset, z_offset]), use_focus=False)
+            if image is not None:
+                # image.particles["primary"] = image.particles.index == particles_in_image.index[0] #TODO: reimpliment in a non set on slice way
+                images.append(image)
+        
+        return DetectorRun(detector, images, distance)
+
+        # if separate_particles: #TODO: This should be default behaviour
+        #     # take an image of each particle individually
+        #     images = []
+        #     length_iterations = len(particles_to_model)
+        #     for particle in tqdm(particles_to_model.itertuples(), total=length_iterations, leave=False):
+        #         y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter
+        #         z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0
+        #         particle_run = self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus)
+        #         if particle_run is not None:
+        #             particle_run.images[0].particles["primary"] = particle_run.images[0].particles.index == particle.Index
+
+        #             images += particle_run.images
+
+        #     run = DetectorRun(detector, images, distance)
+        #     return run 
+    
+    def process_imaged_region(self, particles, detector, distance, offset, use_focus=False): #TODO: can be static, probably belongs on ImagedRegion.
+        detector_position = detector.position + offset
+        n_rows = int(distance / detector.pixel_size)
 
         # get the intensity profile at the given z value for each illuminated particle
-        total_amplitude = AmplitudeField(np.ones((detector.n_pixels, n_images), dtype=np.complex128), pixel_size=detector.pixel_size)
+        total_amplitude = AmplitudeField(np.ones((detector.n_pixels, n_rows), dtype=np.complex128), pixel_size=detector.pixel_size)
         
-        particles = particles_to_model.copy()
-        particles["x_index"] = particles.apply(
-            lambda particle: int((particle["position"] - detector_position)[0] / total_amplitude.pixel_size) + int(total_amplitude.field.shape[0]/2),
-            axis=1)
-        particles["y_index"] = particles.apply(
-            lambda particle: int((particle["position"] - detector_position)[1] / total_amplitude.pixel_size),
-            axis=1)
+        # particles["x_index"] = particles.apply(
+        #     lambda particle: int((particle["position"] - detector_position)[0] / total_amplitude.pixel_size) + int(total_amplitude.field.shape[0]/2),
+        #     axis=1)
+        # particles["y_index"] = particles.apply(
+        #     lambda particle: int((particle["position"] - detector_position)[1] / total_amplitude.pixel_size),
+        #     axis=1)
 
-        for particle in particles.itertuples():
-            model_generator = particle.model.get_generator() if particle.model is not None else model_generator
-            ast_model = model_generator(particle, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
+        
+        generators = {model: model.get_generator() for model in particles.model.unique()}
+
+        for particle in tqdm(particles.itertuples(), total=len(particles), leave=False):
+            ast_model = generators[particle.model](particle, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
             if use_focus:
                 amplitude_at_particle_xy = ast_model.process(0)
             else:
@@ -181,8 +244,7 @@ class CloudVolume:
 
             total_amplitude.embed(amplitude_at_particle_xy, particle, detector_position)
         
-        image = ImagedRegion(detector_position, total_amplitude, particles=particles)
-        return image
+        return ImagedRegion(detector_position, total_amplitude, particles=particles)
 
     def set_model(self, shape:CrystalModel):
         self.particles["model"] = shape

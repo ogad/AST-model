@@ -7,7 +7,6 @@
 import random
 import logging
 logging.basicConfig(level=logging.INFO)
-import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,6 +15,7 @@ from psd_ast_model import GammaPSD, CompositePSD, CrystalModel
 from cloud_model import CloudVolume, Detector
 from detector_model import Detector
 
+from tqdm import tqdm
 
 np.random.seed(42)
 random.seed(42)
@@ -47,19 +47,27 @@ plt.show()
 
 # %%
 
-cloud = CloudVolume(composite_psd, (0.1,1,0.1))
+cloud = CloudVolume(composite_psd, (0.1,1,0.2))
 
 # %%
-import pickle
-with open(f"../data/composite_cloud.pkl", "wb") as f:
-        pickle.dump(cloud, f)
+# import pickle
+# with open(f"../data/composite_cloud.pkl", "wb") as f:
+#         pickle.dump(cloud, f)
 # %%
-detector = Detector(np.array([0.048, 0.751, 0]), n_pixels=256, pixel_size=10e-6, arm_separation=0.06)
-run = cloud.take_image(detector, distance=0.03, separate_particles=False)
+runs = []
+arms = [0.2]
+
+for arm_sep in arms:
+    logging.info(f"Arm separation: {arm_sep}...")
+    detector = Detector(np.array([0.048, 0.751, 0]), n_pixels=256, pixel_size=10e-6, arm_separation=arm_sep)
+    run = cloud.take_image(detector, distance=0.001, single_image=True)
+    runs.append(run)
 # run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_composite_run.pkl")
-
-fig, ax = plt.subplots(figsize=(10,30))
-run.plot(ax=ax, grayscale_bounds=[0.35,0.5,0.65], colorbar=False)
+# %%
+for run in runs:
+    fig, ax = plt.subplots(figsize=(10,20))
+    run.images[0].plot(ax=ax,grayscale_bounds=[0.35,0.5,0.65], colorbar=False)
+    plt.show()
 # %%
 8* 25e-6**2/(4*detector.wavelength)
 # %%

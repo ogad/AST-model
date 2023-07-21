@@ -1,9 +1,11 @@
 # Diameter measurement
 # Oliver Driver
 # 11/07/2023
+import numpy as np
+
 
 #TODO: this has become a mess... split this out so that it's easier for IntensityField and AmplitudeField measurements.
-def measure_diameters(detection: "ImagedRegion|DetectorRun|IntensityField", spec, **kwargs):
+def measure_diameters(detection: "ImagedRegion|DetectorRun|IntensityField", spec, force_nominsep=False, **kwargs):
     if hasattr(detection, "get_frames_to_measure"):
         frames = detection.get_frames_to_measure(spec, **kwargs)
         xlims = detection.xlims
@@ -16,12 +18,18 @@ def measure_diameters(detection: "ImagedRegion|DetectorRun|IntensityField", spec
 
     if len(frames) == 0:
         return {}
+    
+    # filter frames by spec.filters
+    frames = [frame for frame in frames if np.all([image_filter(frame[1]) for image_filter in spec.filters])]
 
     frames.sort(key=lambda x: x[0][0])
     to_remove = []
 
-    if spec.min_sep is not None:
+    if spec.min_sep is not None and not force_nominsep:
         for i, ((ymin, ymax), frame) in enumerate(frames):
+                if ymin == ymax:
+                    raise ValueError("Frame has no height; likely using min_sep with a non-DectorRun object. This is unimplemented.")
+
                 if i == 0:
                     continue
                 if ymin - frames[i-1][0][1] < spec.min_sep:
