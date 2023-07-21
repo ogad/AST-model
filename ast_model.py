@@ -530,6 +530,14 @@ class ASTModel:
         # check if the amplitude has already been calculated
         if z_val in self.amplitudes:
             return self.amplitudes[z_val]
+        
+        diameter_overestimate = (max(self.opaque_shape.shape)*self.pixel_size)
+        estimated_airy_diameter_px = int(1.22 * self.wavelength * z_val/diameter_overestimate / self.pixel_size)
+        if abs(estimated_airy_diameter_px) > 100:
+            # costly to calculate, so only do it if it's going to be used
+            theoretical_dof = 8*diameter_overestimate**2 / (self.wavelength * 4)
+            if abs(z_val) > 10*theoretical_dof:
+                return AmplitudeField(np.ones_like(self.opaque_shape), pixel_size=self.pixel_size)
 
         if self.opaque_shape.size == 0:
             object_plane = np.zeros((1, 1))
@@ -538,7 +546,7 @@ class ASTModel:
                 self.opaque_shape,
                 # int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),
                 max(
-                    abs(10 * int(1.22 * self.wavelength * z_val/(max(self.opaque_shape.shape)*self.pixel_size) / self.pixel_size)),
+                    abs(10 * estimated_airy_diameter_px),
                     10),  # arbitrarily 10 times the size of the object
                 "constant",
                 constant_values=(0, 0),
