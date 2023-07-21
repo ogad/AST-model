@@ -6,6 +6,8 @@
 # Imports
 import random
 import logging
+
+from ast_model import plot_outline
 logging.basicConfig(level=logging.INFO)
 
 import numpy as np
@@ -55,19 +57,21 @@ cloud = CloudVolume(composite_psd, (0.1,1,0.2))
 #         pickle.dump(cloud, f)
 # %%
 runs = []
-arms = [0.2]
+arms = [0.06, 0.2]
 
 for arm_sep in arms:
     logging.info(f"Arm separation: {arm_sep}...")
-    detector = Detector(np.array([0.048, 0.751, 0]), n_pixels=256, pixel_size=10e-6, arm_separation=arm_sep)
-    run = cloud.take_image(detector, distance=0.001, single_image=True)
+    detector = Detector(np.array([0.05, 0.5, 0.1-arm_sep/2]), n_pixels=256, pixel_size=10e-6, arm_separation=arm_sep)
+    run = cloud.take_image(detector, distance=0.01, single_image=True)
     runs.append(run)
 # run.save(f"../data/{datetime.datetime.now():%Y-%m-%d}_{run.distance}_composite_run.pkl")
 # %%
-for run in runs:
-    fig, ax = plt.subplots(figsize=(10,20))
-    run.images[0].plot(ax=ax,grayscale_bounds=[0.35,0.5,0.65], colorbar=False)
-    plt.show()
+
+fig, axs = plt.subplots(1, len(runs), figsize=(10,20))
+for i, run in enumerate(runs):
+    plt.axes(axs[i])
+    run.images[0].plot(ax=axs[i],grayscale_bounds=[0.35,0.5,0.65], colorbar=False)
+plt.show()
 # %%
 8* 25e-6**2/(4*detector.wavelength)
 # %%

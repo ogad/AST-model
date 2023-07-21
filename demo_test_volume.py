@@ -33,11 +33,11 @@ gamma_dist.plot(ax)
 # psd.plot(ax)
 cloud_len = 5001
 try:
-    with open(f"cloud_01_{cloud_len}_01.pkl", "rb") as f:
+    with open(f"../data/cloud_01_{cloud_len}_01.pkl", "rb") as f:
         cloud = pickle.load(f)
 except (FileNotFoundError, ModuleNotFoundError):
     cloud = CloudVolume(gamma_dist, (0.01, cloud_len, 0.1))
-    with open(f"cloud_01_{cloud_len}_01.pkl", "wb") as f:
+    with open(f"../data/cloud_01_{cloud_len}_01.pkl", "wb") as f:
         pickle.dump(cloud, f)
 
 print(cloud.n_particles)

@@ -129,11 +129,9 @@ class AmplitudeField:
             if total_min[axis] > self.field.shape[axis] or total_max[axis] < 0:
                 return self
 
-        #NOTE: check this....... Are the amplitudes combined correctly
         new_amplitude = single_particle_amplitude.field[single_min[0]:single_max[0], single_min[1]:single_max[1]]
+        self.field = self.field
         self.field[total_min[0]:total_max[0], total_min[1]:total_max[1]] *= new_amplitude
-
-        return self # NOTE: is this necessary?
 
 @dataclass
 class IntensityField:
