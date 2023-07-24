@@ -63,12 +63,12 @@ class CloudVolume:
         # take the image
         detector = deepcopy(run.detector)
         detector.position[1] = new_detector_y
-        image = self.take_image(detector, distance=distance)
+        image = self.take_image(detector, distance=distance, single_image=True)
 
         # plot the image
         if ax is None:
             ax = plt.gca()
-        image.plot(ax=ax, **kwargs)
+        image.images[0].plot(ax=ax, **kwargs)
 
     def __post_init__(self):
         logging.info("Initialising cloud volume")
@@ -132,7 +132,12 @@ class CloudVolume:
             # No particles are in the illuminated region.
             return None
         
-        return self.particles[in_illuminated_region]
+        in_z_limits = np.abs(particle_from_detector[:, 2] - detector.arm_separation/2) < detector.detection_length/2
+        
+        illuminated_particles = self.particles[in_illuminated_region].copy()
+        illuminated_particles["in_z_limits"] = in_z_limits[in_illuminated_region]
+
+        return illuminated_particles
         
     
     def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0]), single_image: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None) -> DetectorRun | ImagedRegion:

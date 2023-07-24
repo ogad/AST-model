@@ -6,6 +6,7 @@ import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from ast_model import ASTModel
 
 
@@ -22,7 +23,20 @@ class Retrieval:
         array_length = run.detector.n_pixels * run.detector.pixel_size
         self.bins = bins if bins is not None else np.linspace(0, array_length - run.detector.pixel_size, run.detector.n_pixels)
 
-        self.detected_particles = run.measure_diameters(spec)
+        self.detected_particles = run.measure_diameters(spec) 
+
+        if spec.z_confinement:
+            to_remove = []
+            for loc, _ in self.detected_particles.items():
+                y_vals = self.particles.apply(lambda row: row.position[1], axis=1)
+                likely_pcle_index = np.argmin(np.abs(y_vals - loc[1]/1e6))
+                likely_pcle = self.particles.iloc[likely_pcle_index]
+                if not likely_pcle.in_z_limits:
+                    to_remove.append(loc)
+
+            for loc in to_remove:
+                self.detected_particles.pop(loc)
+
         self.diameters = np.array(list(self.detected_particles.values())) * 1e-6 # m
 
         self.midpoints = (self.bins[:-1] + self.bins[1:]) / 2
@@ -55,3 +69,7 @@ class Retrieval:
             return integrated_volume # m^3(water) m^-3(cloud)
         else:
             return integrated_volume * 917 # kg(water) m^-3(cloud)
+        
+    @property
+    def particles(self):
+        return pd.concat([image.particles for image in self.run.images])

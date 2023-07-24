@@ -21,6 +21,7 @@ class Detector:
     n_pixels: int = 128
     pixel_size: float =10e-6# in m
     wavelength: float = 658e-9 
+    detection_length: float = np.inf #in m; the region in the middle of the detector that is used for detection. If np.inf, the whole detector is used.
 
 
 class ImageFilter(Enum):
@@ -59,8 +60,8 @@ class DiameterSpec: # TODO: implement custom threshold value.
         filters = [ImageFilter.PRESENT_HALF_INTENSITY]
         if self.edge_filter:
             filters.append(ImageFilter.NO_EDGE_HALF_INTENSITY)
-        if self.z_confinement:
-            filters.append(ImageFilter.PRIMARY_Z_CONFINED)
+        # if self.z_confinement:
+        #     filters.append(ImageFilter.PRIMARY_Z_CONFINED)
         return filters
 
 

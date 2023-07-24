@@ -61,14 +61,14 @@ def take_image(detector, distance, cloud: CloudVolume, single_image=False):
     return cloud.take_image(detector, distance=distance, single_image = single_image)
 
 
-def make_run(shape, distance, n_px, plot=True):
-    detector_run_version=2
+def make_run(shape, distance, n_px, det_len=np.inf, plot=True):
+    detector_run_version=5
     cloud.set_model(shape)
     
     try:
-        run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+        run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_{det_len}_run.pkl")
     except FileNotFoundError:
-        detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06)
+        detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06, detection_length=det_len)
         # run = cloud.take_image(detector, distance=distance, separate_particles=True)
         run = take_image(detector, distance, cloud)
         run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
@@ -83,7 +83,7 @@ def make_run(shape, distance, n_px, plot=True):
 
 def make_and_plot_retrievals(run):
     # retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=5e-4, filled=True))
-    retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4))
+    retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4, z_confinement=True))
 
     # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
     fit = GammaPSD.fit(retrieval.midpoints, retrieval.dn_dd_measured, min_considered_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
@@ -119,5 +119,7 @@ def make_and_plot_retrievals(run):
 
 # %%
 for shape in CrystalModel:
-    run, retrievals = make_run(shape, 999, 128)
+#     run, retrievals = make_run(shape, 999, 128)
+    run, retrievals = make_run(CrystalModel.SPHERE, 999, 128)
+    run, retrievals = make_run(CrystalModel.SPHERE, 999, 128, det_len=0.01)
 # %%
