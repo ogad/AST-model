@@ -188,7 +188,7 @@ class CloudVolume:
 
         
         images = [] 
-        for image_no in range(image_nos[-1]+1):
+        for image_no in tqdm(range(image_nos[-1]+1), leave=False):
             particles_in_image = particles_to_model[particles_to_model["image_no"]==image_no]
 
             # offset detector s.t. the end is 5*last_particle.diameter after the "last" particle, and the start is 5*first_particle.diameter before the first particle

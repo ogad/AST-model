@@ -120,6 +120,10 @@ def make_and_plot_retrievals(run):
 # %%
 for shape in CrystalModel:
 #     run, retrievals = make_run(shape, 999, 128)
+    logging.info(f"Processing {shape.name}")
+    logging.info("\tNo z confinement beyond arms...")
     run, retrievals = make_run(shape, 999, 128)
+    logging.info("\tWith 1mm z confinement...")
     run, retrievals = make_run(shape, 999, 128, det_len=0.01)
+    logging.info("Done.")
 # %%
