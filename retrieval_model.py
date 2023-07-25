@@ -26,9 +26,9 @@ class Retrieval:
         self.detected_particles = run.measure_diameters(spec) 
 
         if spec.z_confinement:
+            y_vals = self.particles.apply(lambda row: row.position[1], axis=1)
             to_remove = []
             for loc, _ in self.detected_particles.items():
-                y_vals = self.particles.apply(lambda row: row.position[1], axis=1)
                 likely_pcle_index = np.argmin(np.abs(y_vals - loc[1]/1e6))
                 likely_pcle = self.particles.iloc[likely_pcle_index]
                 if not likely_pcle.in_z_limits:
