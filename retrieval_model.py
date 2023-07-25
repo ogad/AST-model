@@ -72,4 +72,6 @@ class Retrieval:
         
     @property
     def particles(self):
-        return pd.concat([image.particles for image in self.run.images])
+        if not hasattr(self.run, "particles"):
+            self.run.set_particles()
+        return self.run.particles

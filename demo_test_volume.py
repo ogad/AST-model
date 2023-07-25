@@ -80,7 +80,7 @@ def make_run(shape, distance, n_px, det_len=np.inf, plot=True):
     return run, retrievals
 
 # detections.amplitude.intensity.plot()
-
+@profile(f"../data/profile__make_and_plot_retrievals__{datetime.datetime.now():%Y-%m-%d_%H%M}.prof")
 def make_and_plot_retrievals(run):
     # retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=5e-4, filled=True))
     retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4, z_confinement=True))
@@ -120,6 +120,6 @@ def make_and_plot_retrievals(run):
 # %%
 for shape in CrystalModel:
 #     run, retrievals = make_run(shape, 999, 128)
-    run, retrievals = make_run(CrystalModel.SPHERE, 999, 128)
-    run, retrievals = make_run(CrystalModel.SPHERE, 999, 128, det_len=0.01)
+    run, retrievals = make_run(shape, 999, 128)
+    run, retrievals = make_run(shape, 999, 128, det_len=0.01)
 # %%

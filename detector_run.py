@@ -134,3 +134,6 @@ class DetectorRun:
                 logging.warning("Overlap intensity has some signal < 0.9.")
                 continue
         return overlaps
+    
+    def set_particles(self):
+        self.particles = pd.concat([image.particles for image in self.images])
