@@ -466,8 +466,11 @@ class ASTModel:
     @classmethod
     def from_diameter_rectangular(cls, diameter: float, aspect_ratio: float, **kwargs):
         """Create a model for a rectangular opaque object with a given diameter xy mean diameter and aspect ratio."""
-        width = 2 * diameter / (1 + aspect_ratio)
+        area = np.pi * (diameter / 2)**2
+        width = np.sqrt(area / aspect_ratio)
         height = width * aspect_ratio
+        # width = 2 * diameter / (1 + aspect_ratio)
+        # height = width * aspect_ratio
 
         return cls.from_rectangle(width, height, **kwargs)
     
