@@ -288,8 +288,8 @@ class GammaPSD(PSD):
     def fit(cls, diameters, dn_dd, min_considered_diameter=50e-6):
         from scipy.optimize import curve_fit
 
-        diameter_vals = diameters[(dn_dd != 0) & (diameters >= min_considered_diameter)]
-        dn_dd_vals = dn_dd[(dn_dd != 0) & (diameters >= min_considered_diameter)]
+        diameter_vals = diameters[(diameters >= min_considered_diameter)]
+        dn_dd_vals = dn_dd[(diameters >= min_considered_diameter)]
 
         # expon = lambda d, intercept, slope: intercept * np.exp(-1 * slope * d)
 
@@ -308,7 +308,7 @@ class GammaPSD(PSD):
         intercept_l_mcb, slope, shape = results[0]
         intercept = intercept_l_mcb * 1e6
 
-        logging.info(results[3])
+        logging.info(f"\t{results[3]}")
 
         return cls(intercept, slope, shape)
 
