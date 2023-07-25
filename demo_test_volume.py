@@ -61,14 +61,14 @@ def take_image(detector, distance, cloud: CloudVolume, single_image=False):
     return cloud.take_image(detector, distance=distance, single_image = single_image)
 
 
-def make_run(shape, distance, n_px, det_len=np.inf, plot=True):
+def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10):
     detector_run_version=5
     cloud.set_model(shape)
     
     try:
         run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_{det_len}_run.pkl")
     except FileNotFoundError:
-        detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06, detection_length=det_len)
+        detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06, detection_length=det_len, pixel_size=px_size*1e-6)
         # run = cloud.take_image(detector, distance=distance, separate_particles=True)
         run = take_image(detector, distance, cloud)
         run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
@@ -118,12 +118,19 @@ def make_and_plot_retrievals(run):
 
 
 # %%
-for shape in CrystalModel:
+for shape in [CrystalModel.SPHERE, CrystalModel.RECT_AR5]:
 #     run, retrievals = make_run(shape, 999, 128)
     logging.info(f"Processing {shape.name}")
-    logging.info("\tNo z confinement beyond arms...")
-    run, retrievals = make_run(shape, 999, 128)
+    # logging.info("\tNo z confinement beyond arms...")
+    # run, retrievals = make_run(shape, 100, 128)
     logging.info("\tWith 1mm z confinement...")
-    run, retrievals = make_run(shape, 999, 128, det_len=0.01)
+    run, retrievals = make_run(shape, 1000, 128, det_len=512*15e-6, px_size=15)
     logging.info("Done.")
+# %%
+
+
+# plot sample volume as a function of diameter
+diameters = np.linspace(10e-6, 5e-4, 50)
+volumes = [run.volume(diameter) for diameter in diameters]
+plt.plot(diameters, volumes)
 # %%
