@@ -31,7 +31,7 @@ fig, ax = plt.subplots()
 gamma_dist.plot(ax)
 # %%
 # psd.plot(ax)
-cloud_len = 5001
+cloud_len = 100001
 try:
     with open(f"../data/cloud_01_{cloud_len}_01.pkl", "rb") as f:
         cloud = pickle.load(f)
@@ -61,7 +61,7 @@ def take_image(detector, distance, cloud: CloudVolume, single_image=False):
     return cloud.take_image(detector, distance=distance, single_image = single_image)
 
 
-def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10):
+def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10, save_run=False, **kwargs):
     detector_run_version=5
     cloud.set_model(shape)
     
@@ -71,22 +71,24 @@ def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10):
         detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06, detection_length=det_len, pixel_size=px_size*1e-6)
         # run = cloud.take_image(detector, distance=distance, separate_particles=True)
         run = take_image(detector, distance, cloud)
-        run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+        if save_run:
+            run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
 
     if plot:
-        fig, retrievals = make_and_plot_retrievals(run)
+        fig, retrievals = make_and_plot_retrievals(run, **kwargs)
         fig.suptitle(f"{shape.__str__()}\n{n_px}x{run.detector.pixel_size*1e6:.0f} µm pixels, {distance} m distance")
+    else:
+        retrievals = (Retrieval(run, DiameterSpec(min_sep=5e-4, z_confinement=True)))
 
     return run, retrievals
 
 # detections.amplitude.intensity.plot()
 @profile(f"../data/profile__make_and_plot_retrievals__{datetime.datetime.now():%Y-%m-%d_%H%M}.prof")
-def make_and_plot_retrievals(run):
+def make_and_plot_retrievals(run, make_fit=True):
     # retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=5e-4, filled=True))
     retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4, z_confinement=True))
 
     # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
-    fit = GammaPSD.fit(retrieval.midpoints, retrieval.dn_dd_measured, min_considered_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
     # fit2 = GammaPSD.fit(retrieval2.midpoints, retrieval2.dn_dd_measured, min_considered_diameter = 20e-6)
 
     fig, axs = plt.subplots(2, 1, height_ratios=[3,1], figsize=(7.2, 5), sharex='col')
@@ -98,13 +100,17 @@ def make_and_plot_retrievals(run):
     # cloud.psd.plot(ax, label=f"True\n{gamma_dist.parameter_description()}", retrieval=retrieval2, color="C2", linestyle="dotted")
     retrieval.plot(label="Retrieved (Circ. equiv.)", ax=ax, color="C1")
     # retrieval2.plot(label="Retrieved (XY)", ax=ax, color="C2")
-    fit_ce = fit.plot(ax, label=f"Circle equivalent\n{fit.parameter_description()}", color="C1")
+    if make_fit:
+        fit = GammaPSD.fit(retrieval.midpoints, retrieval.dn_dd_measured, min_considered_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+        fit_ce = fit.plot(ax, label=f"Circle equivalent\n{fit.parameter_description()}", color="C1")
     # fit_xy = fit2.plot(ax, label=f"XY mean\n{fit2.parameter_description()}", color="C2")
 
     # plt.yscale("log")
     # psd_axs[1].set_ylim(0, 0.5e9)
+    handles = true+fit_ce if make_fit else true
+
     ax.set_xlim(0, 5e-4)
-    ax.legend(handles=true+fit_ce)#+fit_xy)
+    ax.legend(handles=handles)
 
     axs[1].bar(retrieval.midpoints, np.histogram(retrieval.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C1", alpha=0.2)
     # axs[1][1].bar(retrieval2.midpoints, np.histogram(retrieval2.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C2", alpha=0.2)
@@ -124,13 +130,31 @@ for shape in [CrystalModel.SPHERE, CrystalModel.RECT_AR5]:
     # logging.info("\tNo z confinement beyond arms...")
     # run, retrievals = make_run(shape, 100, 128)
     logging.info("\tWith 1mm z confinement...")
-    run, retrievals = make_run(shape, 1000, 128, det_len=512*15e-6, px_size=15)
+    run, retrievals = make_run(shape, 100, 128, det_len=128*10e-6, px_size=10)
     logging.info("Done.")
 # %%
-
-
 # plot sample volume as a function of diameter
 diameters = np.linspace(10e-6, 5e-4, 50)
 volumes = [run.volume(diameter) for diameter in diameters]
 plt.plot(diameters, volumes)
+# %%
+
+n_px = 128
+px_size = 10
+n_pts = 51
+true_psd = None
+residuals = np.zeros((n_pts, n_px-1))
+for i, len in enumerate(np.linspace(100,10000, n_pts)):
+    run, retrieval = make_run(CrystalModel.SPHERE, len, n_px, det_len=n_px*px_size*1e-6, px_size=px_size, plot=True, save_run=False, make_fit=False)
+    true_psd = cloud.psd.dn_dd(retrieval.midpoints) if true_psd is None else true_psd
+    residuals[i,:] =  retrieval.dn_dd_measured - true_psd
+# %%
+# plot the residuals against len
+fig, ax = plt.subplots()
+for i, x_px in tqdm(enumerate(np.linspace(px_size,px_size*(n_px+1), 30))):
+    ax.plot(residuals[:,i]/true_psd[i], label=f"{x_px:.0f} µm")
+ax.hlines([0], 0, n_pts-1, color="grey", linestyle="dashed")
+ax.legend()
+# ax.set_yscale()
+
 # %%
