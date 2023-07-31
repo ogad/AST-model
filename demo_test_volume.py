@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 
-from ast_model import plot_outline
+from ast_model import AmplitudeField, plot_outline
 from psd_ast_model import GammaPSD, TwoMomentGammaPSD, CrystalModel
 from cloud_model import CloudVolume, Detector
 from detector_model import Detector, ImagedRegion, ImageFilter, DiameterSpec
@@ -29,7 +29,7 @@ gamma_dist = GammaPSD(1.17e43, 8.31e4, 7.86)
 
 fig, ax = plt.subplots()
 gamma_dist.plot(ax)
-# %%
+# %% Cloud generation
 # psd.plot(ax)
 cloud_len = 100001
 try:
@@ -41,7 +41,7 @@ except (FileNotFoundError, ModuleNotFoundError):
         pickle.dump(cloud, f)
 
 print(cloud.n_particles)
-# %%
+# %% Example particle observation
 pcle = cloud.particles.iloc[0]
 detector_location = pcle.position - np.array([300e-6, 15*pcle.diameter, 4e-2])
 
@@ -61,26 +61,36 @@ def take_image(detector, distance, cloud: CloudVolume, single_image=False):
     return cloud.take_image(detector, distance=distance, single_image = single_image)
 
 
+
 def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10, save_run=False, **kwargs):
     detector_run_version=5
     cloud.set_model(shape)
-    
+
+    base_distance = np.max(distance)
     try:
-        run = DetectorRun.load(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_{det_len}_run.pkl")
+        base_run = DetectorRun.load(f"../data/run_v{detector_run_version}_{base_distance}_{n_px}px_{shape.name}_{det_len}_run.pkl")
     except FileNotFoundError:
         detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06, detection_length=det_len, pixel_size=px_size*1e-6)
         # run = cloud.take_image(detector, distance=distance, separate_particles=True)
-        run = take_image(detector, distance, cloud)
+        base_run = take_image(detector, base_distance, cloud)
         if save_run:
-            run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+            base_run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
 
-    if plot:
-        fig, retrievals = make_and_plot_retrievals(run, **kwargs)
-        fig.suptitle(f"{shape.__str__()}\n{n_px}x{run.detector.pixel_size*1e6:.0f} µm pixels, {distance} m distance")
+    diameter_spec = DiameterSpec(min_sep=5e-4, z_confinement=True)
+
+    if isinstance(distance, (int, float)):
+        if plot:
+            fig, retrievals = make_and_plot_retrievals(base_run, **kwargs)
+            fig.suptitle(f"{shape.__str__()}\n{n_px}x{base_run.detector.pixel_size*1e6:.0f} µm pixels, {distance} m distance")
+        else:
+            retrievals = (Retrieval(base_run, diameter_spec))
     else:
-        retrievals = (Retrieval(run, DiameterSpec(min_sep=5e-4, z_confinement=True)))
+        if plot:
+            raise NotImplementedError("Plotting for multiple distances not implemented.")
+        runs = [base_run.slice(run_distance) for run_distance in distance]
+        retrievals = [Retrieval(run, diameter_spec) for run in runs]
 
-    return run, retrievals
+    return base_run, retrievals
 
 # detections.amplitude.intensity.plot()
 @profile(f"../data/profile__make_and_plot_retrievals__{datetime.datetime.now():%Y-%m-%d_%H%M}.prof")
@@ -123,38 +133,83 @@ def make_and_plot_retrievals(run, make_fit=True):
 
 
 
-# %%
+# %% PSD retrieval examples
 for shape in [CrystalModel.SPHERE, CrystalModel.RECT_AR5]:
 #     run, retrievals = make_run(shape, 999, 128)
     logging.info(f"Processing {shape.name}")
-    # logging.info("\tNo z confinement beyond arms...")
-    # run, retrievals = make_run(shape, 100, 128)
+    logging.info("\tNo z confinement beyond arms...")
+    run, retrievals = make_run(shape, 1000, 128)
     logging.info("\tWith 1mm z confinement...")
-    run, retrievals = make_run(shape, 100, 128, det_len=128*10e-6, px_size=10)
+    run, retrievals = make_run(shape, 1000, 128, det_len=128*10e-6, px_size=10)
     logging.info("Done.")
 # %%
 # plot sample volume as a function of diameter
 diameters = np.linspace(10e-6, 5e-4, 50)
 volumes = [run.volume(diameter) for diameter in diameters]
 plt.plot(diameters, volumes)
-# %%
 
+
+# %% Residual plotting
+
+shape = CrystalModel.RECT_AR5
 n_px = 128
 px_size = 10
 n_pts = 51
+z_confinement = n_px*px_size*1e-6
 true_psd = None
+
+# run, retrieval = make_run(CrystalModel.SPHERE, 10_000, n_px, det_len=n_px*px_size*1e-6, px_size=px_size, plot=True, save_run=False, make_fit=False)
 residuals = np.zeros((n_pts, n_px-1))
-for i, len in enumerate(np.linspace(100,10000, n_pts)):
-    run, retrieval = make_run(CrystalModel.SPHERE, len, n_px, det_len=n_px*px_size*1e-6, px_size=px_size, plot=True, save_run=False, make_fit=False)
+run_distances = np.logspace(0,4, n_pts)
+_, retrievals = make_run(
+    shape, 
+    run_distances, 
+    n_px, 
+    px_size=px_size, 
+    plot=False, 
+    save_run=False, 
+    make_fit=False,
+    # det_len=z_confinement,
+)
+
+for i, retrieval in enumerate(retrievals):
     true_psd = cloud.psd.dn_dd(retrieval.midpoints) if true_psd is None else true_psd
     residuals[i,:] =  retrieval.dn_dd_measured - true_psd
 # %%
 # plot the residuals against len
 fig, ax = plt.subplots()
-for i, x_px in tqdm(enumerate(np.linspace(px_size,px_size*(n_px+1), 30))):
-    ax.plot(residuals[:,i]/true_psd[i], label=f"{x_px:.0f} µm")
+for i, x_px in tqdm(enumerate(np.linspace(px_size,px_size*(n_px+1), n_px-1))):
+    ax.plot(run_distances, residuals[:,i], label=f"{x_px:.0f} µm", color="gray", linewidth=0.2)
 ax.hlines([0], 0, n_pts-1, color="grey", linestyle="dashed")
-ax.legend()
+plt.title(f"Fitting {shape.name} PSD with {n_px}x{px_size} µm pixels, with no z confinement")
+plt.ylabel("Residuals/ $\mathrm{m^{-3} m^{-1}}$")
+plt.xlabel("Distance/ m")
+
+ax.set_ylim(-0.15e9,1.75e9)
+ax.set_xlim(0, run_distances[-1])
+# ax.legend()
 # ax.set_yscale()
 
+# %%
+from ast_model import AmplitudeField
+total_amplitude_focused = AmplitudeField(np.ones((400, 1200), dtype=np.complex128))
+total_amplitude_unfocused = AmplitudeField(np.ones((400, 1200), dtype=np.complex128))
+
+from psd_ast_model import PositionedParticle
+for i, crystal_model in enumerate([CrystalModel.SPHERE, CrystalModel.RECT_AR5, CrystalModel.ROS_6]):
+    generator = crystal_model.get_generator()
+    particle = PositionedParticle(500e-6, (0,0), crystal_model,np.array([0,2e-3+4e-3*i,0]))
+    ast_model = generator(particle, pixel_size=10e-6)
+
+    total_amplitude_focused.embed(ast_model.process(0), particle, np.array([0,0,0]))
+    total_amplitude_unfocused.embed(ast_model.process(0.2), particle, np.array([0,0,0]))
+    
+
+    # ast_model.process(0.1).intensity.plot(colorbar=True)
+    # ast_model.process(0.1).intensity.plot(grayscale_bounds=[.35, .5, .65])
+fig, axs = plt.subplots(1, 3, figsize=(7,4.5), sharey=True, sharex=True,)
+total_amplitude_focused.intensity.plot(ax=axs[0])
+total_amplitude_unfocused.intensity.plot(colorbar=True, ax=axs[1])
+total_amplitude_unfocused.intensity.plot(grayscale_bounds=[.35, .5, .65], ax=axs[2])
+plt.tight_layout()
 # %%

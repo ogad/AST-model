@@ -194,7 +194,7 @@ class IntensityField:
         ax_image = ax.imshow(to_plot.T, extent=[0,xlen, 0, ylen], **kwargs)
         if colorbar:
             plt.colorbar(ax_image, ax=ax)
-        ax.set_xlabel("(x/µm (Along detector)")
+        ax.set_xlabel("x/µm (Along detector)")
         ax.set_ylabel(r"($y-y_{\mathrm{det}}$)/µm")
         ax.set_aspect("equal")
 
@@ -495,7 +495,7 @@ class ASTModel:
             ps_width = width*1e-6 / pixel_size
         
         # create the opaque shape
-        angles = np.linspace(0, 180, n_rectangles, endpoint=False)
+        angles = np.linspace(0, np.pi, n_rectangles, endpoint=False)
         opaque_shapes = [cls.rectangle(px_length, ps_width, angle) for angle in angles]
 
         # work out the size of the opaque shape
@@ -548,7 +548,7 @@ class ASTModel:
                 # int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),
                 max(
                     abs(10 * estimated_airy_diameter_px),
-                    10),  # arbitrarily 10 times the size of the object
+                    20),
                 "constant",
                 constant_values=(0, 0),
             )
