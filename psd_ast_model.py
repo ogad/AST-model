@@ -20,6 +20,7 @@ from retrieval_model import Retrieval
 
 
 Particle = namedtuple("Particle", ["diameter", "angle", "model"])
+PositionedParticle = namedtuple("PositionedParticle", ["diameter",  "angle", "model", "position"])
 
 class CrystalModel(Enum):
     """Enum for crystal types."""

@@ -4,6 +4,7 @@
 
 import logging
 from charset_normalizer import detect
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -47,7 +48,6 @@ class DetectorRun:
     def get_frames_to_measure(self, spec, **kwargs) -> list[tuple[float,float],IntensityField]:
         """Returns a list of frames to measure, with the y extent of the frame and the frame itself."""
         frames = []
-        image_filters = spec.filters
         for image in self.images:
             frames = frames + list(image.get_frames_to_measure(spec, **kwargs))
 
@@ -137,3 +137,25 @@ class DetectorRun:
     
     def set_particles(self):
         self.particles = pd.concat([image.particles for image in self.images])
+
+    def slice(self, distance, detector_yval=None):
+        if detector_yval is None:
+            detector_yval = self.detector.position[1]
+
+        new_images = []
+        slice_start = detector_yval + distance
+        slice_end = detector_yval
+        for image in self.images:
+            if image.start <= slice_start and image.end >= slice_end: 
+                new_images.append(image)
+            elif image.start <= slice_start:#TODO: need to deal proprerly with the first and last image in a run, and with splitting images.
+                # image is at the end of the run
+                continue
+            elif image.end >= slice_end:
+                # image is at the start of the run
+                continue
+        
+        new_detector = deepcopy(self.detector)
+        new_detector.position[1] = detector_yval + distance
+        return DetectorRun(new_detector, new_images, distance)
+        
