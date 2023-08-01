@@ -20,6 +20,26 @@ from profiler import profile
 
 logging.basicConfig(level=logging.INFO)
 
+
+# %% From 
+gammas = {
+    ("in-situ", "cold"): GammaPSD.w19_parameterisation(-70, 2e37, insitu_origin=True),
+    ("in-situ", "hot"): GammaPSD.w19_parameterisation(-50, 5e14, insitu_origin=True),
+    ("liquid", "cold"): GammaPSD.w19_parameterisation(-60, 3e12, liquid_origin=True),
+    ("liquid", "hot"): GammaPSD.w19_parameterisation(-40, 9e10, liquid_origin=True),
+}
+fig, ax = plt.subplots()
+for spec, gamma in gammas.items():
+    gamma.plot(ax=ax, label=f"{spec[0]} origin, {spec[1]} cirrus\n{gamma.parameter_description()}")
+ax.legend()
+ax.set_xscale("log")
+ax.set_yscale("log")
+ax.set_xlim(1e-5, 1e-3)
+ax.set_ylim(1e5, 1e11)
+# ax.set_ylim(3e9, 1e11)
+
+for gamma in gammas.values():
+    print(gamma.total_number_density, gamma.mean*1e6)
 # %% Retry with a more realistic gamma distribution
 # reinitialise the random seed
 seed(42)
@@ -41,6 +61,11 @@ except (FileNotFoundError, ModuleNotFoundError):
         pickle.dump(cloud, f)
 
 print(cloud.n_particles)
+
+gamma_clouds = {}
+for labels, gamma in gammas.items():
+    gamma_clouds[labels] = CloudVolume(gamma, (0.01, cloud_len, 0.1))
+
 # %% Example particle observation
 pcle = cloud.particles.iloc[0]
 detector_location = pcle.position - np.array([300e-6, 15*pcle.diameter, 4e-2])
@@ -158,37 +183,41 @@ n_pts = 51
 z_confinement = n_px*px_size*1e-6
 true_psd = None
 
-# run, retrieval = make_run(CrystalModel.SPHERE, 10_000, n_px, det_len=n_px*px_size*1e-6, px_size=px_size, plot=True, save_run=False, make_fit=False)
-residuals = np.zeros((n_pts, n_px-1))
-run_distances = np.logspace(0,4, n_pts)
-_, retrievals = make_run(
-    shape, 
-    run_distances, 
-    n_px, 
-    px_size=px_size, 
-    plot=False, 
-    save_run=False, 
-    make_fit=False,
-    # det_len=z_confinement,
-)
 
-for i, retrieval in enumerate(retrievals):
-    true_psd = cloud.psd.dn_dd(retrieval.midpoints) if true_psd is None else true_psd
-    residuals[i,:] =  retrieval.dn_dd_measured - true_psd
-# %%
-# plot the residuals against len
-fig, ax = plt.subplots()
-for i, x_px in tqdm(enumerate(np.linspace(px_size,px_size*(n_px+1), n_px-1))):
-    ax.plot(run_distances, residuals[:,i], label=f"{x_px:.0f} µm", color="gray", linewidth=0.2)
-ax.hlines([0], 0, n_pts-1, color="grey", linestyle="dashed")
-plt.title(f"Fitting {shape.name} PSD with {n_px}x{px_size} µm pixels, with no z confinement")
-plt.ylabel("Residuals/ $\mathrm{m^{-3} m^{-1}}$")
-plt.xlabel("Distance/ m")
+# %% # run, retrieval = make_run(CrystalModel.SPHERE, 10_000, n_px, det_len=n_px*px_size*1e-6, px_size=px_size, plot=True, save_run=False, make_fit=False)
 
-ax.set_ylim(-0.15e9,1.75e9)
-ax.set_xlim(0, run_distances[-1])
-# ax.legend()
-# ax.set_yscale()
+gamma_residuals = {}
+for labels, cloud in gamma_clouds.items():
+    residuals = np.zeros((n_pts, n_px-1))
+    run_distances = np.logspace(0,4, n_pts)
+    _, retrievals = make_run(
+        shape, 
+        run_distances, 
+        n_px, 
+        px_size=px_size, 
+        plot=False, 
+        save_run=False, 
+        make_fit=False,
+        # det_len=z_confinement,
+    )
+
+    for i, retrieval in enumerate(retrievals):
+        true_psd = cloud.psd.dn_dd(retrieval.midpoints) if true_psd is None else true_psd
+        residuals[i,:] =  retrieval.dn_dd_measured - true_psd
+    
+    gamma_residuals[labels] = residuals
+
+    fig, ax = plt.subplots()
+    for i, x_px in tqdm(enumerate(np.linspace(px_size,px_size*(n_px+1), n_px-1))):
+        ax.plot(run_distances, residuals[:,i], label=f"{x_px:.0f} µm", color="gray", linewidth=0.2)
+    ax.hlines([0], 0, n_pts-1, color="grey", linestyle="dashed")
+    plt.title(f"Fitting {shape.name} PSD with {n_px}x{px_size} µm pixels, with no z confinement")
+    plt.ylabel("Residuals/ $\mathrm{m^{-3} m^{-1}}$")
+    plt.xlabel("Distance/ m")
+
+    ax.set_ylim(-0.15e9,1.75e9)
+    ax.set_xlim(0, run_distances[-1])
+    ax.text(0.05, 0.95, f"{labels[0]} origin, {labels[1]}", transform=ax.transAxes, verticalalignment='top')
 
 # %%
 from ast_model import AmplitudeField
@@ -212,4 +241,38 @@ total_amplitude_focused.intensity.plot(ax=axs[0])
 total_amplitude_unfocused.intensity.plot(colorbar=True, ax=axs[1])
 total_amplitude_unfocused.intensity.plot(grayscale_bounds=[.35, .5, .65], ax=axs[2])
 plt.tight_layout()
+# %%
+
+
+# %% Check parameterisation
+
+ln_slope_param_iso = lambda temp: -0.06837 * temp + 3.492 #cm^-1
+shape_param_iso = lambda ln_slope: 0.02819 * np.exp(0.7216*ln_slope) 
+
+ln_slope_param_lo = lambda temp: 4.937 * np.exp(-0.001846*temp) #cm^-1
+shape_param_lo = lambda ln_slope: 0.001379 * np.exp(1.285*ln_slope)
+
+
+fig, (ax1, ax2)  = plt.subplots(1,2)
+temps = np.linspace(-80, 0, 100)
+ax1.plot(temps, np.exp(ln_slope_param_iso(temps)), label="insitu")
+ax1.plot(temps, np.exp(ln_slope_param_lo(temps)), label="liquid")
+ax1.set_xlabel("Temperature (°C)")
+ax1.set_ylabel("Slope parameter (cm$^{-1}$)")
+ax1.set_yscale("log")
+ax1.grid()
+
+slopes = np.linspace(100, 10000, 100)
+ax2.plot(slopes, shape_param_iso(np.log(slopes)), label="insitu")
+ax2.plot(slopes, shape_param_lo(np.log(slopes)), label="liquid")
+ax2.set_xlabel("Slope")
+ax2.set_ylabel("Shape parameter")
+ax2.set_xscale("log")
+ax2.set_ylim(-2, 21)
+ax2.grid()
+plt.tight_layout()
+
+ax2.legend()
+
+
 # %%
