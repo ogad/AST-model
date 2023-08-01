@@ -11,7 +11,7 @@ import logging
 import numpy as np
 from numpy.random import randint
 from numpy.typing import ArrayLike
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, root_scalar
 
 
 from ast_model import ASTModel
@@ -227,6 +227,48 @@ class GammaPSD(PSD):
     def __str__(self) -> str:
         return super().__str__() + f"GammaPSD({self.intercept}, {self.slope}, {self.shape})"
 
+    @classmethod
+    def from_litres_microns(cls, intercept_per_litre_per_micron, slope_per_micron, shape, **kwargs):
+        # Note the extra factor of 1e-6^shape for conversion of power law.
+        intercept = intercept_per_litre_per_micron * 1e3 * 1e6 * (1e6**shape)
+        slope = slope_per_micron * 1e6
+        return cls(intercept, slope, shape, **kwargs)
+    
+    @classmethod
+    def from_litres_cm(cls, intercept_per_litre_per_cm, slope_per_cm, shape, **kwargs):
+        # Note the extra factor of 1e-2^shape for conversion of power law.
+        intercept = intercept_per_litre_per_cm * 1e3 * (1e2**shape)
+        slope = slope_per_cm * 1e2
+        return cls(intercept, slope, shape, **kwargs)
+    
+    @classmethod
+    def w19_parameterisation(cls, temp, intercept, insitu_origin=False, liquid_origin=False):
+        """Using Wolf et al. 2019 parameterisation.
+
+
+        Returns:
+            float: The number density per field.
+        """
+        if not (insitu_origin or liquid_origin):
+            raise ValueError("Must specify either insitu_origin or liquid_origin.")
+        if insitu_origin and liquid_origin:
+            raise ValueError("Cannot specify both insitu_origin and liquid_origin.")
+        
+        if insitu_origin:
+            ln_slope_param = lambda temp: -0.06837 * temp + 3.492 #cm^-1
+            shape_param = lambda ln_slope: 0.009*np.exp(ln_slope*0.85) # Muhlbauer 2014
+            # shape_param = lambda ln_slope: 0.02819 * np.exp(0.7216*ln_slope) 
+        elif liquid_origin:
+            ln_slope_param = lambda temp: 4.937 * np.exp(-0.001846*temp) #cm^-1
+            shape_param = lambda ln_slope: 0.104*np.exp(ln_slope*0.71) - 1.7
+            # shape_param = lambda ln_slope: 0.001379 * np.exp(1.285*ln_slope)
+
+        ln_slope = ln_slope_param(temp) 
+        shape = shape_param(ln_slope)
+
+
+        return cls.from_litres_cm(intercept, np.exp(ln_slope), shape)
+
     def parameter_description(self) -> str:
         return f"$N_0={self.intercept:.2e}$, $\lambda={self.slope:.2e}$, $\mu={self.shape:.2f}$"
 
@@ -276,7 +318,7 @@ class GammaPSD(PSD):
     @property
     def variance(self):
         """Calculate the variance of the particle diameter."""
-        return (self.shape-1) / self.slope**2
+        return np.abs((self.shape-1) / self.slope**2)
     
     @classmethod
     def from_mean_variance(cls, number_concentration, mean, variance, **kwargs):
