@@ -8,10 +8,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from ast_model import ASTModel
+from cloud_model import CloudVolume
 
 
 from detector_model import  DiameterSpec
 from detector_run import DetectorRun
+from psd_ast_model import GammaPSD
 
 class Retrieval:
     def __init__(self, run: DetectorRun, spec: DiameterSpec, bins: np.array=None):
@@ -54,6 +56,30 @@ class Retrieval:
         ax.set_ylabel("dN/dD ($\mathrm{m}^{-3}\,\mathrm{m}^{-1}$)")
         ax.legend()
         return ax
+    
+    def fancy_plot(self, cloud:CloudVolume, make_fit=True):
+        fig, axs = plt.subplots(2, 1, height_ratios=[3,1], figsize=(7.2, 5), sharex='col')
+
+        ax = axs[0]
+
+        true = cloud.psd.plot(ax, label=f"True\n{cloud.psd.parameter_description()}")
+        cloud.psd.plot(ax, label=f"True\n{cloud.psd.parameter_description()}", retrieval=self, color="C0", linestyle="dotted")
+        self.plot(label="Retrieved (Circ. equiv.)", ax=ax, color="C1")
+        if make_fit:
+            fit = GammaPSD.fit(self.midpoints, self.dn_dd_measured, min_considered_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
+            fit_ce = fit.plot(ax, label=f"Circle equivalent\n{fit.parameter_description()}", color="C1")
+
+        handles = true+fit_ce if make_fit else true
+
+        ax.set_xlim(0, 5e-4)
+        ax.legend(handles=handles)
+
+        axs[1].bar(self.midpoints, np.histogram(self.diameters, bins=self.bins)[0], width=0.9*np.diff(self.bins), color="C1", alpha=0.2)
+        axs[1].set_xlabel("Diameter (m)")
+        axs[1].set_ylabel("Count")
+
+        return fig, axs
+
     
     def remove_particles(self, locations):
         for location in locations:

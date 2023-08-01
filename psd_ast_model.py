@@ -16,7 +16,6 @@ from scipy.optimize import curve_fit, root_scalar
 
 from ast_model import ASTModel
 from diameters import measure_diameters
-from retrieval_model import Retrieval
 
 
 Particle = namedtuple("Particle", ["diameter", "angle", "model"])
@@ -130,7 +129,7 @@ class PSD(ABC):
         # return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1) 
         return self.binned_distribution.sum()
     
-    def plot(self, ax, retrieval:Retrieval=None, **kwargs):
+    def plot(self, ax, retrieval:'Retrieval'=None, **kwargs):
         """Plot the PSD value against diameter."""
         if retrieval is None: # Don't adjust
             x_vals = self.bins
