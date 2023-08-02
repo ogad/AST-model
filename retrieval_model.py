@@ -57,13 +57,14 @@ class Retrieval:
         ax.legend()
         return ax
     
-    def fancy_plot(self, cloud:CloudVolume, make_fit=True):
+    def fancy_plot(self, cloud:CloudVolume, make_fit=True, plot_true_adjusted=True):
         fig, axs = plt.subplots(2, 1, height_ratios=[3,1], figsize=(7.2, 5), sharex='col')
 
         ax = axs[0]
 
-        true = cloud.psd.plot(ax, label=f"True\n{cloud.psd.parameter_description()}")
-        cloud.psd.plot(ax, label=f"True\n{cloud.psd.parameter_description()}", retrieval=self, color="C0", linestyle="dotted")
+        true = cloud.psd.plot(ax, label=f"True\n{cloud.psd.parameter_description()}",)
+        if plot_true_adjusted:
+            cloud.psd.plot(ax, retrieval=self, color="C0", linestyle="dotted")
         self.plot(label="Retrieved (Circ. equiv.)", ax=ax, color="C1")
         if make_fit:
             fit = GammaPSD.fit(self.midpoints, self.dn_dd_measured, min_considered_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
