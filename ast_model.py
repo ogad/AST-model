@@ -534,7 +534,7 @@ class ASTModel:
         
         diameter_overestimate = (max(self.opaque_shape.shape)*self.pixel_size)
         estimated_airy_diameter_px = int(1.22 * self.wavelength * z_val/diameter_overestimate / self.pixel_size)
-        if abs(estimated_airy_diameter_px) > 100:
+        if abs(estimated_airy_diameter_px) > 20:
             # costly to calculate, so only do it if it's going to be used
             theoretical_dof = 8*diameter_overestimate**2 / (self.wavelength * 4)
             if abs(z_val) > 10*theoretical_dof:
@@ -548,7 +548,7 @@ class ASTModel:
                 # int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),
                 max(
                     abs(10 * estimated_airy_diameter_px),
-                    20),
+                    10),
                 "constant",
                 constant_values=(0, 0),
             )
@@ -566,13 +566,13 @@ class ASTModel:
 
         # low pass filter
         # FIXME: I have no idea if this works/is the right vibe.
-        f_xy = np.meshgrid(f_x, f_y)
-        transmission_function_fourier = np.where(
-            f_xy[0]**2 + f_xy[1]**2
-            <= (f_xy[0]**2 + f_xy[1]**2).max() * low_pass,
-            transmission_function_fourier,
-            0,
-        )
+        # f_xy = np.meshgrid(f_x, f_y)
+        # transmission_function_fourier = np.where(
+        #     f_xy[0]**2 + f_xy[1]**2
+        #     <= (f_xy[0]**2 + f_xy[1]**2).max() * low_pass,
+        #     transmission_function_fourier,
+        #     0,
+        # )
 
         # apply helmholtz phase factor
         helmholtz_phase_factor = np.sqrt(self.wavenumber**2 - 4 * np.pi**2 *
