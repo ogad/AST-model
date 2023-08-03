@@ -3,6 +3,7 @@ import logging
 from random import seed
 import pickle
 from typing import is_typeddict
+from venv import logger
 
 from tqdm import tqdm
 import numpy as np
@@ -19,66 +20,66 @@ from detector_run import DetectorRun
 from profiler import profile
 
 logging.basicConfig(level=logging.INFO)
+ 
+# # %% PSD initialisation
+# # reinitialise the random seed
+# seed(42)
+# np.random.seed(42)
+
+# gamma_dist = GammaPSD(1.17e43, 8.31e4, 7.86)
+
+# fig, ax = plt.subplots()
+# gamma_dist.plot(ax)
 
 
-# %% From 
-# %% Retry with a more realistic gamma distribution
-# reinitialise the random seed
-seed(42)
-np.random.seed(42)
+# # %% Cloud generation
+# # psd.plot(ax)
+# cloud_len = 100001
+# try:
+#     with open(f"../data/cloud_01_{cloud_len}_01.pkl", "rb") as f:
+#         cloud = pickle.load(f)
+# except (FileNotFoundError, ModuleNotFoundError):
+#     cloud = CloudVolume(gamma_dist, (0.01, cloud_len, 0.1))
+#     with open(f"../data/cloud_01_{cloud_len}_01.pkl", "wb") as f:
+#         pickle.dump(cloud, f)
 
-gamma_dist = GammaPSD(1.17e43, 8.31e4, 7.86)
-
-fig, ax = plt.subplots()
-gamma_dist.plot(ax)
-
-
-# %% Cloud generation
-# psd.plot(ax)
-cloud_len = 100001
-try:
-    with open(f"../data/cloud_01_{cloud_len}_01.pkl", "rb") as f:
-        cloud = pickle.load(f)
-except (FileNotFoundError, ModuleNotFoundError):
-    cloud = CloudVolume(gamma_dist, (0.01, cloud_len, 0.1))
-    with open(f"../data/cloud_01_{cloud_len}_01.pkl", "wb") as f:
-        pickle.dump(cloud, f)
-
-print(cloud.n_particles)
+# print(cloud.n_particles)
 
 
-# %% Example particle observation
-pcle = cloud.particles.iloc[0]
-detector_location = pcle.position - np.array([300e-6, 15*pcle.diameter, 4e-2])
+# # %% Example particle observation
+# pcle = cloud.particles.iloc[0]
+# detector_location = pcle.position - np.array([300e-6, 15*pcle.diameter, 4e-2])
 
-n_pixels = 128
+# n_pixels = 128
 
-detector_1 = Detector(detector_location, n_pixels=n_pixels)
+# detector_1 = Detector(detector_location, n_pixels=n_pixels)
 
-image = cloud.take_image(detector_1, distance=30* pcle.diameter).images[0].amplitude.intensity.field
-plt.imshow(image)
-plt.scatter(0, n_pixels / 2, c="r")
-plt.colorbar()
+# image = cloud.take_image(detector_1, distance=30* pcle.diameter).images[0].amplitude.intensity.field
+# plt.imshow(image)
+# plt.scatter(0, n_pixels / 2, c="r")
+# plt.colorbar()
 
 
 # %% Helper functions
 @profile(f"../data/profile__take_image__{datetime.datetime.now():%Y-%m-%d_%H%M}.prof")
-def take_image(detector, distance, cloud: CloudVolume, single_image=False):
+def take_image(detector, distance, cloud: CloudVolume, single_image=False, **kwargs):
     return cloud.take_image(detector, distance=distance, single_image = single_image)
 
-def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10, save_run=False, **kwargs):
+def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10, save_run=False, offset=0, identifier=None, **kwargs):
     detector_run_version=5
     cloud.set_model(shape)
 
     base_distance = np.max(distance)
+    file = f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_{det_len}_{identifier+'_' if identifier else ''}run.pkl"
     try:
-        base_run = DetectorRun.load(f"../data/run_v{detector_run_version}_{base_distance}_{n_px}px_{shape.name}_{det_len}_run.pkl")
+        base_run = DetectorRun.load(file)
     except FileNotFoundError:
-        detector = Detector(np.array([0.005, 0.1, 0.01]), n_pixels=n_px, arm_separation=0.06, detection_length=det_len, pixel_size=px_size*1e-6)
+        detector = Detector(np.array([0.005, 0.1+offset, 0.01]), n_pixels=n_px, arm_separation=0.06, detection_length=det_len, pixel_size=px_size*1e-6)
         # run = cloud.take_image(detector, distance=distance, separate_particles=True)
         base_run = take_image(detector, base_distance, cloud)
         if save_run:
-            base_run.save(f"../data/run_v{detector_run_version}_{distance}_{n_px}px_{shape.name}_run.pkl")
+            base_run.save(file)
+
 
     diameter_spec = DiameterSpec(min_sep=5e-4, z_confinement=True)
 
@@ -87,65 +88,31 @@ def make_run(shape, distance, n_px, det_len=np.inf, plot=True, px_size=10, save_
     runs = [base_run.slice(run_distance) for run_distance in distance]
     retrievals = [Retrieval(run, diameter_spec) for run in runs]
     if plot:
-        [retrieval.fancy_plot(cloud) for retrieval in retrievals]
+        [retrieval.fancy_plot(cloud, **kwargs) for retrieval in retrievals]
 
     return base_run, retrievals
 
-# detections.amplitude.intensity.plot()
-# @profile(f"../data/profile__make_and_plot_retrievals__{datetime.datetime.now():%Y-%m-%d_%H%M}.prof")
-# def make_and_plot_retrievals(run, make_fit=True):
-#     # retrieval2 = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=5e-4, filled=True))
-#     retrieval = Retrieval(run, DiameterSpec(min_sep=5e-4, z_confinement=True))
+# # %% PSD retrieval examples - habit and 2D-S
+# for shape in [CrystalModel.SPHERE, CrystalModel.RECT_AR5]:
+# #     run, retrievals = make_run(shape, 999, 128)
+#     logging.info(f"Processing {shape.name}")
+#     logging.info("\tNo z confinement beyond arms...")
+#     run, retrievals = make_run(shape, 1000, 128, make_fit=False, plot_true_adjusted=False)
+#     logging.info("\tWith 1mm z confinement...")
+#     run, retrievals = make_run(shape, 1000, 128, det_len=128*10e-6, px_size=10, make_fit=False, plot_true_adjusted=False)
+#     logging.info("Done.")
 
-#     # retrieval = Retrieval(run, DiameterSpec(diameter_method="xy", min_sep=0.1, filled=True))
-#     # fit2 = GammaPSD.fit(retrieval2.midpoints, retrieval2.dn_dd_measured, min_considered_diameter = 20e-6)
+# # %% PSD retrieval examples - rect 2D-S, offset
+# for offset in np.linspace(0,10000, 10, endpoint=False):
+#     logging.info(f"Processing offset {offset}")
+#     run, retrievals = make_run(CrystalModel.RECT_AR5, 1000, 128, det_len=128*10e-6, px_size=10, make_fit=False, plot_true_adjusted=False, offset=offset)
+#     retrievals[-1].fancy_plot(cloud, make_fit=False, plot_true_adjusted=False)
+#     logging.info("Done.")
 
-#     fig, axs = plt.subplots(2, 1, height_ratios=[3,1], figsize=(7.2, 5), sharex='col')
-
-#     ax = axs[0]
-
-#     true = cloud.psd.plot(ax, label=f"True\n{gamma_dist.parameter_description()}")
-#     cloud.psd.plot(ax, label=f"True\n{gamma_dist.parameter_description()}", retrieval=retrieval, color="C0", linestyle="dotted")
-#     # cloud.psd.plot(ax, label=f"True\n{gamma_dist.parameter_description()}", retrieval=retrieval2, color="C2", linestyle="dotted")
-#     retrieval.plot(label="Retrieved (Circ. equiv.)", ax=ax, color="C1")
-#     # retrieval2.plot(label="Retrieved (XY)", ax=ax, color="C2")
-#     if make_fit:
-#         fit = GammaPSD.fit(retrieval.midpoints, retrieval.dn_dd_measured, min_considered_diameter = 20e-6) # What minimum diameter is appropriate; how can we account for the low spike...
-#         fit_ce = fit.plot(ax, label=f"Circle equivalent\n{fit.parameter_description()}", color="C1")
-#     # fit_xy = fit2.plot(ax, label=f"XY mean\n{fit2.parameter_description()}", color="C2")
-
-#     # plt.yscale("log")
-#     # psd_axs[1].set_ylim(0, 0.5e9)
-#     handles = true+fit_ce if make_fit else true
-
-#     ax.set_xlim(0, 5e-4)
-#     ax.legend(handles=handles)
-
-#     axs[1].bar(retrieval.midpoints, np.histogram(retrieval.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C1", alpha=0.2)
-#     # axs[1][1].bar(retrieval2.midpoints, np.histogram(retrieval2.diameters, bins=retrieval.bins)[0], width=0.9*np.diff(retrieval.bins), color="C2", alpha=0.2)
-#     axs[1].set_xlabel("Diameter (m)")
-#     axs[1].set_ylabel("Count")
-
-#     # plt.tight_layout()
-
-#     return fig, (retrieval)#, retrieval2)
-
-
-
-# %% PSD retrieval examples
-for shape in [CrystalModel.SPHERE, CrystalModel.RECT_AR5]:
-#     run, retrievals = make_run(shape, 999, 128)
-    logging.info(f"Processing {shape.name}")
-    logging.info("\tNo z confinement beyond arms...")
-    run, retrievals = make_run(shape, 1000, 128)
-    logging.info("\tWith 1mm z confinement...")
-    run, retrievals = make_run(shape, 1000, 128, det_len=128*10e-6, px_size=10)
-    logging.info("Done.")
-
-# %% plot sample volume as a function of diameter
-diameters = np.linspace(10e-6, 5e-4, 50)
-volumes = [run.volume(diameter) for diameter in diameters]
-plt.plot(diameters, volumes)
+# # %% plot sample volume as a function of diameter
+# diameters = np.linspace(10e-6, 5e-4, 50)
+# volumes = [run.volume(diameter) for diameter in diameters]
+# plt.plot(diameters, volumes)
 
 
 # %% Residuals for different distances and PSDs
@@ -154,8 +121,11 @@ shape = CrystalModel.SPHERE
 n_px = 128
 px_size = 10
 n_pts = 51
-z_confinement = n_px*px_size*1e-6
+z_confinement = False
+det_len = n_px*px_size*1e-6 if z_confinement else np.inf
 true_psd = None
+identifier="2d128"
+cloud_len = 100001
 
 # run, retrieval = make_run(CrystalModel.SPHERE, 10_000, n_px, det_len=n_px*px_size*1e-6, px_size=px_size, plot=True, save_run=False, make_fit=False)
 gammas = {
@@ -174,8 +144,10 @@ ax.set_xlim(1e-5, 1e-3)
 ax.set_ylim(1e5, 1e11)
 # ax.set_ylim(3e9, 1e11)
 
-for gamma in gammas.values():
-    print(gamma.total_number_density, gamma.mean*1e6)
+logger.info("Calculating means and number densities...")
+for labels, gamma in gammas.items():
+    logging.info(f"{labels}: n_0 {gamma.total_number_density:.2f} m-3; D_mean {gamma.mean*1e6:.2f} um")
+print()
 
 gamma_clouds = {}
 for labels, gamma in gammas.items():
@@ -185,15 +157,16 @@ gamma_residuals = {}
 for labels, cloud in gamma_clouds.items():
     residuals = np.zeros((n_pts, n_px-1))
     run_distances = np.logspace(0,4, n_pts)
-    _, retrievals = make_run(
+    run, retrievals = make_run(
         shape, 
         run_distances, 
         n_px, 
         px_size=px_size, 
         plot=False, 
-        save_run=False, 
+        save_run=True,
         make_fit=False,
-        # det_len=z_confinement,
+        det_len=z_confinement,
+        identifier=identifier+"-"+labels[0]+"-"+labels[1],
     )
 
     for i, retrieval in enumerate(retrievals):
@@ -213,6 +186,7 @@ for labels, cloud in gamma_clouds.items():
     ax.set_ylim(-0.15e9,1.75e9)
     ax.set_xlim(0, run_distances[-1])
     ax.text(0.05, 0.95, f"{labels[0]} origin, {labels[1]}", transform=ax.transAxes, verticalalignment='top')
+    plt.show()
 
 # %% Particle AST model examples
 from ast_model import AmplitudeField
