@@ -11,7 +11,7 @@ from tkinter import Image
 import pandas as pd
 import logging
 import numpy as np
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 from enum import Enum
 
 import matplotlib.pyplot as plt
@@ -26,6 +26,7 @@ from profiler import profile
 class CloudVolume:
     psd: GammaPSD
     dimensions: tuple[float, float, float] # (x, y, z) in m
+    random_seed: int = 42
 
     def _generate_positions(self, resolution, n_particles, y_offset=0):
         """Generate a random position within the cloud volume."""
@@ -72,13 +73,13 @@ class CloudVolume:
 
     def __post_init__(self):
         logging.info("Initialising cloud volume")
-        self.random_state = random.getstate()
 
         self.particles = None
         self.generate_particles()
 
     def generate_particles(self):
-        random.setstate(self.random_state)
+        random.seed(self.random_seed)
+        np.random.seed(self.random_seed)
 
         if self.particles is not None:
             raise ValueError("Particles already generated.")
@@ -201,7 +202,7 @@ class CloudVolume:
             y_offset = new_detector_y - detector_position[1]
             z_offset = particles_in_image.iloc[0].position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0 #TODO: check this after refactoring to own function
             image = self.process_imaged_region(particles_to_model[particles_to_model["image_no"]==image_no], detector, new_distance, offset=np.array([0, y_offset, z_offset]), use_focus=False)
-            if image is not None:
+            if (image is not None) and (image.amplitude.intensity.field < 0.9).any():
                 # image.particles["primary"] = image.particles.index == particles_in_image.index[0] #TODO: reimpliment in a non set on slice way
                 images.append(image)
         
@@ -240,7 +241,9 @@ class CloudVolume:
         
         generators = {model: model.get_generator() for model in particles.model.unique()}
 
-        for particle in tqdm(particles.itertuples(), total=len(particles), leave=False):
+
+        n_pcles = len(particles)
+        for particle in tqdm(particles.itertuples(), total=n_pcles, leave=False, disable=n_pcles<10):
             ast_model = generators[particle.model](particle, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
             if use_focus:
                 amplitude_at_particle_xy = ast_model.process(0)
