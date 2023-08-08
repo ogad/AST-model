@@ -5,6 +5,7 @@
 import logging
 from charset_normalizer import detect
 from copy import deepcopy
+import os
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ from detector_model import Detector, ImageFilter, DiameterSpec, ImagedRegion
 from diameters import measure_diameters
 
 
+
 @dataclass
 class DetectorRun:
     detector: Detector
@@ -25,16 +27,16 @@ class DetectorRun:
     distance: float # in m
 
 
+    def __post_init__(self):
+        self.images = [image for image in self.images if (image.amplitude.intensity.field < 0.9).any()]
+
     def save(self, filename):
         with open(filename, "wb") as f:
             pickle.dump(self, f)
-
     @classmethod
     def load(cls, filename):
         with open(filename, "rb") as f:
-            run =  pickle.load(f)
-
-        return run
+            return pickle.load(f)
     
     @property
     def xlims(self):
@@ -134,9 +136,12 @@ class DetectorRun:
                 logging.warning("Overlap intensity has some signal < 0.9.")
                 continue
         return overlaps
-    
+
     def set_particles(self):
-        self.particles = pd.concat([image.particles for image in self.images])
+        try:
+            self.particles = pd.concat([image.particles for image in self.images])
+        except ValueError:
+            self.particles = pd.DataFrame()
 
     def slice(self, distance, detector_yval=None):
         if detector_yval is None:
