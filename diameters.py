@@ -2,7 +2,7 @@
 # Oliver Driver
 # 11/07/2023
 import numpy as np
-
+from tqdm.autonotebook import tqdm
 
 #TODO: this has become a mess... split this out so that it's easier for IntensityField and AmplitudeField measurements.
 def measure_diameters(detection: "ImagedRegion|DetectorRun|IntensityField", spec, force_nominsep=False, **kwargs):

@@ -17,7 +17,7 @@ from psd_ast_model import GammaPSD, CompositePSD, CrystalModel
 from cloud_model import CloudVolume, Detector
 from detector_model import Detector
 
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 np.random.seed(42)
 random.seed(42)

@@ -3,7 +3,7 @@ import logging
 from random import seed
 import pickle
 
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -82,7 +82,7 @@ for image, object in zip(detections, objects):
         # secax = ax.secondary_yaxis('right', functions=(abs_y, rel_y))
         # secax.set_ylabel("y (m)")
 
-        z = (image.particles.iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2
+        z = (image.particles.iloc[0].position[2] - detector.position[2] - detector.arm_separation/2) * 1e2 # FIXME: this wont work for loaded clouds because image.particles doesn't exist.
         plt.text(20, 20, f"z = {z:.1f} cm\nNo. regions = {len(measured_diameter)}", ha="left", va="bottom", bbox=dict(facecolor='white', alpha=0.5), )
         plt.xlim(0, 1280)
         plot_outline(object.amplitude.intensity.T<0.1, ax)
