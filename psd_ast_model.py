@@ -92,9 +92,9 @@ class PSD(ABC):
     def __init__(self, bins: list[float] = None, model: CrystalModel = CrystalModel.SPHERE):
         if bins is None and getattr(self,"xlim", None) is not None:
             lower_lim = -7 if self.xlim[0] == 0 else np.log10(self.xlim[0])
-            bins = np.logspace(lower_lim, np.log10(self.xlim[1]), 100)
+            bins = np.logspace(lower_lim, np.log10(self.xlim[1]), 1000)
         elif bins is None:
-            bins = np.logspace(-7, -3, 100)
+            bins = np.logspace(-7, -3, 1000)
         self.bins = bins
 
         self.model = model
@@ -112,8 +112,22 @@ class PSD(ABC):
         Returns:
             np.ndarray: The number of particles in each bin.
         """
+        return self.dn_dd(self.midpoints) * (np.diff(self.bins))
+    
+    @property
+    def midpoints(self):
+        """Calculate the binned particle size distribution.
+
+        Returns:
+            np.ndarray: The number of particles in each bin.
+        """
         midpoints = (self.bins[1:] + self.bins[:-1]) / 2
-        return self.dn_dd(midpoints) * (np.diff(self.bins))
+        return midpoints
+    
+    @property
+    def max_dn_dd(self):
+        """Calculate the maximum value of the particle size distribution."""
+        return self.dn_dd(self.midpoints).max()
     
     def generate_diameters(self, n_particles) -> tuple[list[float], list[ASTModel]]:
         """Generate a particle diameter from the PSD."""
