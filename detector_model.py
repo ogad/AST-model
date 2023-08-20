@@ -48,6 +48,7 @@ class DiameterSpec: # TODO: implement custom threshold value.
     bound: bool = True
     filled: bool = False
     z_confinement: bool = False
+    c:float = 8.
 
     def __post_init__(self):
         if self.filled and not self.bound:
@@ -78,6 +79,21 @@ class ImagedRegion:
     def xlims(self):
         array_length = self.amplitude.pixel_size * self.amplitude.field.shape[0]
         return self.detector_position[0] + np.array([-array_length/2, array_length/2])
+    
+    def trim_blank_space(self):
+        """Trim the blank space from the start and end of the image."""
+        # trim start
+        for i in range(self.amplitude.field.shape[1]):
+            if (self.amplitude.field[:,i] < 0.9).any():
+                self.amplitude.field = self.amplitude.field[:,i:]
+                self.amplitude.intensity.field = self.amplitude.intensity.field[:,i:]
+                break
+        # trim end
+        for i in range(self.amplitude.field.shape[1]-1, -1, -1):
+            if (self.amplitude.field[:,i] < 0.9).any():
+                self.amplitude.field = self.amplitude.field[:,:i+1]
+                self.amplitude.intensity.field = self.amplitude.intensity.field[:,:i+1]
+                break
 
 
     def get_frames_to_measure(self, spec, **kwargs) -> list[tuple[tuple[float, float], IntensityField]]:
@@ -167,12 +183,12 @@ class ImagedRegion:
     @property
     def end(self):
         """The end of the region in the detector's reference frame, note that this is the low y value."""
-        return self.detector_position[1]+ self.amplitude.pixel_size * self.amplitude.field.shape[1] 
+        return self.detector_position[1]- self.amplitude.pixel_size * self.amplitude.field.shape[1] 
     
     @property
     def y_values(self): # y values decrease
         """The y values of the detector pixels, aligned so the y value at index i is the y value of the pixel at index i."""
         n_pixels = self.amplitude.field.shape[1]
-        range = np.arange(self.end, self.start - self.amplitude.pixel_size/2, -1*self.amplitude.pixel_size)
+        range = np.arange(self.start, self.end - self.amplitude.pixel_size/2, -1*self.amplitude.pixel_size)
         return range[:n_pixels+1]
 

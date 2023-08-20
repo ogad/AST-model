@@ -5,14 +5,14 @@ import numpy as np
 from tqdm.autonotebook import tqdm
 
 #TODO: this has become a mess... split this out so that it's easier for IntensityField and AmplitudeField measurements.
-def measure_diameters(detection: "ImagedRegion|DetectorRun|IntensityField", spec, force_nominsep=False, **kwargs):
-    if hasattr(detection, "get_frames_to_measure"):
+def measure_diameters(detection: "ImagedRegion|DetectorRun|IntensityField|AmplitudeField", spec, force_nominsep=False, **kwargs):
+    if hasattr(detection, "get_frames_to_measure"): #ImagedRegion or DetectorRun
         frames = detection.get_frames_to_measure(spec, **kwargs)
         xlims = detection.xlims
-    elif hasattr(detection, "frames"):
+    elif hasattr(detection, "frames"): #IntensityField
         frames = [((istart, istart), field) for istart, field in detection.frames()]
         xlims = (0, detection.field.shape[0])
-    else:
+    else: # AmplitudeField
         frames = [((istart, istart), field) for istart, field in detection.intensity.frames()]
         xlims = (0, detection.intensity.field.shape[0])
 

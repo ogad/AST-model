@@ -2,9 +2,12 @@
 # Author: Oliver Driver
 # Date: 13/06/2023
 
+import asyncio
 from copy import deepcopy
 from dataclasses import dataclass
 import datetime
+import multiprocessing
+from multiprocessing import process
 from pyexpat import model
 import random
 from tkinter import Image
@@ -21,6 +24,25 @@ from ast_model import ASTModel, AmplitudeField
 from detector_model import Detector, ImagedRegion
 from detector_run import DetectorRun
 from profiler import profile
+
+
+def process_image_no(image_no, particles_to_model, detector_position, detector, cloud, use_focus, binary_output):
+    particles_in_image = particles_to_model[particles_to_model["image_no"]==image_no]
+
+    # offset detector s.t. the end is 5*last_particle.diameter after the "last" particle, and the start is 5*first_particle.diameter before the first particle
+    last_y = particles_in_image.iloc[0].y_value # low
+    last_diameter = particles_in_image.iloc[0].diameter
+    first_y = particles_in_image.iloc[-1].y_value # high
+    first_diameter = particles_in_image.iloc[-1].diameter
+    new_detector_y = last_y - 5*last_diameter
+    new_distance = (first_y + 5*first_diameter) - (last_y - 5*last_diameter)
+    y_offset = new_detector_y - detector_position[1]
+    z_offset = particles_in_image.iloc[0].position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0 #TODO: check this after refactoring to own function
+    image = cloud.process_imaged_region(particles_to_model[particles_to_model["image_no"]==image_no], detector, new_distance, offset=np.array([0, y_offset, z_offset]), use_focus=False, binary_output=binary_output)
+    if (image is not None) and (image.amplitude.intensity.field <= 0.5).any():
+        # image.particles["primary"] = image.particles.index == particles_in_image.index[0] #TODO: reimpliment in a non set on slice way
+        return image
+
 
 @dataclass
 class CloudVolume:
@@ -85,15 +107,15 @@ class CloudVolume:
             raise ValueError("Particles already generated.")
 
         logging.info(f"Generating grid of dimensions: {[int(dim / 1e-6) for dim in self.dimensions]} points.")
-        # raise warning if any dimension will have more than 2e9 points
-        if any([dim > 1e3 for dim in self.dimensions]):
-            logging.warn("One or more dimensions is too great to grid at 2µm resolution.")
+        # # raise warning if any dimension will have more than 2e9 points
+        # if any([dim > 1e3 for dim in self.dimensions]):
+        #     logging.warn("One or more dimensions is too great to grid at 2µm resolution.")
 
         # Generate the particles
         # self.particles = pd.DataFrame(columns=["diameter", "position", "model"])
         logging.info(f"Generating {self.n_particles} particles")
 
-        positions = self._generate_positions(2e-6, self.n_particles)
+        positions = self._generate_positions(1e-6, self.n_particles)
         diameters, models = self.psd.generate_diameters(self.n_particles)
 
         angles = self._generate_angles(self.n_particles)
@@ -133,15 +155,22 @@ class CloudVolume:
             # No particles are in the illuminated region.
             return None
         
-        in_z_limits = np.abs(particle_from_detector[:, 2] - detector.arm_separation/2) < detector.detection_length/2
+        stereo_observed = np.abs(particle_from_detector[:, 2] - detector.arm_separation/2) < detector.detection_length/2
         
         illuminated_particles = self.particles[in_illuminated_region].copy()
-        illuminated_particles["in_z_limits"] = in_z_limits[in_illuminated_region]
+        illuminated_particles["stereo_observed"] = stereo_observed[in_illuminated_region]
+
+        to_test_stereo = illuminated_particles[illuminated_particles.stereo_observed]
+        for particle in to_test_stereo.itertuples():# TODO: this could be improved by accounting for e.g. postition in detector
+            model = particle.model.get_generator()(particle, wavenumber=2*np.pi/detector.wavelength, pixel_size=detector.pixel_size)
+            if (model.process(particle_from_detector[particle.Index, 0]).intensity.field > 0.5).all():
+                illuminated_particles.loc[particle.Index, "stereo_observed"] = False
+        
 
         return illuminated_particles
         
     
-    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0]), single_image: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None) -> DetectorRun | ImagedRegion:
+    def take_image(self, detector: Detector, distance:float=10e-6, offset: np.ndarray = np.array([0,0,0]), single_image: bool=False, use_focus: bool=False, primary_only: bool=False, detection_condition: callable=None, binary_output:bool = False) -> DetectorRun | ImagedRegion:
         """Take an image using repeated detections along the y-axis.
 
         Detector is aligned with x-axis, and the y-axis is the direction of travel.
@@ -156,17 +185,16 @@ class CloudVolume:
         if primary_only:
             particles_to_model = particles_to_model[particles_to_model.primary]
 
-        # define images to take based on particles' separation in y
-        particles_to_model["y_value"] = particles_to_model.position.apply(lambda pos: pos[1])
-        particles_to_model = particles_to_model.sort_values(by="y_value", inplace=False)
-        particles_to_model["y_separation"] = particles_to_model["y_value"].diff()
-        
         # for dense or large image regions, do some filtering to reduce the number of particles to model
         if len(particles_to_model) > 10: 
             models = particles_to_model.model.unique()
             min_diameter = {model: model.min_diameter(pixel_size=detector.pixel_size) for model in models}
             particles_to_model = particles_to_model[particles_to_model.apply(lambda particle: particle.diameter >= min_diameter[particle.model], axis=1)]
 
+        # define images to take based on particles' separation in y
+        particles_to_model["y_value"] = particles_to_model.position.apply(lambda pos: pos[1])
+        particles_to_model = particles_to_model.sort_values(by="y_value", inplace=False)
+        particles_to_model["y_separation"] = particles_to_model["y_value"].diff()
 
         if single_image:
             return DetectorRun(detector, [self.process_imaged_region(particles_to_model, detector, distance, offset, use_focus=use_focus)], distance)
@@ -177,7 +205,7 @@ class CloudVolume:
                 image_nos.append(0)
                 prev_diameter = particle.diameter
                 continue
-
+            
             if particle.y_separation  < min(10*prev_diameter, 10*particle.diameter):
                 image_nos.append(image_nos[-1])
             else:
@@ -187,7 +215,20 @@ class CloudVolume:
 
         particles_to_model["image_no"] = image_nos
 
-        
+        args = [(image_no, particles_to_model, detector_position, detector, self, use_focus, binary_output) for image_no in image_nos]
+
+        # with multiprocessing.Pool(1) as pool:
+        #     images = pool.starmap_async(process_image_no, args)
+        #     pool.close()
+        #     pool.join()
+        #     images = [image for image in images.get() if image is not None]
+
+        # loop = asyncio.get_event_loop()
+        # looper = asyncio.gather(*[process_image_no(image_no) for image_no in range(image_nos[-1]+1)])
+        # images = loop.run_until_complete(looper)
+        # images = [image for image in images if image is not None]
+
+
         images = [] 
         for image_no in tqdm(range(image_nos[-1]+1), leave=False, smoothing=0.1):
             particles_in_image = particles_to_model[particles_to_model["image_no"]==image_no]
@@ -201,8 +242,8 @@ class CloudVolume:
             new_distance = (first_y + 5*first_diameter) - (last_y - 5*last_diameter)
             y_offset = new_detector_y - detector_position[1]
             z_offset = particles_in_image.iloc[0].position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0 #TODO: check this after refactoring to own function
-            image = self.process_imaged_region(particles_to_model[particles_to_model["image_no"]==image_no], detector, new_distance, offset=np.array([0, y_offset, z_offset]), use_focus=False)
-            if (image is not None) and (image.amplitude.intensity.field < 0.9).any():
+            image = self.process_imaged_region(particles_to_model[particles_to_model["image_no"]==image_no], detector, new_distance, offset=np.array([0, y_offset, z_offset]), use_focus=False, binary_output=binary_output)
+            if (image is not None) and (image.amplitude.intensity.field <= 0.5).any():
                 # image.particles["primary"] = image.particles.index == particles_in_image.index[0] #TODO: reimpliment in a non set on slice way
                 images.append(image)
         
@@ -224,7 +265,7 @@ class CloudVolume:
         #     run = DetectorRun(detector, images, distance)
         #     return run 
     
-    def process_imaged_region(self, particles, detector, distance, offset, use_focus=False): #TODO: can be static, probably belongs on ImagedRegion.
+    def process_imaged_region(self, particles, detector, distance, offset, use_focus=False, binary_output=False): #TODO: can be static, probably belongs on ImagedRegion.
         detector_position = detector.position + offset
         n_rows = int(distance / detector.pixel_size)
 
@@ -252,6 +293,8 @@ class CloudVolume:
 
             total_amplitude.embed(amplitude_at_particle_xy, particle, detector_position)
         
+        if binary_output:
+            total_amplitude.field = np.where(total_amplitude.intensity.field > 0.5, 1, 0).astype(np.int8)
         return ImagedRegion(detector_position, total_amplitude, particles=particles)
 
     def set_model(self, shape:CrystalModel):

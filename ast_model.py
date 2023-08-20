@@ -9,9 +9,9 @@ from typing import Generator, Self
 
 # Package imports
 import numpy as np
-from numpy.typing import ArrayLike
+
 from matplotlib import pyplot as plt
-from matplotlib.colors import TwoSlopeNorm
+from matplotlib.colors import CenteredNorm, TwoSlopeNorm
 from scipy import ndimage
 from skimage.transform import rescale
 from shapely.geometry import Point
@@ -181,21 +181,41 @@ class IntensityField:
         if grayscale_bounds is not None:
             # Replace pixel values to the next-highest grayscale bound
             bounded = np.zeros_like(to_plot)
-            for i, bound in enumerate(sorted(grayscale_bounds)):
-                current_bound = (to_plot < bound) & (bounded == 0)
-                to_plot = np.where(current_bound, i, to_plot)
-                bounded = np.where(current_bound, 1, bounded)
-            to_plot = np.where((bounded == 0), len(grayscale_bounds), to_plot)
+            # to_plot_values = []
+            # for i, bound in enumerate(sorted(grayscale_bounds)):
+            #     current_bound = (to_plot < bound) & (bounded == 0)
+            #     to_plot = np.where(current_bound, i, to_plot)
+            #     bounded = np.where(current_bound, 1, bounded)
+            #     to_plot_values.append(i)
+            
+            # to_plot = np.where((bounded == 0), len(grayscale_bounds), to_plot)
+            cmap = plt.cm.viridis
+            cmaplist = [cmap(val) for val in range(cmap.N)]
+            cmap = plt.cm.colors.LinearSegmentedColormap.from_list("Custom cmap", cmaplist, cmap.N)
+            
+            bounds = sorted(grayscale_bounds)
+            bounds = [0] + bounds + [2]
+            norm = plt.cm.colors.BoundaryNorm(bounds, cmap.N)
+            kwargs["cmap"] = cmap
+            kwargs["norm"] = norm
         else:
-            kwargs["norm"] = TwoSlopeNorm(vmin=0, vcenter=1, vmax=2)
+            kwargs["norm"] = plt.cm.colors.Normalize(vmin=0, vmax=2)
 
 
         xlen, ylen = np.array(to_plot.shape) * self.pixel_size * 1e6
         ax_image = ax.imshow(to_plot.T, extent=[0,xlen, 0, ylen], **kwargs)
+
         if colorbar:
-            plt.colorbar(ax_image, ax=ax)
-        ax.set_xlabel("x/µm (Along detector)")
-        ax.set_ylabel(r"($y-y_{\mathrm{det}}$)/µm")
+            cax = ax.inset_axes([1.02, 0, 0.05, 1])
+            cb = plt.colorbar(ax_image, ax=ax, cax=cax)
+            if grayscale_bounds:
+                cax.set_yticks(grayscale_bounds, [f"{bound}$I_0$" for bound in grayscale_bounds])
+            else:
+                cax.set_yticks([0, 1, 2], ["$0$", "$I_0$", "$2I_0$"])
+            cax.set_facecolor("white")
+            cax.set_alpha(0.5)
+        ax.set_xlabel("$x$ (µm) (along detector)")
+        ax.set_ylabel(r"$y-y_{\mathrm{det}}$ (µm)")
         ax.set_aspect("equal")
 
         return ax_image
@@ -475,7 +495,7 @@ class ASTModel:
         return cls.from_rectangle(width, height, **kwargs)
     
     @classmethod
-    def from_diameter_rosette(cls, diameter:float, n_rectangles:int, width:float=None, rect_aspect_ratio: float=None, wavenumber:float=None, pixel_size:float=None, **kwargs):
+    def from_diameter_rosette(cls, diameter:float, n_rectangles:int, width:float=40, wavenumber:float=None, pixel_size:float=None, **kwargs):
         """Create a model for a rosette opaque object made up of n_rectangles opaque objects."""
         # set defaults
         if wavenumber is None:
@@ -483,20 +503,20 @@ class ASTModel:
         if pixel_size is None:
             pixel_size = cls.pixel_size
 
-        if width is not None and rect_aspect_ratio is not None:
-            raise ValueError("Only one of width and rect_aspect_ratio can be specified.")
-        if width is None and rect_aspect_ratio is None:
-            width = 100
 
-        px_length = diameter*1e-6 / pixel_size
-        if width is None:
-            width = (px_length / rect_aspect_ratio)
+        if diameter <= width:
+            px_length = diameter*1e-6 / pixel_size
         else:
-            ps_width = width*1e-6 / pixel_size
+            approx_overlap_area = width **2
+            target_area = np.pi * (diameter / 2)**2
+            length = np.round((target_area + (n_rectangles-1)*approx_overlap_area) / (n_rectangles * width))
+            px_length = length*1e-6 / pixel_size
+
+        px_width = width*1e-6 / pixel_size
         
         # create the opaque shape
         angles = np.linspace(0, np.pi, n_rectangles, endpoint=False)
-        opaque_shapes = [cls.rectangle(px_length, ps_width, angle) for angle in angles]
+        opaque_shapes = [cls.rectangle(px_length, px_width, angle) for angle in angles]
 
         # work out the size of the opaque shape
         opaque_shape_size = np.max([shape.shape for shape in opaque_shapes], axis=0)
@@ -517,7 +537,7 @@ class ASTModel:
         return model
 
 
-    def process(self, z_val: float, low_pass=1.0) -> AmplitudeField:
+    def process(self, z_val: float, low_pass=1.) -> AmplitudeField:
         """Process the model, calculating the amplitude given the opaque shape is at z.
 
         Args:
@@ -589,6 +609,7 @@ class ASTModel:
         amplitude = AmplitudeField(transmission_function_translated, pixel_size=self.pixel_size)
 
         self.amplitudes[z_val] = amplitude
+
         return amplitude
 
     def process_range(self, z_range: np.ndarray) -> np.ndarray:

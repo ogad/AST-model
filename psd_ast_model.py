@@ -52,7 +52,7 @@ class CrystalModel(Enum):
         elif self == CrystalModel.COL_AR5_ROT:
             return lambda particle, **kwargs: ASTModel.from_diameter_rectangular(particle.diameter*1e6, 5, angle=particle.angle, **kwargs)
         elif self == CrystalModel.ROS_6:
-            return lambda particle, **kwargs: ASTModel.from_diameter_rosette(particle.diameter*1e6, 3, **kwargs)
+            return lambda particle, **kwargs: ASTModel.from_diameter_rosette(particle.diameter*1e6, 3, width=40, **kwargs)
         else:
             raise ValueError("Crystal model not recognised.")
         
@@ -91,10 +91,10 @@ class PSD(ABC):
     """Base class for particle size distribution objects."""
     def __init__(self, bins: list[float] = None, model: CrystalModel = CrystalModel.SPHERE):
         if bins is None and getattr(self,"xlim", None) is not None:
-            lower_lim = -7 if self.xlim[0] == 0 else np.log10(self.xlim[0])
-            bins = np.logspace(lower_lim, np.log10(self.xlim[1]), 1000)
+            lower_lim = 5e-7 if self.xlim[0] == 0 else self.xlim[0]
+            bins = np.arange(lower_lim, self.xlim[1], 5e-7)
         elif bins is None:
-            bins = np.logspace(-7, -3, 1000)
+            bins = np.arange(5e-7, 1e-3, 5e-7)
         self.bins = bins
 
         self.model = model
@@ -104,6 +104,10 @@ class PSD(ABC):
         """Calculate the particle size distribution value given diameters.
         """
         pass
+
+    def moment(self, n):
+        """Calculate the nth moment of the PSD."""
+        return np.trapz(self.dn_dd(self.midpoints) * (self.midpoints ** n), self.midpoints)
 
     @property
     def binned_distribution(self):
@@ -132,7 +136,7 @@ class PSD(ABC):
     def generate_diameters(self, n_particles) -> tuple[list[float], list[ASTModel]]:
         """Generate a particle diameter from the PSD."""
         diameters = choices(
-                self.bins[1:], weights=self.binned_distribution, k=n_particles
+                self.midpoints, weights=self.binned_distribution, k=n_particles
             )
         return diameters, [self.model] * n_particles
     
@@ -250,18 +254,25 @@ class GammaPSD(PSD):
     @classmethod
     def from_litres_cm(cls, intercept_per_litre_per_cm, slope_per_cm, shape, **kwargs):
         # Note the extra factor of 1e-2^shape for conversion of power law.
-        intercept = intercept_per_litre_per_cm * 1e3 * (1e2**shape)
+        intercept = intercept_per_litre_per_cm * 1e3 * (1e2**(1+shape))
         slope = slope_per_cm * 1e2
         return cls(intercept, slope, shape, **kwargs)
     
     @classmethod
-    def w19_parameterisation(cls, temp, intercept, insitu_origin=False, liquid_origin=False):
+    def w19_parameterisation(cls, temp, intercept=None, total_number_density=None, insitu_origin=False, liquid_origin=False):
         """Using Wolf et al. 2019 parameterisation.
 
 
         Returns:
             float: The number density per field.
         """
+        if intercept is None and total_number_density is None:
+            raise ValueError("Must specify either intercept or total_number_concentration.")
+        if intercept and total_number_density:
+            raise ValueError("Cannot specify both intercept and total_number_concentration.")
+        
+        
+
         if not (insitu_origin or liquid_origin):
             raise ValueError("Must specify either insitu_origin or liquid_origin.")
         if insitu_origin and liquid_origin:
@@ -279,6 +290,9 @@ class GammaPSD(PSD):
         ln_slope = ln_slope_param(temp) 
         shape = shape_param(ln_slope)
 
+        if total_number_density: # in per litre
+
+            intercept = total_number_density * (np.exp(ln_slope) ** (shape + 1)) / np.math.gamma(shape + 1)
 
         return cls.from_litres_cm(intercept, np.exp(ln_slope), shape)
 
