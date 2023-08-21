@@ -22,7 +22,7 @@ if __name__ == "__main__":
     from oap_model.retrieval import Retrieval
     from oap_model.detector_run import DetectorRun
 
-    from profiler import profile
+    from extras.profiler import profile
 
     # %%
     logging.basicConfig(level=logging.INFO)

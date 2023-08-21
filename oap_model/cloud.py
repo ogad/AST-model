@@ -24,7 +24,7 @@ from oap_model.psd import CrystalModel, GammaPSD
 from oap_model.intensity import AmplitudeField
 from oap_model.detector import Detector, ImagedRegion
 from oap_model.detector_run import DetectorRun
-from profiler import profile
+from extras.profiler import profile
 
 
 def process_image_no(image_no, particles_to_model, detector_position, detector, cloud, use_focus, binary_output):

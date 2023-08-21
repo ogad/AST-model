@@ -9,4 +9,4 @@ Examples should be seen below:
 - [Generating sample data](examples/data_generation.ipynb)
 
 Documentation can be found here:
-- [ogad.uk/ast-model](https://www.ogad.uk/ast-model)
+- [tbs.ogad.uk](https://tbs.ogad.uk)
