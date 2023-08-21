@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oap_model.retrieval module &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="oap_model.diameters module" href="oap_model.diameters.html" />
+    <link rel="prev" title="oap_model.detector_run module" href="oap_model.detector_run.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">oap_model.retrieval module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.retrieval.Retrieval"><code class="docutils literal notranslate"><span class="pre">Retrieval</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.retrieval.Retrieval.fancy_plot"><code class="docutils literal notranslate"><span class="pre">Retrieval.fancy_plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.retrieval.Retrieval.iwc"><code class="docutils literal notranslate"><span class="pre">Retrieval.iwc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.retrieval.Retrieval.particles"><code class="docutils literal notranslate"><span class="pre">Retrieval.particles</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.retrieval.Retrieval.plot"><code class="docutils literal notranslate"><span class="pre">Retrieval.plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.retrieval.Retrieval.remove_particles"><code class="docutils literal notranslate"><span class="pre">Retrieval.remove_particles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.retrieval.Retrieval.slice"><code class="docutils literal notranslate"><span class="pre">Retrieval.slice()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.diameters.html">oap_model.diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">oap_model.retrieval module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/oap_model.retrieval.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-oap_model.retrieval">
+<span id="oap-model-retrieval-module"></span><h1>oap_model.retrieval module<a class="headerlink" href="#module-oap_model.retrieval" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.retrieval.Retrieval">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.retrieval.</span></span><span class="sig-name descname"><span class="pre">Retrieval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.detector_run.html#oap_model.detector_run.DetectorRun" title="oap_model.detector_run.DetectorRun"><span class="pre">DetectorRun</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.detector.html#oap_model.detector.DiameterSpec" title="oap_model.detector.DiameterSpec"><span class="pre">DiameterSpec</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_particles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/retrieval.html#Retrieval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.retrieval.Retrieval" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.retrieval.Retrieval.fancy_plot">
+<span class="sig-name descname"><span class="pre">fancy_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cloud</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.cloud.html#oap_model.cloud.CloudVolume" title="oap_model.cloud.CloudVolume"><span class="pre">CloudVolume</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">make_fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_true_adjusted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/retrieval.html#Retrieval.fancy_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.retrieval.Retrieval.fancy_plot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.retrieval.Retrieval.iwc">
+<span class="sig-name descname"><span class="pre">iwc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">as_volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/retrieval.html#Retrieval.iwc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.retrieval.Retrieval.iwc" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.retrieval.Retrieval.particles">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">particles</span></span><a class="headerlink" href="#oap_model.retrieval.Retrieval.particles" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.retrieval.Retrieval.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/retrieval.html#Retrieval.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.retrieval.Retrieval.plot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.retrieval.Retrieval.remove_particles">
+<span class="sig-name descname"><span class="pre">remove_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">locations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/retrieval.html#Retrieval.remove_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.retrieval.Retrieval.remove_particles" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.retrieval.Retrieval.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/retrieval.html#Retrieval.slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.retrieval.Retrieval.slice" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="oap_model.detector_run.html" class="btn btn-neutral float-left" title="oap_model.detector_run module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="oap_model.diameters.html" class="btn btn-neutral float-right" title="oap_model.diameters module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

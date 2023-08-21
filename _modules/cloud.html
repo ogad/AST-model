@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cloud &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ast.html">ast module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intensity.html">intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../psd.html">psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cloud.html">cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector.html">detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector_run.html">detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../retrieval.html">retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../diameters.html">diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cloud</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cloud</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Cloud model</span>
+<span class="c1"># Author: Oliver Driver</span>
+<span class="c1"># Date: 13/06/2023</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm.autonotebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">psd</span> <span class="kn">import</span> <span class="n">CrystalModel</span><span class="p">,</span> <span class="n">GammaPSD</span>
+<span class="kn">from</span> <span class="nn">intensity</span> <span class="kn">import</span> <span class="n">AmplitudeField</span>
+<span class="kn">from</span> <span class="nn">detector</span> <span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">ImagedRegion</span>
+<span class="kn">from</span> <span class="nn">detector_run</span> <span class="kn">import</span> <span class="n">DetectorRun</span>
+
+
+<div class="viewcode-block" id="process_image_no"><a class="viewcode-back" href="../cloud.html#cloud.process_image_no">[docs]</a><span class="k">def</span> <span class="nf">process_image_no</span><span class="p">(</span><span class="n">image_no</span><span class="p">,</span> <span class="n">particles_to_model</span><span class="p">,</span> <span class="n">detector_position</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">cloud</span><span class="p">,</span> <span class="n">use_focus</span><span class="p">,</span> <span class="n">binary_output</span><span class="p">):</span>
+    <span class="n">particles_in_image</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="p">[</span><span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;image_no&quot;</span><span class="p">]</span><span class="o">==</span><span class="n">image_no</span><span class="p">]</span>
+
+    <span class="c1"># offset detector s.t. the end is 5*last_particle.diameter after the &quot;last&quot; particle, and the start is 5*first_particle.diameter before the first particle</span>
+    <span class="n">last_y</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">y_value</span> <span class="c1"># low</span>
+    <span class="n">last_diameter</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diameter</span>
+    <span class="n">first_y</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">y_value</span> <span class="c1"># high</span>
+    <span class="n">first_diameter</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diameter</span>
+    <span class="n">new_detector_y</span> <span class="o">=</span> <span class="n">last_y</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">last_diameter</span>
+    <span class="n">new_distance</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_y</span> <span class="o">+</span> <span class="mi">5</span><span class="o">*</span><span class="n">first_diameter</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">last_y</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">last_diameter</span><span class="p">)</span>
+    <span class="n">y_offset</span> <span class="o">=</span> <span class="n">new_detector_y</span> <span class="o">-</span> <span class="n">detector_position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">z_offset</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">detector_position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">detector</span><span class="o">.</span><span class="n">arm_separation</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_focus</span> <span class="k">else</span> <span class="mi">0</span> <span class="c1">#TODO: check this after refactoring to own function</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">cloud</span><span class="o">.</span><span class="n">process_imaged_region</span><span class="p">(</span><span class="n">particles_to_model</span><span class="p">[</span><span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;image_no&quot;</span><span class="p">]</span><span class="o">==</span><span class="n">image_no</span><span class="p">],</span> <span class="n">detector</span><span class="p">,</span> <span class="n">new_distance</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">,</span> <span class="n">z_offset</span><span class="p">]),</span> <span class="n">use_focus</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binary_output</span><span class="o">=</span><span class="n">binary_output</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">field</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="c1"># image.particles[&quot;primary&quot;] = image.particles.index == particles_in_image.index[0] #TODO: reimpliment in a non set on slice way</span>
+        <span class="k">return</span> <span class="n">image</span></div>
+
+
+<div class="viewcode-block" id="CloudVolume"><a class="viewcode-back" href="../cloud.html#cloud.CloudVolume">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">CloudVolume</span><span class="p">:</span>
+    <span class="n">psd</span><span class="p">:</span> <span class="n">GammaPSD</span>
+    <span class="n">dimensions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="c1"># (x, y, z) in m</span>
+    <span class="n">random_seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span>
+
+    <span class="k">def</span> <span class="nf">_generate_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a random position within the cloud volume.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e3</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;X and Z dimensions cannot be extended beyond 1km.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e3</span><span class="p">:</span>
+            <span class="n">possible_offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">possible_offsets</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">y_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">possible_offsets</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">weights</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_particles</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_particles</span><span class="p">))</span>
+
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">//</span><span class="n">resolution</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_particles</span><span class="p">))</span>
+        <span class="n">ys</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="n">resolution</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_particles</span><span class="p">))</span> <span class="o">+</span> <span class="n">y_offset</span>
+        <span class="n">zs</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">//</span><span class="n">resolution</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_particles</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span><span class="p">])</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">resolution</span>
+    
+    <span class="k">def</span> <span class="nf">_generate_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a random angle for each particle.&quot;&quot;&quot;</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+        <span class="n">thetas</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_particles</span><span class="p">))</span>
+        <span class="c1"># generate phis weighted by sin(theta)</span>
+        <span class="n">sin_phis</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_particles</span><span class="p">))</span>
+        <span class="n">phis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">sin_phis</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">thetas</span><span class="p">,</span> <span class="n">phis</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    
+<div class="viewcode-block" id="CloudVolume.plot_from_run"><a class="viewcode-back" href="../cloud.html#cloud.CloudVolume.plot_from_run">[docs]</a>    <span class="k">def</span> <span class="nf">plot_from_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="n">DetectorRun</span><span class="p">,</span> <span class="n">near_coord</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">near_length</span><span class="o">=</span><span class="mf">2e-3</span><span class="p">,</span> <span class="n">ylims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">new_detector_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ylims</span><span class="p">)</span> <span class="k">if</span> <span class="n">ylims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">near_coord</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">near_length</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ylims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ylims</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">ylims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">near_length</span>
+
+        <span class="c1"># take the image</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">detector</span><span class="p">)</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_detector_y</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">take_image</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span> <span class="n">single_image</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># plot the image</span>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initialising cloud volume&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">particles</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_particles</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CloudVolume.generate_particles"><a class="viewcode-back" href="../cloud.html#cloud.CloudVolume.generate_particles">[docs]</a>    <span class="k">def</span> <span class="nf">generate_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_seed</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Particles already generated.&quot;</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating grid of dimensions: </span><span class="si">{</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">dim</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e-6</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">dim</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">]</span><span class="si">}</span><span class="s2"> points.&quot;</span><span class="p">)</span>
+        <span class="c1"># # raise warning if any dimension will have more than 2e9 points</span>
+        <span class="c1"># if any([dim &gt; 1e3 for dim in self.dimensions]):</span>
+        <span class="c1">#     logging.warn(&quot;One or more dimensions is too great to grid at 2µm resolution.&quot;)</span>
+
+        <span class="c1"># Generate the particles</span>
+        <span class="c1"># self.particles = pd.DataFrame(columns=[&quot;diameter&quot;, &quot;position&quot;, &quot;model&quot;])</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_particles</span><span class="si">}</span><span class="s2"> particles&quot;</span><span class="p">)</span>
+
+        <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_positions</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_particles</span><span class="p">)</span>
+        <span class="n">diameters</span><span class="p">,</span> <span class="n">models</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">psd</span><span class="o">.</span><span class="n">generate_diameters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_particles</span><span class="p">)</span>
+
+        <span class="n">angles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_angles</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_particles</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">particles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;diameter&quot;</span><span class="p">:</span> <span class="n">diameters</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">:</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">positions</span><span class="p">)),</span> <span class="s2">&quot;angle&quot;</span><span class="p">:</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">angles</span><span class="p">)),</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">models</span><span class="p">})</span></div>
+        <span class="c1"># for i in tqdm(range(self.n_particles), total=self.n_particles):</span>
+        <span class="c1">#     particle = [diameters_models[i][0], positions[i, :], diameters_models[i][1]]</span>
+        <span class="c1">#     self.particles.loc[i] = particle</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number of particles in the volume based on the PSD.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">psd</span><span class="o">.</span><span class="n">total_number_density</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="CloudVolume.particles_in_illuminated_region"><a class="viewcode-back" href="../cloud.html#cloud.CloudVolume.particles_in_illuminated_region">[docs]</a>    <span class="k">def</span> <span class="nf">particles_in_illuminated_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">10e-6</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="p">):</span>
+        <span class="n">detector_position</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="n">offset</span>
+
+        
+        <span class="n">beam_width</span> <span class="o">=</span> <span class="mf">8e-3</span> <span class="o">-</span> <span class="p">(</span><span class="mi">128</span> <span class="o">*</span> <span class="mf">10e-6</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">n_pixels</span> <span class="o">*</span> <span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span> <span class="c1"># leave the same padding</span>
+        <span class="n">beam_length</span> <span class="o">=</span> <span class="mf">2e-3</span> <span class="o">-</span> <span class="p">(</span><span class="mf">10e-6</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span> <span class="c1"># leave the same padding</span>
+
+        <span class="c1"># check which particles are somewhat within within the illuminated region</span>
+        <span class="c1"># Illuminated region is defined as the 8mm x 2mm x arm_separation region aligned with the orthogonal vector pointing towards the detector</span>
+        <span class="c1"># TODO: These may also need to also detect particles whose centres are outside the illuminated region, but whos edges are inside it.</span>
+        <span class="n">particle_from_detector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="o">-</span> <span class="n">detector_position</span>
+
+        <span class="n">is_in_illuminated_region_x</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">particle_from_detector</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">beam_width</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">is_in_illuminated_region_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">particle_from_detector</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">beam_length</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">distance</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">particle_from_detector</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">beam_length</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">is_in_illuminated_region_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">particle_from_detector</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">&lt;</span> <span class="n">detector</span><span class="o">.</span><span class="n">arm_separation</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">particle_from_detector</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">)</span>
+
+        <span class="n">in_illuminated_region</span> <span class="o">=</span> <span class="n">is_in_illuminated_region_x</span> <span class="o">&amp;</span> <span class="n">is_in_illuminated_region_y</span> <span class="o">&amp;</span> <span class="n">is_in_illuminated_region_z</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_illuminated_region</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="c1"># No particles are in the illuminated region.</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">stereo_observed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">particle_from_detector</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">detector</span><span class="o">.</span><span class="n">arm_separation</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">detector</span><span class="o">.</span><span class="n">detection_length</span><span class="o">/</span><span class="mi">2</span>
+        
+        <span class="n">illuminated_particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="n">in_illuminated_region</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">illuminated_particles</span><span class="p">[</span><span class="s2">&quot;stereo_observed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stereo_observed</span><span class="p">[</span><span class="n">in_illuminated_region</span><span class="p">]</span>
+
+        <span class="n">to_test_stereo</span> <span class="o">=</span> <span class="n">illuminated_particles</span><span class="p">[</span><span class="n">illuminated_particles</span><span class="o">.</span><span class="n">stereo_observed</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="n">to_test_stereo</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span><span class="c1"># TODO: this could be improved by accounting for e.g. postition in detector</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">particle</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_generator</span><span class="p">()(</span><span class="n">particle</span><span class="p">,</span> <span class="n">wavenumber</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">detector</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">particle_from_detector</span><span class="p">[</span><span class="n">particle</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">field</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">illuminated_particles</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">particle</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span> <span class="s2">&quot;stereo_observed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        
+
+        <span class="k">return</span> <span class="n">illuminated_particles</span></div>
+        
+    
+<div class="viewcode-block" id="CloudVolume.take_image"><a class="viewcode-back" href="../cloud.html#cloud.CloudVolume.take_image">[docs]</a>    <span class="k">def</span> <span class="nf">take_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">10e-6</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">single_image</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_focus</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">primary_only</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">detection_condition</span><span class="p">:</span> <span class="nb">callable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">binary_output</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetectorRun</span> <span class="o">|</span> <span class="n">ImagedRegion</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Take an image using repeated detections along the y-axis.</span>
+
+<span class="sd">        Detector is aligned with x-axis, and the y-axis is the direction of travel.</span>
+<span class="sd">        The z-axis is the focal axis.</span>
+<span class="sd">        The detector position is the position of the detector centre during the final detection.</span>
+<span class="sd">        The model_generator is a callable taking the diameter of the particle in microns and returning an ASTModel.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">detector_position</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="n">offset</span>
+
+        <span class="n">particles_to_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">particles_in_illuminated_region</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">primary_only</span><span class="p">:</span>
+            <span class="n">particles_to_model</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="p">[</span><span class="n">particles_to_model</span><span class="o">.</span><span class="n">primary</span><span class="p">]</span>
+
+        <span class="c1"># for dense or large image regions, do some filtering to reduce the number of particles to model</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles_to_model</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span> 
+            <span class="n">models</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+            <span class="n">min_diameter</span> <span class="o">=</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">min_diameter</span><span class="p">(</span><span class="n">pixel_size</span><span class="o">=</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">}</span>
+            <span class="n">particles_to_model</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="p">[</span><span class="n">particles_to_model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">particle</span><span class="p">:</span> <span class="n">particle</span><span class="o">.</span><span class="n">diameter</span> <span class="o">&gt;=</span> <span class="n">min_diameter</span><span class="p">[</span><span class="n">particle</span><span class="o">.</span><span class="n">model</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+
+        <span class="c1"># define images to take based on particles&#39; separation in y</span>
+        <span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;y_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">pos</span><span class="p">:</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">particles_to_model</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;y_value&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;y_separation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;y_value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">single_image</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DetectorRun</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">process_imaged_region</span><span class="p">(</span><span class="n">particles_to_model</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">use_focus</span><span class="o">=</span><span class="n">use_focus</span><span class="p">)],</span> <span class="n">distance</span><span class="p">)</span>
+        
+        <span class="n">image_nos</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="n">particles_to_model</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">y_separation</span><span class="p">):</span>
+                <span class="n">image_nos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">prev_diameter</span> <span class="o">=</span> <span class="n">particle</span><span class="o">.</span><span class="n">diameter</span>
+                <span class="k">continue</span>
+            
+            <span class="k">if</span> <span class="n">particle</span><span class="o">.</span><span class="n">y_separation</span>  <span class="o">&lt;</span> <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">prev_diameter</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="n">particle</span><span class="o">.</span><span class="n">diameter</span><span class="p">):</span>
+                <span class="n">image_nos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image_nos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">image_nos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image_nos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">prev_diameter</span> <span class="o">=</span> <span class="n">particle</span><span class="o">.</span><span class="n">diameter</span>
+
+        <span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;image_no&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_nos</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[(</span><span class="n">image_no</span><span class="p">,</span> <span class="n">particles_to_model</span><span class="p">,</span> <span class="n">detector_position</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">use_focus</span><span class="p">,</span> <span class="n">binary_output</span><span class="p">)</span> <span class="k">for</span> <span class="n">image_no</span> <span class="ow">in</span> <span class="n">image_nos</span><span class="p">]</span>
+
+        <span class="c1"># with multiprocessing.Pool(1) as pool:</span>
+        <span class="c1">#     images = pool.starmap_async(process_image_no, args)</span>
+        <span class="c1">#     pool.close()</span>
+        <span class="c1">#     pool.join()</span>
+        <span class="c1">#     images = [image for image in images.get() if image is not None]</span>
+
+        <span class="c1"># loop = asyncio.get_event_loop()</span>
+        <span class="c1"># looper = asyncio.gather(*[process_image_no(image_no) for image_no in range(image_nos[-1]+1)])</span>
+        <span class="c1"># images = loop.run_until_complete(looper)</span>
+        <span class="c1"># images = [image for image in images if image is not None]</span>
+
+
+        <span class="n">images</span> <span class="o">=</span> <span class="p">[]</span> 
+        <span class="k">for</span> <span class="n">image_no</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">image_nos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+            <span class="n">particles_in_image</span> <span class="o">=</span> <span class="n">particles_to_model</span><span class="p">[</span><span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;image_no&quot;</span><span class="p">]</span><span class="o">==</span><span class="n">image_no</span><span class="p">]</span>
+
+            <span class="c1"># offset detector s.t. the end is 5*last_particle.diameter after the &quot;last&quot; particle, and the start is 5*first_particle.diameter before the first particle</span>
+            <span class="n">last_y</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">y_value</span> <span class="c1"># low</span>
+            <span class="n">last_diameter</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diameter</span>
+            <span class="n">first_y</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">y_value</span> <span class="c1"># high</span>
+            <span class="n">first_diameter</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diameter</span>
+            <span class="n">new_detector_y</span> <span class="o">=</span> <span class="n">last_y</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">last_diameter</span>
+            <span class="n">new_distance</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_y</span> <span class="o">+</span> <span class="mi">5</span><span class="o">*</span><span class="n">first_diameter</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">last_y</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">last_diameter</span><span class="p">)</span>
+            <span class="n">y_offset</span> <span class="o">=</span> <span class="n">new_detector_y</span> <span class="o">-</span> <span class="n">detector_position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">z_offset</span> <span class="o">=</span> <span class="n">particles_in_image</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">detector_position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">detector</span><span class="o">.</span><span class="n">arm_separation</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_focus</span> <span class="k">else</span> <span class="mi">0</span> <span class="c1">#TODO: check this after refactoring to own function</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_imaged_region</span><span class="p">(</span><span class="n">particles_to_model</span><span class="p">[</span><span class="n">particles_to_model</span><span class="p">[</span><span class="s2">&quot;image_no&quot;</span><span class="p">]</span><span class="o">==</span><span class="n">image_no</span><span class="p">],</span> <span class="n">detector</span><span class="p">,</span> <span class="n">new_distance</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_offset</span><span class="p">,</span> <span class="n">z_offset</span><span class="p">]),</span> <span class="n">use_focus</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binary_output</span><span class="o">=</span><span class="n">binary_output</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">field</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="c1"># image.particles[&quot;primary&quot;] = image.particles.index == particles_in_image.index[0] #TODO: reimpliment in a non set on slice way</span>
+                <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">DetectorRun</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span></div>
+
+        <span class="c1"># if separate_particles: #TODO: This should be default behaviour</span>
+        <span class="c1">#     # take an image of each particle individually</span>
+        <span class="c1">#     images = []</span>
+        <span class="c1">#     length_iterations = len(particles_to_model)</span>
+        <span class="c1">#     for particle in tqdm(particles_to_model.itertuples(), total=length_iterations, leave=False):</span>
+        <span class="c1">#         y_offset = particle.position[1] - detector_position[1] - 5 * particle.diameter</span>
+        <span class="c1">#         z_offset = particle.position[2] - (detector_position[2] + detector.arm_separation/2) if use_focus else 0</span>
+        <span class="c1">#         particle_run = self.take_image(detector, 10*particle.diameter, offset=np.array([0, y_offset, z_offset]), use_focus=use_focus)</span>
+        <span class="c1">#         if particle_run is not None:</span>
+        <span class="c1">#             particle_run.images[0].particles[&quot;primary&quot;] = particle_run.images[0].particles.index == particle.Index</span>
+
+        <span class="c1">#             images += particle_run.images</span>
+
+        <span class="c1">#     run = DetectorRun(detector, images, distance)</span>
+        <span class="c1">#     return run </span>
+    
+<div class="viewcode-block" id="CloudVolume.process_imaged_region"><a class="viewcode-back" href="../cloud.html#cloud.CloudVolume.process_imaged_region">[docs]</a>    <span class="k">def</span> <span class="nf">process_imaged_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">,</span> <span class="n">detector</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">use_focus</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binary_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> <span class="c1">#TODO: can be static, probably belongs on ImagedRegion.</span>
+        <span class="n">detector_position</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">distance</span> <span class="o">/</span> <span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+
+        <span class="c1"># get the intensity profile at the given z value for each illuminated particle</span>
+        <span class="n">total_amplitude</span> <span class="o">=</span> <span class="n">AmplitudeField</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">detector</span><span class="o">.</span><span class="n">n_pixels</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">),</span> <span class="n">pixel_size</span><span class="o">=</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+        
+        <span class="c1"># particles[&quot;x_index&quot;] = particles.apply(</span>
+        <span class="c1">#     lambda particle: int((particle[&quot;position&quot;] - detector_position)[0] / total_amplitude.pixel_size) + int(total_amplitude.field.shape[0]/2),</span>
+        <span class="c1">#     axis=1)</span>
+        <span class="c1"># particles[&quot;y_index&quot;] = particles.apply(</span>
+        <span class="c1">#     lambda particle: int((particle[&quot;position&quot;] - detector_position)[1] / total_amplitude.pixel_size),</span>
+        <span class="c1">#     axis=1)</span>
+
+        
+        <span class="n">generators</span> <span class="o">=</span> <span class="p">{</span><span class="n">model</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">get_generator</span><span class="p">()</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">particles</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">unique</span><span class="p">()}</span>
+
+
+        <span class="n">n_pcles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(),</span> <span class="n">total</span><span class="o">=</span><span class="n">n_pcles</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="n">n_pcles</span><span class="o">&lt;</span><span class="mi">10</span><span class="p">):</span>
+            <span class="n">ast_model</span> <span class="o">=</span> <span class="n">generators</span><span class="p">[</span><span class="n">particle</span><span class="o">.</span><span class="n">model</span><span class="p">](</span><span class="n">particle</span><span class="p">,</span> <span class="n">wavenumber</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">detector</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">use_focus</span><span class="p">:</span>
+                <span class="n">amplitude_at_particle_xy</span> <span class="o">=</span> <span class="n">ast_model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">amplitude_at_particle_xy</span> <span class="o">=</span> <span class="n">ast_model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">detector_position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">detector</span><span class="o">.</span><span class="n">arm_separation</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="n">total_amplitude</span><span class="o">.</span><span class="n">embed</span><span class="p">(</span><span class="n">amplitude_at_particle_xy</span><span class="p">,</span> <span class="n">particle</span><span class="p">,</span> <span class="n">detector_position</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">binary_output</span><span class="p">:</span>
+            <span class="n">total_amplitude</span><span class="o">.</span><span class="n">field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">total_amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">field</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ImagedRegion</span><span class="p">(</span><span class="n">detector_position</span><span class="p">,</span> <span class="n">total_amplitude</span><span class="p">,</span> <span class="n">particles</span><span class="o">=</span><span class="n">particles</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudVolume.set_model"><a class="viewcode-back" href="../cloud.html#cloud.CloudVolume.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span><span class="n">CrystalModel</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">particles</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psd</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">shape</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

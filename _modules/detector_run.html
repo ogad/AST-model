@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>detector_run &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ast.html">ast module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intensity.html">intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../psd.html">psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cloud.html">cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector.html">detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector_run.html">detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../retrieval.html">retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../diameters.html">diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">detector_run</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for detector_run</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Detector run</span>
+<span class="c1"># Author: Oliver Driver</span>
+<span class="c1"># Date: 29/06/2023</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">from</span> <span class="nn">intensity</span> <span class="kn">import</span> <span class="n">IntensityField</span>
+<span class="kn">from</span> <span class="nn">detector</span> <span class="kn">import</span> <span class="n">Detector</span><span class="p">,</span> <span class="n">ImageFilter</span><span class="p">,</span> <span class="n">DiameterSpec</span><span class="p">,</span> <span class="n">ImagedRegion</span>
+<span class="kn">from</span> <span class="nn">diameters</span> <span class="kn">import</span> <span class="n">measure_diameters</span>
+
+
+
+<div class="viewcode-block" id="DetectorRun"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DetectorRun</span><span class="p">:</span>
+    <span class="n">detector</span><span class="p">:</span> <span class="n">Detector</span>
+    <span class="n">images</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ImagedRegion</span><span class="p">]</span>
+    <span class="c1"># particles: pd.DataFrame # The particles illuminated by the laser beam (not necessarily detected) </span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span> <span class="c1"># in m</span>
+
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">image</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="k">if</span> <span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">field</span> <span class="o">&lt;</span> <span class="mf">0.9</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DetectorRun.trim_blank_space"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.trim_blank_space">[docs]</a>    <span class="k">def</span> <span class="nf">trim_blank_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trim the blank space from the start and end of each image.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">:</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">trim_blank_space</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DetectorRun.save"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+<div class="viewcode-block" id="DetectorRun.load"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">xlims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">array_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">n_pixels</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector_position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">array_length</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">array_length</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">detector_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">position</span>
+    
+<div class="viewcode-block" id="DetectorRun.get_frames_to_measure"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.get_frames_to_measure">[docs]</a>    <span class="k">def</span> <span class="nf">get_frames_to_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">],</span><span class="n">IntensityField</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a list of frames to measure, with the y extent of the frame and the frame itself.&quot;&quot;&quot;</span>
+        <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">:</span>
+            <span class="n">frames</span> <span class="o">=</span> <span class="n">frames</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">get_frames_to_measure</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">frames</span></div>
+
+<div class="viewcode-block" id="DetectorRun.measure_diameters"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.measure_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">DiameterSpec</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">detected_particles</span> <span class="o">=</span> <span class="n">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">detected_particles</span></div>
+
+<div class="viewcode-block" id="DetectorRun.plot"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_images</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">image_filters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ImageFilter</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="n">ImageFilter</span><span class="o">.</span><span class="n">PRESENT_HALF_INTENSITY</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the images in the run.&quot;&quot;&quot;</span>
+
+        <span class="n">images_to_plot</span> <span class="o">=</span> <span class="p">[</span><span class="n">image</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">image_filter</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="p">)</span> <span class="k">for</span> <span class="n">image_filter</span> <span class="ow">in</span> <span class="n">image_filters</span><span class="p">])]</span>
+        
+        <span class="k">if</span> <span class="n">n_images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">images_to_plot</span> <span class="o">=</span> <span class="n">images_to_plot</span><span class="p">[:</span><span class="n">n_images</span><span class="p">]</span>
+
+        <span class="n">n_plots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">images_to_plot</span><span class="p">)</span>
+        <span class="n">n_cols</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_plots</span> <span class="o">/</span> <span class="n">n_cols</span><span class="p">))</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">n_cols</span><span class="o">*</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_rows</span><span class="o">*</span><span class="mi">5</span><span class="p">),</span><span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">images_to_plot</span><span class="p">,</span> <span class="n">axs</span><span class="o">.</span><span class="n">flatten</span><span class="p">()):</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+        <span class="n">n_bottom</span> <span class="o">=</span> <span class="n">n_plots</span> <span class="o">%</span> <span class="mi">3</span>
+        <span class="k">if</span> <span class="n">n_bottom</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="n">n_bottom</span><span class="p">:]:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">labelbottom</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">n_bottom</span><span class="p">:]:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span></div>
+    
+<div class="viewcode-block" id="DetectorRun.volume"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.volume">[docs]</a>    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diameter</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span><span class="n">DiameterSpec</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1"># m^3</span>
+        <span class="c1"># TODO: in theory, parallel diameter can be different to DOF diameter (!)</span>
+        <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spec</span> <span class="o">=</span> <span class="n">DiameterSpec</span><span class="p">()</span>
+
+        <span class="n">c</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">c</span>
+
+        <span class="n">max_dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">detection_length</span> <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="o">.</span><span class="n">z_confinement</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">sample_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="c1"># m</span>
+        <span class="n">effective_array_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">n_pixels</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">diameter</span> <span class="c1"># ? m: pixel_size * (n_pixels - 1) - diameter (parallel to array?)</span>
+        
+        <span class="c1"># if np.any(effective_array_width &lt; 0):</span>
+            <span class="c1"># logging.warn(&quot;Effective array width is negative. Check the units of diameter.&quot;)</span>
+        
+        <span class="n">depth_of_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">arm_separation</span><span class="p">,</span> <span class="n">c</span> <span class="o">*</span> <span class="n">diameter</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">wavelength</span><span class="p">))</span><span class="c1"># ? m ± cD^2/4λ; c = 8 ish for 2D-S. (from Gurganus Lawson 2018)</span>
+        <span class="n">depth_of_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">depth_of_field</span><span class="p">,</span> <span class="n">max_dof</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">z_confinement</span><span class="p">:</span>
+            <span class="n">effective_array_width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">effective_array_width</span><span class="p">,</span> <span class="n">depth_of_field</span><span class="p">)</span>
+            
+        <span class="n">sample_volume</span> <span class="o">=</span> <span class="n">sample_length</span> <span class="o">*</span> <span class="n">effective_array_width</span> <span class="o">*</span> <span class="n">depth_of_field</span> <span class="c1"># should strictly be integrated...</span>
+        <span class="k">return</span> <span class="n">sample_volume</span></div>
+    
+    <span class="c1"># def overlaps(self): #FIXME: this is a mess and probably doesnt work; unused due to fram</span>
+    <span class="c1">#     ends = [im.end for im in self.images] </span>
+    <span class="c1">#     starts = [im.start for im in self.images]</span>
+    <span class="c1">#     regions = list(zip(range(len(starts)), starts, ends))</span>
+    <span class="c1">#     sorted_regions = sorted(regions, key=lambda x: x[1], reverse=True)</span>
+
+    <span class="c1">#     overlaps = []</span>
+    <span class="c1">#     for i in range(len(sorted_regions)-1):</span>
+    <span class="c1">#         # if the end of the current region is after the start of the next region</span>
+    <span class="c1">#         if sorted_regions[i][2] &lt; sorted_regions[i+1][1]:</span>
+    <span class="c1">#             # print(&quot;Overlap detected&quot;)</span>
+    <span class="c1">#             overlaps.append((sorted_regions[i], sorted_regions[i+1]))</span>
+        
+    <span class="c1">#     for overlap in overlaps:</span>
+    <span class="c1">#         intensity_1 = self.images[overlap[0][0]].amplitude.intensity.field</span>
+    <span class="c1">#         intensity_2 = self.images[overlap[1][0]].amplitude.intensity.field</span>
+            
+    <span class="c1">#         y_vals_1 = self.images[overlap[0][0]].y_values</span>
+    <span class="c1">#         y_vals_2 = self.images[overlap[1][0]].y_values</span>
+
+    <span class="c1">#         # the end of 1 overlaps with the beginning of 2</span>
+    <span class="c1">#         overlap_start = y_vals_1[0] #bigger value, at lesser index</span>
+    <span class="c1">#         overlap_end = y_vals_2[-1] #smaller value, at greater index</span>
+    <span class="c1">#         if overlap_start &gt; overlap_end:</span>
+    <span class="c1">#             logging.warning(&quot;Overlap start &gt; overlap end.&quot;)</span>
+    <span class="c1">#             continue</span>
+            
+    <span class="c1">#         # the index after the overlap in the first image</span>
+    <span class="c1">#         overlap_end_index_1 = np.argwhere(y_vals_1 &lt; overlap_end)[0][0]</span>
+    <span class="c1">#         # the index after the overlap ends in the second image</span>
+    <span class="c1">#         overlap_start_index_2 = np.argwhere(y_vals_2 &gt; overlap_start)[-1][0]</span>
+
+    <span class="c1">#         overlap_intensity_1 = intensity_1[:overlap_end_index_1]</span>
+    <span class="c1">#         overlap_intensity_2 = intensity_2[overlap_start_index_2:]</span>
+
+    <span class="c1">#         if (overlap_intensity_1 &lt;0.9).any() or (overlap_intensity_2 &lt; 0.9).any():</span>
+    <span class="c1">#             logging.warning(&quot;Overlap intensity has some signal &lt; 0.9.&quot;)</span>
+    <span class="c1">#             continue</span>
+    <span class="c1">#     return overlaps</span>
+
+<div class="viewcode-block" id="DetectorRun.set_particles"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.set_particles">[docs]</a>    <span class="k">def</span> <span class="nf">set_particles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">particles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">particles</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">particles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DetectorRun.slice"><a class="viewcode-back" href="../detector_run.html#detector_run.DetectorRun.slice">[docs]</a>    <span class="k">def</span> <span class="nf">slice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">detector_yval</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">detector_yval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">detector_yval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">new_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">slice_start</span> <span class="o">=</span> <span class="n">detector_yval</span> <span class="o">+</span> <span class="n">distance</span>
+        <span class="n">slice_end</span> <span class="o">=</span> <span class="n">detector_yval</span>
+        <span class="n">image_starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">])</span>
+        <span class="n">image_ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">end</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">])</span>
+        <span class="n">in_slice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">image_starts</span> <span class="o">&lt;=</span> <span class="n">slice_start</span><span class="p">,</span> <span class="n">image_ends</span> <span class="o">&gt;=</span> <span class="n">slice_end</span><span class="p">)</span>
+        <span class="n">new_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">image</span> <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">in_slice</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">,</span> <span class="n">in_slice</span><span class="p">)</span> <span class="k">if</span> <span class="n">in_slice</span><span class="p">]</span>
+
+        <span class="c1"># for image in self.images:</span>
+        <span class="c1">#     first_image = np.argwhere(image.start &lt; slice_start)[-1][0]</span>
+        <span class="c1">#     last_image = np.argwhere(image.end &gt; slice_end)[0][0]</span>
+
+
+
+        <span class="c1">#     if image.start &lt;= slice_start and image.end &gt;= slice_end: </span>
+        <span class="c1">#         new_images.append(image)</span>
+        <span class="c1">#     elif image.start &lt;= slice_start:#TODO: need to deal proprerly with the first and last image in a run, and with splitting images.</span>
+        <span class="c1">#         # image is at the end of the run</span>
+        <span class="c1">#         continue</span>
+        <span class="c1">#     elif image.end &gt;= slice_end:</span>
+        <span class="c1">#         # image is at the start of the run</span>
+        <span class="c1">#         continue</span>
+        
+        <span class="n">new_detector</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">)</span>
+        <span class="n">new_detector</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">detector_yval</span><span class="c1"># + distance</span>
+        <span class="k">return</span> <span class="n">DetectorRun</span><span class="p">(</span><span class="n">new_detector</span><span class="p">,</span> <span class="n">new_images</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span></div></div>
+        
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

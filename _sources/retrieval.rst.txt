@@ -1,0 +1,7 @@
+retrieval module
+================
+
+.. automodule:: retrieval
+   :members:
+   :undoc-members:
+   :show-inheritance:

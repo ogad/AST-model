@@ -1,0 +1,29 @@
+extras package
+==============
+
+Submodules
+----------
+
+extras.curve\_fit module
+------------------------
+
+.. automodule:: extras.curve_fit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+extras.profiler module
+----------------------
+
+.. automodule:: extras.profiler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: extras
+   :members:
+   :undoc-members:
+   :show-inheritance:
