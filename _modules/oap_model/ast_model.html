@@ -42,7 +42,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../oap_model.html">oap_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.diameters.html">oap_model.diameters module</a></li>
 </ul>
 
         </div>
@@ -85,7 +92,7 @@
 
 <span class="kn">from</span> <span class="nn">.intensity</span> <span class="kn">import</span> <span class="n">AmplitudeField</span>
 
-<div class="viewcode-block" id="ASTModel"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="ASTModel"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ASTModel</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Angular Spectrum Theory model.</span>
 
@@ -121,7 +128,7 @@
                                                   <span class="n">nonzero_y</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
                                                   <span class="p">):</span><span class="n">nonzero_y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-<div class="viewcode-block" id="ASTModel.from_diameter"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.from_diameter">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ASTModel.from_diameter"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.from_diameter">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_diameter</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a model for a circular opaque object.</span>
 
@@ -161,7 +168,7 @@
 
         <span class="k">return</span> <span class="n">model</span></div>
 
-<div class="viewcode-block" id="ASTModel.rectangle"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.rectangle">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ASTModel.rectangle"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.rectangle">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">rectangle</span><span class="p">(</span><span class="n">px_height</span><span class="p">,</span> <span class="n">px_width</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span><span class="nb">float</span><span class="o">|</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a rectangular opaque object.</span>
 
@@ -199,7 +206,7 @@
 
         <span class="k">return</span> <span class="n">shape</span></div>
 
-<div class="viewcode-block" id="ASTModel.from_rectangle"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.from_rectangle">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ASTModel.from_rectangle"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.from_rectangle">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_rectangle</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a model for a rectangular opaque object.</span>
 
@@ -230,7 +237,7 @@
 
         <span class="k">return</span> <span class="n">model</span></div>
 
-<div class="viewcode-block" id="ASTModel.from_diameter_rectangular"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.from_diameter_rectangular">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ASTModel.from_diameter_rectangular"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.from_diameter_rectangular">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_diameter_rectangular</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a model for a rectangular opaque object with a given diameter xy mean diameter and aspect ratio.&quot;&quot;&quot;</span>
         <span class="n">area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">diameter</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
@@ -241,7 +248,7 @@
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_rectangle</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ASTModel.from_diameter_rosette"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.from_diameter_rosette">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ASTModel.from_diameter_rosette"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.from_diameter_rosette">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_diameter_rosette</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">n_rectangles</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a model for a rosette opaque object made up of n_rectangles opaque objects.&quot;&quot;&quot;</span>
         <span class="c1"># set defaults</span>
@@ -284,7 +291,7 @@
         <span class="k">return</span> <span class="n">model</span></div>
 
 
-<div class="viewcode-block" id="ASTModel.process"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">low_pass</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AmplitudeField</span><span class="p">:</span>
+<div class="viewcode-block" id="ASTModel.process"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">low_pass</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AmplitudeField</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model, calculating the amplitude given the opaque shape is at z.</span>
 
 <span class="sd">        Args:</span>
@@ -359,7 +366,7 @@
 
         <span class="k">return</span> <span class="n">amplitude</span></div>
 
-<div class="viewcode-block" id="ASTModel.process_range"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.process_range">[docs]</a>    <span class="k">def</span> <span class="nf">process_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_range</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="ASTModel.process_range"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.process_range">[docs]</a>    <span class="k">def</span> <span class="nf">process_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_range</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model for offsetting the object at range of z values.</span>
 
 <span class="sd">        Args:</span>
@@ -370,7 +377,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">z_range</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ASTModel.plot_intensity"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.plot_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">plot_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<div class="viewcode-block" id="ASTModel.plot_intensity"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.plot_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">plot_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity at a given z</span>
 
 <span class="sd">        Args:</span>
@@ -380,7 +387,7 @@
 
         <span class="k">return</span> <span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ASTModel.xy_diameter"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="ASTModel.xy_diameter"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the xy diameter of the opaque_shape.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;xy&quot;</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span>
@@ -396,7 +403,7 @@
         <span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ASTModel.get_zd"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.get_zd">[docs]</a>    <span class="k">def</span> <span class="nf">get_zd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">diameter_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<div class="viewcode-block" id="ASTModel.get_zd"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.get_zd">[docs]</a>    <span class="k">def</span> <span class="nf">get_zd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">diameter_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the dimensionless diffraction z distance.</span>
 
 <span class="sd">        The diffraction pattern for a particle (sized relative to the true diameter)</span>
@@ -415,7 +422,7 @@
         <span class="n">wavelength</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span>
         <span class="k">return</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="n">z_val</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="n">diameter_type</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span></div>
 
-<div class="viewcode-block" id="ASTModel.rescale"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.rescale">[docs]</a>    <span class="k">def</span> <span class="nf">rescale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diameter_scale_factor</span><span class="p">):</span>
+<div class="viewcode-block" id="ASTModel.rescale"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.rescale">[docs]</a>    <span class="k">def</span> <span class="nf">rescale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diameter_scale_factor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Produce a new AST model for similar object at a different scale.</span>
 
 <span class="sd">        Scales the object, and any already-measured diameters or processed amplitude </span>
@@ -450,7 +457,7 @@
         <span class="c1"># return the new ASTModel object</span>
         <span class="k">return</span> <span class="n">scaled_model</span></div>
 
-<div class="viewcode-block" id="ASTModel.regrid"><a class="viewcode-back" href="../../oap_model.html#oap_model.ast_model.ASTModel.regrid">[docs]</a>    <span class="k">def</span> <span class="nf">regrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span> <span class="mf">10e-6</span><span class="p">):</span>
+<div class="viewcode-block" id="ASTModel.regrid"><a class="viewcode-back" href="../../oap_model.ast_model.html#oap_model.ast_model.ASTModel.regrid">[docs]</a>    <span class="k">def</span> <span class="nf">regrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span> <span class="mf">10e-6</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Regrid the model to a new pixel size.</span>
 
 <span class="sd">        Resamples the opaque object and any already-measured amplitude profiles </span>

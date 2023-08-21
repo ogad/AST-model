@@ -42,7 +42,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../oap_model.html">oap_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.diameters.html">oap_model.diameters module</a></li>
 </ul>
 
         </div>
@@ -85,7 +92,7 @@
 <span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">CenteredNorm</span><span class="p">,</span> <span class="n">TwoSlopeNorm</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
 
-<div class="viewcode-block" id="plot_outline"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.plot_outline">[docs]</a><span class="k">def</span> <span class="nf">plot_outline</span><span class="p">(</span><span class="n">mapimg</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_outline"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.plot_outline">[docs]</a><span class="k">def</span> <span class="nf">plot_outline</span><span class="p">(</span><span class="n">mapimg</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;From https://stackoverflow.com/questions/24539296/outline-a-region-in-a-graph/24540564#24540564&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">mapimg</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
         <span class="k">return</span>
@@ -130,7 +137,7 @@
     <span class="c1"># and now there isn&#39;t anything else to do than plot it</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">segments</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">segments</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">.5</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AmplitudeField"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.AmplitudeField">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="AmplitudeField"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.AmplitudeField">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">AmplitudeField</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent an amplitude field.</span>
 
@@ -154,7 +161,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The intensity field.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">IntensityField</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AmplitudeField.embed"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.AmplitudeField.embed">[docs]</a>    <span class="k">def</span> <span class="nf">embed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">single_particle_amplitude</span><span class="p">,</span> <span class="n">particle</span><span class="p">,</span> <span class="n">detector_position</span><span class="p">):</span> 
+<div class="viewcode-block" id="AmplitudeField.embed"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.AmplitudeField.embed">[docs]</a>    <span class="k">def</span> <span class="nf">embed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">single_particle_amplitude</span><span class="p">,</span> <span class="n">particle</span><span class="p">,</span> <span class="n">detector_position</span><span class="p">):</span> 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Embed the intensity profile of a particle into the total intensity array.&quot;&quot;&quot;</span>
 
         <span class="c1"># TODO: this should take embed_iloc, rather than detector and particle positions...</span>
@@ -200,7 +207,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">[</span><span class="n">total_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">total_max</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">total_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">total_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">*=</span> <span class="n">new_amplitude</span></div></div>
 
-<div class="viewcode-block" id="IntensityField"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.IntensityField">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="IntensityField"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.IntensityField">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">IntensityField</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to represent an intensity field.</span>
 
@@ -214,7 +221,7 @@
     <span class="n">field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="n">pixel_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10e-6</span>
     
-<div class="viewcode-block" id="IntensityField.plot"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.IntensityField.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis_length</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grayscale_bounds</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colorbar</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<div class="viewcode-block" id="IntensityField.plot"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.IntensityField.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span><span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis_length</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grayscale_bounds</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">colorbar</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity field.</span>
 
 <span class="sd">        Args:</span>
@@ -328,7 +335,7 @@
 
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
 
-<div class="viewcode-block" id="IntensityField.measure_diameters"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.IntensityField.measure_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">bounded</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">diameter_method</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="IntensityField.measure_diameters"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.IntensityField.measure_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">bounded</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">diameter_method</span><span class="o">=</span><span class="s2">&quot;xy&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Measure the diameters of all connected regions in the image.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
@@ -366,7 +373,7 @@
         <span class="c1"># return dictionary of diameters in micrometres</span>
         <span class="k">return</span> <span class="n">diameters</span></div>
     
-<div class="viewcode-block" id="IntensityField.frames"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.IntensityField.frames">[docs]</a>    <span class="k">def</span> <span class="nf">frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<div class="viewcode-block" id="IntensityField.frames"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.IntensityField.frames">[docs]</a>    <span class="k">def</span> <span class="nf">frames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Split the intensity field into frames.</span>
 
 <span class="sd">        Args:</span>
@@ -386,7 +393,7 @@
         <span class="c1"># if not frames_indices:</span>
         <span class="c1">#     yield 0, self</span>
 
-<div class="viewcode-block" id="IntensityField.n_pixels_depletion_range"><a class="viewcode-back" href="../../oap_model.html#oap_model.intensity.IntensityField.n_pixels_depletion_range">[docs]</a>    <span class="k">def</span> <span class="nf">n_pixels_depletion_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_dep</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">max_dep</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="IntensityField.n_pixels_depletion_range"><a class="viewcode-back" href="../../oap_model.intensity.html#oap_model.intensity.IntensityField.n_pixels_depletion_range">[docs]</a>    <span class="k">def</span> <span class="nf">n_pixels_depletion_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_dep</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">max_dep</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number of pixels in the depletion range</span>
 
 <span class="sd">        Args:</span>

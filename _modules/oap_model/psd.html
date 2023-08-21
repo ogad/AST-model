@@ -42,7 +42,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../oap_model.html">oap_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.diameters.html">oap_model.diameters module</a></li>
 </ul>
 
         </div>
@@ -91,7 +98,7 @@
 <span class="n">Particle</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Particle&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;diameter&quot;</span><span class="p">,</span> <span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">])</span>
 <span class="n">PositionedParticle</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;PositionedParticle&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;diameter&quot;</span><span class="p">,</span>  <span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">])</span>
 
-<div class="viewcode-block" id="CrystalModel"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.CrystalModel">[docs]</a><span class="k">class</span> <span class="nc">CrystalModel</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="CrystalModel"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.CrystalModel">[docs]</a><span class="k">class</span> <span class="nc">CrystalModel</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum for crystal types.&quot;&quot;&quot;</span>
     <span class="n">SPHERE</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">RECT_AR5</span> <span class="o">=</span> <span class="mi">2</span>
@@ -112,7 +119,7 @@
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
 
-<div class="viewcode-block" id="CrystalModel.get_generator"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.CrystalModel.get_generator">[docs]</a>    <span class="k">def</span> <span class="nf">get_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CrystalModel.get_generator"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.CrystalModel.get_generator">[docs]</a>    <span class="k">def</span> <span class="nf">get_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">SPHERE</span><span class="p">:</span>
             <span class="k">return</span> <span class="k">lambda</span> <span class="n">particle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">diameter</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">RECT_AR5</span><span class="p">:</span>
@@ -126,7 +133,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Crystal model not recognised.&quot;</span><span class="p">)</span></div>
         
-<div class="viewcode-block" id="CrystalModel.min_diameter"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.CrystalModel.min_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">min_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">):</span>
+<div class="viewcode-block" id="CrystalModel.min_diameter"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.CrystalModel.min_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">min_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">):</span>
         <span class="n">model_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_generator</span><span class="p">()</span>
         
         <span class="n">diameter</span> <span class="o">=</span> <span class="mi">0</span>
@@ -141,7 +148,7 @@
 
 
 
-<div class="viewcode-block" id="rejection_sampler"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.rejection_sampler">[docs]</a><span class="k">def</span> <span class="nf">rejection_sampler</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">xbounds</span><span class="p">,</span> <span class="n">pmax</span><span class="p">):</span>
+<div class="viewcode-block" id="rejection_sampler"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.rejection_sampler">[docs]</a><span class="k">def</span> <span class="nf">rejection_sampler</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">xbounds</span><span class="p">,</span> <span class="n">pmax</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a value sampled from a bounded probability distribution.</span>
 
 <span class="sd">    Args:</span>
@@ -157,7 +164,7 @@
         <span class="k">if</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">x</span></div>
 
-<div class="viewcode-block" id="PSD"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.PSD">[docs]</a><span class="k">class</span> <span class="nc">PSD</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="PSD"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.PSD">[docs]</a><span class="k">class</span> <span class="nc">PSD</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for particle size distribution objects.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CrystalModel</span> <span class="o">=</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">SPHERE</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s2">&quot;xlim&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -169,13 +176,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
 
-<div class="viewcode-block" id="PSD.dn_dd"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.PSD.dn_dd">[docs]</a>    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="PSD.dn_dd"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.PSD.dn_dd">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="PSD.moment"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.PSD.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="PSD.moment"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.PSD.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the nth moment of the PSD.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span> <span class="o">**</span> <span class="n">n</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">)</span></div>
 
@@ -203,7 +210,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the maximum value of the particle size distribution.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     
-<div class="viewcode-block" id="PSD.generate_diameters"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.PSD.generate_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">generate_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">ASTModel</span><span class="p">]]:</span>
+<div class="viewcode-block" id="PSD.generate_diameters"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.PSD.generate_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">generate_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">ASTModel</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a particle diameter from the PSD.&quot;&quot;&quot;</span>
         <span class="n">diameters</span> <span class="o">=</span> <span class="n">choices</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">binned_distribution</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">n_particles</span>
@@ -217,7 +224,7 @@
         <span class="c1"># return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1) </span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">binned_distribution</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     
-<div class="viewcode-block" id="PSD.plot"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.PSD.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">retrieval</span><span class="p">:</span><span class="s2">&quot;Retrieval&quot;</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="PSD.plot"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.PSD.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">retrieval</span><span class="p">:</span><span class="s2">&quot;Retrieval&quot;</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the PSD value against diameter.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">retrieval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
             <span class="n">x_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span>
@@ -230,7 +237,7 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;PSD ($\mathrm</span><span class="si">{m}</span><span class="s1">^{-3}\,\mathrm</span><span class="si">{m}</span><span class="s1">^{-1}$)&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">handle</span></div>
     
-<div class="viewcode-block" id="PSD.adjusted_bins"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.PSD.adjusted_bins">[docs]</a>    <span class="k">def</span> <span class="nf">adjusted_bins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retrieval</span><span class="p">):</span>
+<div class="viewcode-block" id="PSD.adjusted_bins"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.PSD.adjusted_bins">[docs]</a>    <span class="k">def</span> <span class="nf">adjusted_bins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retrieval</span><span class="p">):</span>
         <span class="c1"># for each bin edge, calculate the focused diameter</span>
         <span class="n">adjusted_bins</span> <span class="o">=</span> <span class="p">[]</span>
         
@@ -247,7 +254,7 @@
                 <span class="n">adjusted_bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">diameter</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">adjusted_bins</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-6</span></div></div>
 
-<div class="viewcode-block" id="CompositePSD"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.CompositePSD">[docs]</a><span class="k">class</span> <span class="nc">CompositePSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
+<div class="viewcode-block" id="CompositePSD"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.CompositePSD">[docs]</a><span class="k">class</span> <span class="nc">CompositePSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A composite particle size distribution object.</span>
 
 <span class="sd">    Contains the distribution parameters, and binning information.</span>
@@ -263,12 +270,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">psd</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">psd</span> <span class="ow">in</span> <span class="n">psds</span><span class="p">]),</span> <span class="nb">max</span><span class="p">([</span><span class="n">psd</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">psd</span> <span class="ow">in</span> <span class="n">psds</span><span class="p">]))</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CompositePSD.dn_dd"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.CompositePSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="CompositePSD.dn_dd"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.CompositePSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">psd</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">psd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psds</span><span class="p">])</span></div>
     
-<div class="viewcode-block" id="CompositePSD.generate_diameters"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.CompositePSD.generate_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">generate_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">ASTModel</span><span class="p">]]:</span>
+<div class="viewcode-block" id="CompositePSD.generate_diameters"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.CompositePSD.generate_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">generate_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">ASTModel</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a particle diameter from the PSD.&quot;&quot;&quot;</span>
         <span class="n">n_from_psd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n_particles</span> <span class="o">*</span> <span class="n">weight</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_number_density</span><span class="p">)</span> <span class="k">for</span> <span class="n">weight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psd_weights</span><span class="p">]</span>
 
@@ -284,7 +291,7 @@
             <span class="n">models</span> <span class="o">+=</span> <span class="n">psd_models</span>
         <span class="k">return</span> <span class="n">diameters</span><span class="p">,</span> <span class="n">models</span></div></div>
 
-<div class="viewcode-block" id="GammaPSD"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD">[docs]</a><span class="k">class</span> <span class="nc">GammaPSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
+<div class="viewcode-block" id="GammaPSD"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD">[docs]</a><span class="k">class</span> <span class="nc">GammaPSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gamma particle size distribution object.</span>
 
 <span class="sd">    Contains the distribution parameters, and binning information.</span>
@@ -314,21 +321,21 @@
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;GammaPSD(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">)&quot;</span>
 
-<div class="viewcode-block" id="GammaPSD.from_litres_microns"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.from_litres_microns">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GammaPSD.from_litres_microns"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.from_litres_microns">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_litres_microns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">intercept_per_litre_per_micron</span><span class="p">,</span> <span class="n">slope_per_micron</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Note the extra factor of 1e-6^shape for conversion of power law.</span>
         <span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept_per_litre_per_micron</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1e6</span><span class="o">**</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">slope</span> <span class="o">=</span> <span class="n">slope_per_micron</span> <span class="o">*</span> <span class="mf">1e6</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="GammaPSD.from_litres_cm"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.from_litres_cm">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GammaPSD.from_litres_cm"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.from_litres_cm">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_litres_cm</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">intercept_per_litre_per_cm</span><span class="p">,</span> <span class="n">slope_per_cm</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># Note the extra factor of 1e-2^shape for conversion of power law.</span>
         <span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept_per_litre_per_cm</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1e2</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">shape</span><span class="p">))</span>
         <span class="n">slope</span> <span class="o">=</span> <span class="n">slope_per_cm</span> <span class="o">*</span> <span class="mf">1e2</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="GammaPSD.w19_parameterisation"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.w19_parameterisation">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GammaPSD.w19_parameterisation"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.w19_parameterisation">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">w19_parameterisation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">intercept</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">total_number_density</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">insitu_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">liquid_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Using Wolf et al. 2019 parameterisation.</span>
 
@@ -366,10 +373,10 @@
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_litres_cm</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">ln_slope</span><span class="p">),</span> <span class="n">shape</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="GammaPSD.parameter_description"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.parameter_description">[docs]</a>    <span class="k">def</span> <span class="nf">parameter_description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="GammaPSD.parameter_description"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.parameter_description">[docs]</a>    <span class="k">def</span> <span class="nf">parameter_description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;$N_0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">$, $\lambda=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">$, $\mu=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">$&quot;</span></div>
 
-<div class="viewcode-block" id="GammaPSD.from_concentration"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.from_concentration">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GammaPSD.from_concentration"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.from_concentration">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_concentration</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">number_concentration</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number density per field.</span>
 
@@ -401,7 +408,7 @@
         <span class="k">return</span> <span class="n">intercept</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">**</span><span class="n">shape</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="GammaPSD.dn_dd"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="GammaPSD.dn_dd"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># &quot;shape&quot; expects diameter values in cm in the O&#39;Shea formulation - hence the 1e-2 fudge factor</span>
@@ -417,14 +424,14 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the variance of the particle diameter.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     
-<div class="viewcode-block" id="GammaPSD.from_mean_variance"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.from_mean_variance">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GammaPSD.from_mean_variance"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.from_mean_variance">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_mean_variance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">number_concentration</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a GammaPSD object from the mean and variance of the particle diameter.&quot;&quot;&quot;</span>
         <span class="n">slope</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">/</span> <span class="n">variance</span>
         <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean</span> <span class="o">*</span> <span class="n">slope</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_concentration</span><span class="p">(</span><span class="n">number_concentration</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="GammaPSD.fit"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.GammaPSD.fit">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GammaPSD.fit"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.GammaPSD.fit">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameters</span><span class="p">,</span> <span class="n">dn_dd</span><span class="p">,</span> <span class="n">min_considered_diameter</span><span class="o">=</span><span class="mf">50e-6</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
 
@@ -454,15 +461,15 @@
 
 
 
-<div class="viewcode-block" id="OSheaGammaPSD"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.OSheaGammaPSD">[docs]</a><span class="k">class</span> <span class="nc">OSheaGammaPSD</span><span class="p">(</span><span class="n">GammaPSD</span><span class="p">):</span>
-<div class="viewcode-block" id="OSheaGammaPSD.dn_dd"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.OSheaGammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="OSheaGammaPSD"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.OSheaGammaPSD">[docs]</a><span class="k">class</span> <span class="nc">OSheaGammaPSD</span><span class="p">(</span><span class="n">GammaPSD</span><span class="p">):</span>
+<div class="viewcode-block" id="OSheaGammaPSD.dn_dd"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.OSheaGammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># &quot;shape&quot; expects diameter values in cm in the O&#39;Shea formulation - hence the 1e-2 fudge factor</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dn_gamma_dd</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1e-2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="TwoMomentGammaPSD"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.TwoMomentGammaPSD">[docs]</a><span class="k">class</span> <span class="nc">TwoMomentGammaPSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
+<div class="viewcode-block" id="TwoMomentGammaPSD"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.TwoMomentGammaPSD">[docs]</a><span class="k">class</span> <span class="nc">TwoMomentGammaPSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m3</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CrystalModel</span> <span class="o">=</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">SPHERE</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span>
@@ -470,7 +477,7 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TwoMomentGammaPSD.from_m2_tc"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.TwoMomentGammaPSD.from_m2_tc">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TwoMomentGammaPSD.from_m2_tc"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.TwoMomentGammaPSD.from_m2_tc">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_m2_tc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">tc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a TwoMomentGammaPSD object from the second moment and in-cloud temperature.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -483,7 +490,7 @@
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="n">m3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TwoMomentGammaPSD.dn_dd"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.TwoMomentGammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="TwoMomentGammaPSD.dn_dd"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.TwoMomentGammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3</span> <span class="c1"># now neatly dimensionless</span>
@@ -496,7 +503,7 @@
     <span class="k">def</span> <span class="nf">characteristic_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span></div>
 
-<div class="viewcode-block" id="SamplingModel"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.SamplingModel">[docs]</a><span class="k">class</span> <span class="nc">SamplingModel</span><span class="p">:</span> <span class="c1"># NOTE: Not really used anymore; deprecated in favour of CloudModel, DetectorRun, and Retrieval</span>
+<div class="viewcode-block" id="SamplingModel"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.SamplingModel">[docs]</a><span class="k">class</span> <span class="nc">SamplingModel</span><span class="p">:</span> <span class="c1"># NOTE: Not really used anymore; deprecated in favour of CloudModel, DetectorRun, and Retrieval</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Particle size distribution model.</span>
 
 <span class="sd">    A modelling class that contains a PSD object, and simulates particle</span>
@@ -528,7 +535,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">z_dist</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_pmax</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span>
                 <span class="n">z</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">zbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="SamplingModel.generate"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.SamplingModel.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="SamplingModel.generate"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.SamplingModel.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a sample of particles from the PSD, at random z positions.</span>
 
 <span class="sd">        Args:</span>
@@ -548,7 +555,7 @@
 
         <span class="k">return</span> <span class="n">particles</span></div>
 
-<div class="viewcode-block" id="SamplingModel.simulate_distribution"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.SamplingModel.simulate_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">single_particle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">keep_models</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="SamplingModel.simulate_distribution"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.SamplingModel.simulate_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">single_particle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">keep_models</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate the observation of spherical particles.</span>
 
 <span class="sd">        Generates a sample of spherical particles and then simulates the</span>
@@ -587,7 +594,7 @@
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">diameters_measured</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SamplingModel.simulate_distribution_from_scaling"><a class="viewcode-back" href="../../oap_model.html#oap_model.psd.SamplingModel.simulate_distribution_from_scaling">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution_from_scaling</span><span class="p">(</span>
+<div class="viewcode-block" id="SamplingModel.simulate_distribution_from_scaling"><a class="viewcode-back" href="../../oap_model.psd.html#oap_model.psd.SamplingModel.simulate_distribution_from_scaling">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution_from_scaling</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">single_particle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
             <span class="n">base_model</span><span class="p">:</span> <span class="n">ASTModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keep_models</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>

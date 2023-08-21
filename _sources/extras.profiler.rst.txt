@@ -1,0 +1,7 @@
+extras.profiler module
+======================
+
+.. automodule:: extras.profiler
+   :members:
+   :undoc-members:
+   :show-inheritance:

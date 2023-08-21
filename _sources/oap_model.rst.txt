@@ -4,69 +4,17 @@ oap\_model package
 Submodules
 ----------
 
-oap\_model.ast\_model module
-----------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: oap_model.ast_model
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-oap\_model.cloud module
------------------------
-
-.. automodule:: oap_model.cloud
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-oap\_model.detector module
---------------------------
-
-.. automodule:: oap_model.detector
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-oap\_model.detector\_run module
--------------------------------
-
-.. automodule:: oap_model.detector_run
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-oap\_model.diameters module
----------------------------
-
-.. automodule:: oap_model.diameters
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-oap\_model.intensity module
----------------------------
-
-.. automodule:: oap_model.intensity
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-oap\_model.psd module
----------------------
-
-.. automodule:: oap_model.psd
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-oap\_model.retrieval module
----------------------------
-
-.. automodule:: oap_model.retrieval
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   oap_model.ast_model
+   oap_model.cloud
+   oap_model.detector
+   oap_model.detector_run
+   oap_model.diameters
+   oap_model.intensity
+   oap_model.psd
+   oap_model.retrieval
 
 Module contents
 ---------------

@@ -42,7 +42,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../oap_model.html">oap_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.diameters.html">oap_model.diameters module</a></li>
 </ul>
 
         </div>
@@ -77,7 +84,7 @@
 <span class="kn">from</span> <span class="nn">tqdm.autonotebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
 <span class="c1">#TODO: this has become a mess... split this out so that it&#39;s easier for IntensityField and AmplitudeField measurements.</span>
-<div class="viewcode-block" id="measure_diameters"><a class="viewcode-back" href="../../oap_model.html#oap_model.diameters.measure_diameters">[docs]</a><span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="n">detection</span><span class="p">:</span> <span class="s2">&quot;ImagedRegion|DetectorRun|IntensityField|AmplitudeField&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">force_nominsep</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="measure_diameters"><a class="viewcode-back" href="../../oap_model.diameters.html#oap_model.diameters.measure_diameters">[docs]</a><span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="n">detection</span><span class="p">:</span> <span class="s2">&quot;ImagedRegion|DetectorRun|IntensityField|AmplitudeField&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">force_nominsep</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">detection</span><span class="p">,</span> <span class="s2">&quot;get_frames_to_measure&quot;</span><span class="p">):</span> <span class="c1">#ImagedRegion or DetectorRun</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="n">detection</span><span class="o">.</span><span class="n">get_frames_to_measure</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">xlims</span> <span class="o">=</span> <span class="n">detection</span><span class="o">.</span><span class="n">xlims</span>

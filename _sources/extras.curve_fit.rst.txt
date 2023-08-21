@@ -1,0 +1,7 @@
+extras.curve\_fit module
+========================
+
+.. automodule:: extras.curve_fit
+   :members:
+   :undoc-members:
+   :show-inheritance:

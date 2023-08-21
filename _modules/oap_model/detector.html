@@ -42,7 +42,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../oap_model.html">oap_model package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../oap_model.diameters.html">oap_model.diameters module</a></li>
 </ul>
 
         </div>
@@ -85,7 +92,7 @@
 <span class="kn">from</span> <span class="nn">.intensity</span> <span class="kn">import</span> <span class="n">plot_outline</span><span class="p">,</span> <span class="n">AmplitudeField</span><span class="p">,</span> <span class="n">IntensityField</span>
 <span class="kn">from</span> <span class="nn">.diameters</span> <span class="kn">import</span> <span class="n">measure_diameters</span>
 
-<div class="viewcode-block" id="Detector"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.Detector">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Detector"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.Detector">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Detector</span><span class="p">:</span>
     <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="c1"># (x, y, z) in m</span>
     <span class="n">arm_separation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10e-2</span> <span class="c1"># in m</span>
@@ -95,7 +102,7 @@
     <span class="n">detection_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="c1">#in m; the region in the middle of the detector that is used for detection. If np.inf, the whole detector is used.</span></div>
 
 
-<div class="viewcode-block" id="ImageFilter"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.ImageFilter">[docs]</a><span class="k">class</span> <span class="nc">ImageFilter</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="ImageFilter"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.ImageFilter">[docs]</a><span class="k">class</span> <span class="nc">ImageFilter</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">PRESENT_HALF_INTENSITY</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">NO_EDGE_HALF_INTENSITY</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">PRIMARY_Z_CONFINED</span> <span class="o">=</span> <span class="mi">3</span>
@@ -110,7 +117,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Image filter </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> not implemented&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DiameterSpec"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.DiameterSpec">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="DiameterSpec"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.DiameterSpec">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">DiameterSpec</span><span class="p">:</span> <span class="c1"># TODO: implement custom threshold value.</span>
     <span class="n">diameter_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;circle_equivalent&quot;</span>
     <span class="n">edge_filter</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
@@ -137,7 +144,7 @@
         <span class="k">return</span> <span class="n">filters</span></div>
 
 
-<div class="viewcode-block" id="ImagedRegion"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.ImagedRegion">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="ImagedRegion"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.ImagedRegion">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ImagedRegion</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A region illuminated by the laser beam at a single instant.&quot;&quot;&quot;</span>
     <span class="c1"># orthogonal_vector: np.ndarray = (0,0,1) # in m</span>
@@ -151,7 +158,7 @@
         <span class="n">array_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector_position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">array_length</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">array_length</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
     
-<div class="viewcode-block" id="ImagedRegion.trim_blank_space"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.ImagedRegion.trim_blank_space">[docs]</a>    <span class="k">def</span> <span class="nf">trim_blank_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ImagedRegion.trim_blank_space"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.ImagedRegion.trim_blank_space">[docs]</a>    <span class="k">def</span> <span class="nf">trim_blank_space</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Trim the blank space from the start and end of the image.&quot;&quot;&quot;</span>
         <span class="c1"># trim start</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
@@ -167,7 +174,7 @@
                 <span class="k">break</span></div>
 
 
-<div class="viewcode-block" id="ImagedRegion.get_frames_to_measure"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.ImagedRegion.get_frames_to_measure">[docs]</a>    <span class="k">def</span> <span class="nf">get_frames_to_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">IntensityField</span><span class="p">]]:</span>
+<div class="viewcode-block" id="ImagedRegion.get_frames_to_measure"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.ImagedRegion.get_frames_to_measure">[docs]</a>    <span class="k">def</span> <span class="nf">get_frames_to_measure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">IntensityField</span><span class="p">]]:</span>
         <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">framed</span><span class="p">:</span>
             <span class="c1"># split image into &quot;frames&quot; separated by empty rows.</span>
             <span class="n">frames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">frames</span><span class="p">())</span>
@@ -202,12 +209,12 @@
         <span class="n">frames</span> <span class="o">=</span> <span class="p">[((</span><span class="bp">self</span><span class="o">.</span><span class="n">y_values</span><span class="p">[</span><span class="n">istart</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_values</span><span class="p">[</span><span class="n">istart</span><span class="o">+</span><span class="n">frame</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">frame</span><span class="p">)</span> <span class="k">for</span> <span class="n">istart</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">frames</span></div>
     
-<div class="viewcode-block" id="ImagedRegion.measure_diameters"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.ImagedRegion.measure_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">DiameterSpec</span> <span class="o">=</span> <span class="n">DiameterSpec</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ImagedRegion.measure_diameters"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.ImagedRegion.measure_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">DiameterSpec</span> <span class="o">=</span> <span class="n">DiameterSpec</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;ImagedRegion.measure_diameters only considers one image at a time; use DetectorRun.measure_diameters to consider inter-image separation.&quot;</span><span class="p">)</span>
         <span class="n">detected_particles</span> <span class="o">=</span> <span class="n">measure_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">detected_particles</span></div>
     
-<div class="viewcode-block" id="ImagedRegion.plot"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.ImagedRegion.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cloud</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot_outlines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ImagedRegion.plot"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.ImagedRegion.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cloud</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot_outlines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         
         <span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -220,7 +227,7 @@
 
         <span class="k">return</span> <span class="n">plot</span></div>
     
-<div class="viewcode-block" id="ImagedRegion.get_focused_image"><a class="viewcode-back" href="../../oap_model.html#oap_model.detector.ImagedRegion.get_focused_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_focused_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cloud</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+<div class="viewcode-block" id="ImagedRegion.get_focused_image"><a class="viewcode-back" href="../../oap_model.detector.html#oap_model.detector.ImagedRegion.get_focused_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_focused_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cloud</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cloud</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cloud must be specified&quot;</span><span class="p">)</span>
 

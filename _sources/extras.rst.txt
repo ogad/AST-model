@@ -4,21 +4,11 @@ extras package
 Submodules
 ----------
 
-extras.curve\_fit module
-------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: extras.curve_fit
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-extras.profiler module
-----------------------
-
-.. automodule:: extras.profiler
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   extras.curve_fit
+   extras.profiler
 
 Module contents
 ---------------
