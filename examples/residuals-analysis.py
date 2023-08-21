@@ -9,7 +9,7 @@ from tqdm import tqdm
 from oap_model.detector import DiameterSpec, Detector
 
 
-from repeat_run_hpc import gammas
+from examples.repeat_run_hpc import gammas
 
 from oap_model.retrieval import Retrieval
 

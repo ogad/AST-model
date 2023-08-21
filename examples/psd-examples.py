@@ -10,7 +10,7 @@ from oap_model.psd import CrystalModel
 from oap_model.detector import DiameterSpec, Detector
 from oap_model.retrieval import Retrieval
 
-from repeat_run_hpc import gammas
+from examples.repeat_run_hpc import gammas
 from residuals_analysis import detector_kwargs, diameter_spec_kwargs
 
 base_run_len = 10000

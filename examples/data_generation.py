@@ -52,10 +52,6 @@ plt.show()
 cloud = CloudVolume(composite_psd, (0.1,1,0.2))
 
 # %%
-# import pickle
-# with open(f"../data/composite_cloud.pkl", "wb") as f:
-#         pickle.dump(cloud, f)
-# %%
 runs = []
 arms = [0.06, 0.2]
 
