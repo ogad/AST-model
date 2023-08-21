@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>psd &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ast.html">ast module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intensity.html">intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../psd.html">psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cloud.html">cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector.html">detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector_run.html">detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../retrieval.html">retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../diameters.html">diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">psd</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for psd</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Particle size distribution model</span>
+<span class="c1"># Author: Oliver Driver</span>
+<span class="c1"># Date: 01/06/2023</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choices</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">ArrayLike</span>
+
+<span class="kn">from</span> <span class="nn">ast_model</span> <span class="kn">import</span> <span class="n">ASTModel</span>
+<span class="kn">from</span> <span class="nn">diameters</span> <span class="kn">import</span> <span class="n">measure_diameters</span>
+
+
+<span class="n">Particle</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;Particle&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;diameter&quot;</span><span class="p">,</span> <span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">])</span>
+<span class="n">PositionedParticle</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;PositionedParticle&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;diameter&quot;</span><span class="p">,</span>  <span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="CrystalModel"><a class="viewcode-back" href="../psd.html#psd.CrystalModel">[docs]</a><span class="k">class</span> <span class="nc">CrystalModel</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum for crystal types.&quot;&quot;&quot;</span>
+    <span class="n">SPHERE</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">RECT_AR5</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">ROS_6</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">COL_AR5_ROT</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">RECT_AR5_ROT</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_names</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;Sphere&quot;</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;Rectangular with aspect ratio 5&quot;</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;Rosette with 6 arms, 100µm width&quot;</span><span class="p">,</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;Rectangular with aspect ratio 5, rotated in 3D&quot;</span><span class="p">,</span>
+            <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;Rectangular with aspect ratio 5, rotated in plane&quot;</span>
+        <span class="p">}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+
+<div class="viewcode-block" id="CrystalModel.get_generator"><a class="viewcode-back" href="../psd.html#psd.CrystalModel.get_generator">[docs]</a>    <span class="k">def</span> <span class="nf">get_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">SPHERE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">particle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">diameter</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">RECT_AR5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">particle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter_rectangular</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">diameter</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">RECT_AR5_ROT</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">particle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter_rectangular</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">diameter</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">particle</span><span class="o">.</span><span class="n">angle</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">COL_AR5_ROT</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">particle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter_rectangular</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">diameter</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">particle</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">ROS_6</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">particle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter_rosette</span><span class="p">(</span><span class="n">particle</span><span class="o">.</span><span class="n">diameter</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Crystal model not recognised.&quot;</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="CrystalModel.min_diameter"><a class="viewcode-back" href="../psd.html#psd.CrystalModel.min_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">min_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">):</span>
+        <span class="n">model_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_generator</span><span class="p">()</span>
+        
+        <span class="n">diameter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model_generator</span><span class="p">(</span><span class="n">Particle</span><span class="p">(</span><span class="n">diameter</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="bp">self</span><span class="p">),</span> <span class="n">pixel_size</span><span class="o">=</span><span class="n">pixel_size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">break</span>
+            <span class="n">diameter</span> <span class="o">+=</span> <span class="n">pixel_size</span><span class="o">/</span><span class="mi">10</span>
+        
+        <span class="k">return</span> <span class="n">diameter</span></div></div>
+
+
+
+
+<div class="viewcode-block" id="rejection_sampler"><a class="viewcode-back" href="../psd.html#psd.rejection_sampler">[docs]</a><span class="k">def</span> <span class="nf">rejection_sampler</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">xbounds</span><span class="p">,</span> <span class="n">pmax</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a value sampled from a bounded probability distribution.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        p (callable): The probability distribution function.</span>
+<span class="sd">        xbounds (list): The bounds of the distribution.</span>
+<span class="sd">        pmax (float): The maximum value of the probability distribution.&quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Generate a random x and y value</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xbounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">xbounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">pmax</span>
+
+        <span class="c1"># If the y value is below the probability distribution, return the x value</span>
+        <span class="k">if</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="n">p</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="PSD"><a class="viewcode-back" href="../psd.html#psd.PSD">[docs]</a><span class="k">class</span> <span class="nc">PSD</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for particle size distribution objects.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CrystalModel</span> <span class="o">=</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">SPHERE</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s2">&quot;xlim&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lower_lim</span> <span class="o">=</span> <span class="mf">5e-7</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lower_lim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">5e-7</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">5e-7</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">5e-7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="PSD.dn_dd"><a class="viewcode-back" href="../psd.html#psd.PSD.dn_dd">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="PSD.moment"><a class="viewcode-back" href="../psd.html#psd.PSD.moment">[docs]</a>    <span class="k">def</span> <span class="nf">moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the nth moment of the PSD.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span> <span class="o">**</span> <span class="n">n</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">binned_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the binned particle size distribution.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The number of particles in each bin.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">))</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">midpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the binned particle size distribution.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The number of particles in each bin.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">midpoints</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">midpoints</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the maximum value of the particle size distribution.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="PSD.generate_diameters"><a class="viewcode-back" href="../psd.html#psd.PSD.generate_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">generate_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">ASTModel</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a particle diameter from the PSD.&quot;&quot;&quot;</span>
+        <span class="n">diameters</span> <span class="o">=</span> <span class="n">choices</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">midpoints</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">binned_distribution</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">n_particles</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">diameters</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_particles</span></div>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">total_number_density</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the total number density of particles.&quot;&quot;&quot;</span>
+        <span class="c1"># Uses the analytical expression for the integral of the gamma distribution</span>
+        <span class="c1"># return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1) </span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">binned_distribution</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="PSD.plot"><a class="viewcode-back" href="../psd.html#psd.PSD.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">retrieval</span><span class="p">:</span><span class="s2">&quot;Retrieval&quot;</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the PSD value against diameter.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">retrieval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+            <span class="n">x_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjusted_bins</span><span class="p">(</span><span class="n">retrieval</span><span class="p">)</span><span class="c1"># FIXME: this does not change the dn/dD values to account for the change in bin width...</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_vals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># ax.set_xscale(&#39;log&#39;)</span>
+        <span class="c1"># ax.set_yscale(&#39;log&#39;)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Diameter (m)&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;PSD ($\mathrm</span><span class="si">{m}</span><span class="s1">^{-3}\,\mathrm</span><span class="si">{m}</span><span class="s1">^{-1}$)&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">handle</span></div>
+    
+<div class="viewcode-block" id="PSD.adjusted_bins"><a class="viewcode-back" href="../psd.html#psd.PSD.adjusted_bins">[docs]</a>    <span class="k">def</span> <span class="nf">adjusted_bins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retrieval</span><span class="p">):</span>
+        <span class="c1"># for each bin edge, calculate the focused diameter</span>
+        <span class="n">adjusted_bins</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">diameter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">:</span>
+            <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">diameter</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_generator</span><span class="p">()(</span><span class="n">particle</span><span class="p">,</span>  <span class="n">wavenumber</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">retrieval</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">wavelength</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="n">retrieval</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">detector</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+            <span class="n">focused_amp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">diameter</span> <span class="o">=</span> <span class="n">measure_diameters</span><span class="p">(</span><span class="n">focused_amp</span><span class="p">,</span> <span class="n">retrieval</span><span class="o">.</span><span class="n">spec</span><span class="p">,</span> <span class="n">force_nominsep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">diameter</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Multiple diameters found in focused image... Something is very wrong.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">diameter</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">adjusted_bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">adjusted_bins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">diameter</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">adjusted_bins</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-6</span></div></div>
+
+<div class="viewcode-block" id="CompositePSD"><a class="viewcode-back" href="../psd.html#psd.CompositePSD">[docs]</a><span class="k">class</span> <span class="nc">CompositePSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A composite particle size distribution object.</span>
+
+<span class="sd">    Contains the distribution parameters, and binning information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        psds (list[PSD]): The list of PSDs to combine.</span>
+<span class="sd">        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PSD</span><span class="p">],</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psds</span> <span class="o">=</span> <span class="n">psds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psd_weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">psd</span><span class="o">.</span><span class="n">total_number_density</span> <span class="k">for</span> <span class="n">psd</span> <span class="ow">in</span> <span class="n">psds</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">psd</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">psd</span> <span class="ow">in</span> <span class="n">psds</span><span class="p">]),</span> <span class="nb">max</span><span class="p">([</span><span class="n">psd</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">psd</span> <span class="ow">in</span> <span class="n">psds</span><span class="p">]))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CompositePSD.dn_dd"><a class="viewcode-back" href="../psd.html#psd.CompositePSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">psd</span><span class="o">.</span><span class="n">dn_dd</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">psd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psds</span><span class="p">])</span></div>
+    
+<div class="viewcode-block" id="CompositePSD.generate_diameters"><a class="viewcode-back" href="../psd.html#psd.CompositePSD.generate_diameters">[docs]</a>    <span class="k">def</span> <span class="nf">generate_diameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">ASTModel</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a particle diameter from the PSD.&quot;&quot;&quot;</span>
+        <span class="n">n_from_psd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n_particles</span> <span class="o">*</span> <span class="n">weight</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_number_density</span><span class="p">)</span> <span class="k">for</span> <span class="n">weight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psd_weights</span><span class="p">]</span>
+
+        <span class="c1">#check sum</span>
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">n_from_psd</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_particles</span><span class="p">:</span>
+            <span class="n">n_from_psd</span><span class="p">[</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psds</span><span class="p">))]</span> <span class="o">+=</span> <span class="n">n_particles</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">n_from_psd</span><span class="p">)</span>
+
+        <span class="n">diameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">psd</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psds</span><span class="p">,</span> <span class="n">n_from_psd</span><span class="p">):</span>
+            <span class="n">psd_diameters</span><span class="p">,</span> <span class="n">psd_models</span> <span class="o">=</span> <span class="n">psd</span><span class="o">.</span><span class="n">generate_diameters</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">diameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diameters</span><span class="p">,</span> <span class="n">psd_diameters</span><span class="p">)</span>
+            <span class="n">models</span> <span class="o">+=</span> <span class="n">psd_models</span>
+        <span class="k">return</span> <span class="n">diameters</span><span class="p">,</span> <span class="n">models</span></div></div>
+
+<div class="viewcode-block" id="GammaPSD"><a class="viewcode-back" href="../psd.html#psd.GammaPSD">[docs]</a><span class="k">class</span> <span class="nc">GammaPSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Gamma particle size distribution object.</span>
+
+<span class="sd">    Contains the distribution parameters, and binning information.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        n_N(r) = N_0 \left(\frac{r}{\text{1 m}}\right)^\mu \mathrm{e}^{-\Lambda r}.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        intercept (float): :math:`N_0` in :math:`\mathrm{m^{-3}}`.</span>
+<span class="sd">        slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.</span>
+<span class="sd">        shape (float): :math:`\mu`.</span>
+<span class="sd">        bins (np.ndarray, optional): The bin edges in metres. Defaults to 100 bins between :math:`1\times10^{-7}` and :math:`1\times10^{-7}`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intercept</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">slope</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CrystalModel</span> <span class="o">=</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">SPHERE</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="n">slope</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">+</span> <span class="p">(</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variance</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">5e-4</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;GammaPSD(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+<div class="viewcode-block" id="GammaPSD.from_litres_microns"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.from_litres_microns">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_litres_microns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">intercept_per_litre_per_micron</span><span class="p">,</span> <span class="n">slope_per_micron</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Note the extra factor of 1e-6^shape for conversion of power law.</span>
+        <span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept_per_litre_per_micron</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1e6</span><span class="o">**</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">slope</span> <span class="o">=</span> <span class="n">slope_per_micron</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GammaPSD.from_litres_cm"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.from_litres_cm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_litres_cm</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">intercept_per_litre_per_cm</span><span class="p">,</span> <span class="n">slope_per_cm</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Note the extra factor of 1e-2^shape for conversion of power law.</span>
+        <span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept_per_litre_per_cm</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1e2</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">shape</span><span class="p">))</span>
+        <span class="n">slope</span> <span class="o">=</span> <span class="n">slope_per_cm</span> <span class="o">*</span> <span class="mf">1e2</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GammaPSD.w19_parameterisation"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.w19_parameterisation">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">w19_parameterisation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">intercept</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">total_number_density</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">insitu_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">liquid_origin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Using Wolf et al. 2019 parameterisation.</span>
+
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The number density per field.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">intercept</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">total_number_density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify either intercept or total_number_concentration.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">intercept</span> <span class="ow">and</span> <span class="n">total_number_density</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both intercept and total_number_concentration.&quot;</span><span class="p">)</span>
+        
+        
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">insitu_origin</span> <span class="ow">or</span> <span class="n">liquid_origin</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify either insitu_origin or liquid_origin.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">insitu_origin</span> <span class="ow">and</span> <span class="n">liquid_origin</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot specify both insitu_origin and liquid_origin.&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">insitu_origin</span><span class="p">:</span>
+            <span class="n">ln_slope_param</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">temp</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.06837</span> <span class="o">*</span> <span class="n">temp</span> <span class="o">+</span> <span class="mf">3.492</span> <span class="c1">#cm^-1</span>
+            <span class="n">shape_param</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ln_slope</span><span class="p">:</span> <span class="mf">0.009</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">ln_slope</span><span class="o">*</span><span class="mf">0.85</span><span class="p">)</span> <span class="c1"># Muhlbauer 2014</span>
+            <span class="c1"># shape_param = lambda ln_slope: 0.02819 * np.exp(0.7216*ln_slope) </span>
+        <span class="k">elif</span> <span class="n">liquid_origin</span><span class="p">:</span>
+            <span class="n">ln_slope_param</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">temp</span><span class="p">:</span> <span class="mf">4.937</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.001846</span><span class="o">*</span><span class="n">temp</span><span class="p">)</span> <span class="c1">#cm^-1</span>
+            <span class="n">shape_param</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ln_slope</span><span class="p">:</span> <span class="mf">0.104</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">ln_slope</span><span class="o">*</span><span class="mf">0.71</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.7</span>
+            <span class="c1"># shape_param = lambda ln_slope: 0.001379 * np.exp(1.285*ln_slope)</span>
+
+        <span class="n">ln_slope</span> <span class="o">=</span> <span class="n">ln_slope_param</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> 
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">shape_param</span><span class="p">(</span><span class="n">ln_slope</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">total_number_density</span><span class="p">:</span> <span class="c1"># in per litre</span>
+
+            <span class="n">intercept</span> <span class="o">=</span> <span class="n">total_number_density</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">ln_slope</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">shape</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">shape</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_litres_cm</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">ln_slope</span><span class="p">),</span> <span class="n">shape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GammaPSD.parameter_description"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.parameter_description">[docs]</a>    <span class="k">def</span> <span class="nf">parameter_description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;$N_0=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">$, $\lambda=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">$, $\mu=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">$&quot;</span></div>
+
+<div class="viewcode-block" id="GammaPSD.from_concentration"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.from_concentration">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_concentration</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">number_concentration</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the number density per field.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            number_concentration (float): The number concentration in :math:`\mathrm{m^{-3}}`.</span>
+<span class="sd">            slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.</span>
+<span class="sd">            shape (float): :math:`\mu`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The number density per field.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">intercept</span> <span class="o">=</span> <span class="n">number_concentration</span> <span class="o">*</span> <span class="p">(</span><span class="n">slope</span> <span class="o">**</span> <span class="p">(</span><span class="n">shape</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">shape</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_dn_gamma_dd</span><span class="p">(</span><span class="n">d</span><span class="p">:</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">intercept</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">slope</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span><span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The gamma distribution probability distribution function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            d (ArrayLike): The diameters in metres.</span>
+<span class="sd">            intercept (float): :math:`N_0` in :math:`\mathrm{m^{-4}}`.</span>
+<span class="sd">            slope (float): :math:`\Lambda` in :math:`\mathrm{m^{-1}}`.</span>
+<span class="sd">            shape (float): :math:`\mu`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            callable: The gamma distribution probability distribution function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># &quot;shape&quot; expects diameter values in cm in the O&#39;Shea formulation</span>
+        <span class="k">return</span> <span class="n">intercept</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">**</span><span class="n">shape</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">slope</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GammaPSD.dn_dd"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># &quot;shape&quot; expects diameter values in cm in the O&#39;Shea formulation - hence the 1e-2 fudge factor</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dn_gamma_dd</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the mean particle diameter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">variance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the variance of the particle diameter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="GammaPSD.from_mean_variance"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.from_mean_variance">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_mean_variance</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">number_concentration</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a GammaPSD object from the mean and variance of the particle diameter.&quot;&quot;&quot;</span>
+        <span class="n">slope</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">/</span> <span class="n">variance</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean</span> <span class="o">*</span> <span class="n">slope</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_concentration</span><span class="p">(</span><span class="n">number_concentration</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GammaPSD.fit"><a class="viewcode-back" href="../psd.html#psd.GammaPSD.fit">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameters</span><span class="p">,</span> <span class="n">dn_dd</span><span class="p">,</span> <span class="n">min_considered_diameter</span><span class="o">=</span><span class="mf">50e-6</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
+
+        <span class="n">diameter_vals</span> <span class="o">=</span> <span class="n">diameters</span><span class="p">[(</span><span class="n">diameters</span> <span class="o">&gt;=</span> <span class="n">min_considered_diameter</span><span class="p">)]</span>
+        <span class="n">dn_dd_vals</span> <span class="o">=</span> <span class="n">dn_dd</span><span class="p">[(</span><span class="n">diameters</span> <span class="o">&gt;=</span> <span class="n">min_considered_diameter</span><span class="p">)]</span>
+
+        <span class="c1"># expon = lambda d, intercept, slope: intercept * np.exp(-1 * slope * d)</span>
+
+        <span class="c1"># log_gamma = lambda d, intercept, slope, shape: np.log10(GammaPSD._dn_gamma_dd(d, intercept, slope, shape))</span>
+
+        <span class="n">fit_gamma</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">GammaPSD</span><span class="o">.</span><span class="n">_dn_gamma_dd</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">GammaPSD</span><span class="o">.</span><span class="n">_dn_gamma_dd</span><span class="p">,</span> <span class="n">diameter_vals</span><span class="p">,</span> <span class="n">dn_dd_vals</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> 
+                                <span class="n">p0</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> 
+                                <span class="n">maxfev</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+                                <span class="n">bounds</span><span class="o">=</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]),</span>
+                                <span class="c1"># method=&#39;dogbox&#39;,</span>
+                                <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span>
+                               <span class="p">)</span> 
+        
+        <span class="n">intercept_l_mcb</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept_l_mcb</span> <span class="o">*</span> <span class="mf">1e6</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="OSheaGammaPSD"><a class="viewcode-back" href="../psd.html#psd.OSheaGammaPSD">[docs]</a><span class="k">class</span> <span class="nc">OSheaGammaPSD</span><span class="p">(</span><span class="n">GammaPSD</span><span class="p">):</span>
+<div class="viewcode-block" id="OSheaGammaPSD.dn_dd"><a class="viewcode-back" href="../psd.html#psd.OSheaGammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># &quot;shape&quot; expects diameter values in cm in the O&#39;Shea formulation - hence the 1e-2 fudge factor</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dn_gamma_dd</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1e-2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TwoMomentGammaPSD"><a class="viewcode-back" href="../psd.html#psd.TwoMomentGammaPSD">[docs]</a><span class="k">class</span> <span class="nc">TwoMomentGammaPSD</span><span class="p">(</span><span class="n">PSD</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m3</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">CrystalModel</span> <span class="o">=</span> <span class="n">CrystalModel</span><span class="o">.</span><span class="n">SPHERE</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m3</span> <span class="o">=</span> <span class="n">m3</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TwoMomentGammaPSD.from_m2_tc"><a class="viewcode-back" href="../psd.html#psd.TwoMomentGammaPSD.from_m2_tc">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_m2_tc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">tc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a TwoMomentGammaPSD object from the second moment and in-cloud temperature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">a_n</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">13.6</span> <span class="o">-</span> <span class="mf">7.76</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="mf">0.479</span> <span class="o">*</span> <span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">b_n</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0361</span> <span class="o">+</span> <span class="mf">0.0151</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="mf">0.00149</span> <span class="o">*</span> <span class="n">n</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">c_n</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="mf">0.807</span> <span class="o">+</span> <span class="mf">0.00581</span> <span class="o">*</span> <span class="n">n</span> <span class="o">-</span> <span class="mf">0.0457</span> <span class="o">*</span> <span class="n">n</span><span class="o">**</span><span class="mi">2</span>
+
+        <span class="n">m3</span> <span class="o">=</span> <span class="n">a_n</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">b_n</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">tc</span><span class="p">)</span> <span class="o">*</span> <span class="n">m2</span><span class="o">**</span><span class="n">c_n</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="n">m3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TwoMomentGammaPSD.dn_dd"><a class="viewcode-back" href="../psd.html#psd.TwoMomentGammaPSD.dn_dd">[docs]</a>    <span class="k">def</span> <span class="nf">dn_dd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the particle size distribution value given diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3</span> <span class="c1"># now neatly dimensionless</span>
+        <span class="c1"># TODO: Currently only the mid-latitude parameters</span>
+        <span class="n">phi_23</span> <span class="o">=</span> <span class="n">GammaPSD</span><span class="o">.</span><span class="n">_dn_gamma_dd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mf">4.82</span><span class="p">,</span> <span class="mf">2.07</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">phi_23</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m3</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span></div>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">characteristic_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span></div>
+
+<div class="viewcode-block" id="SamplingModel"><a class="viewcode-back" href="../psd.html#psd.SamplingModel">[docs]</a><span class="k">class</span> <span class="nc">SamplingModel</span><span class="p">:</span> <span class="c1"># NOTE: Not really used anymore; deprecated in favour of CloudModel, DetectorRun, and Retrieval</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Particle size distribution model.</span>
+
+<span class="sd">    A modelling class that contains a PSD object, and simulates particle</span>
+<span class="sd">    measurement from it. Particles are assumed to be distributed uniformly</span>
+<span class="sd">    across the inlet. Particle size is assumed to be independent of position</span>
+<span class="sd">    along the inlet.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        psd (PSD): The particle size distribution function, dN/dr in :math:`\mathrm{m^{-3}}`.</span>
+<span class="sd">        z_dist (callable, optional, unimplimented): The probability </span>
+<span class="sd">            distribution of particles along the z-axis, normalised to 1 when </span>
+<span class="sd">            integrated wrt z, in m^-1. Defaults to uniform across array.</span>
+<span class="sd">        inlet_length (float, optional): The length of the inlet in metres.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psd</span><span class="p">:</span> <span class="n">GammaPSD</span><span class="p">,</span> <span class="n">z_dist</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inlet_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">7.35e-3</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psd</span> <span class="o">=</span> <span class="n">psd</span>
+
+        <span class="k">if</span> <span class="n">z_dist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># not implemented</span>
+            <span class="c1"># TODO: work out xbounds and pmax</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_dist</span> <span class="o">=</span> <span class="n">z_dist</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zbounds</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_pmax</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_pmax</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">inlet_length</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zbounds</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">inlet_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">inlet_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_dist</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_pmax</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span>
+                <span class="n">z</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">zbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="SamplingModel.generate"><a class="viewcode-back" href="../psd.html#psd.SamplingModel.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a sample of particles from the PSD, at random z positions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_particles (int): The number of particles to generate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The particles represented by tuples of (diameter, z).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># generate particle size and z positions</span>
+        <span class="n">particles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_particles</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_particles</span><span class="p">):</span>
+            <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">choices</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">psd</span><span class="o">.</span><span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">psd</span><span class="o">.</span><span class="n">binned_distribution</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">rejection_sampler</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">z_dist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zbounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_pmax</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">particles</span></div>
+
+<div class="viewcode-block" id="SamplingModel.simulate_distribution"><a class="viewcode-back" href="../psd.html#psd.SamplingModel.simulate_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">single_particle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">keep_models</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate the observation of spherical particles.</span>
+
+<span class="sd">        Generates a sample of spherical particles and then simulates the</span>
+<span class="sd">        observation of the particles by producing new AST models.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_particles (int): The number of particles to generate.</span>
+<span class="sd">            single_particle (bool, optional): Whether to consider only the</span>
+<span class="sd">                largest particle in each diffraction pattern. Defaults to False.</span>
+<span class="sd">            keep_models (bool, optional): Whether to keep the AST models after</span>
+<span class="sd">                simulation. Warning: this will use a lot of memory. Defaults to </span>
+<span class="sd">                False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The measured particle diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">n_particles</span><span class="p">)</span>
+        <span class="n">diameters_measured</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">diameter</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">z_value</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">diameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter</span><span class="p">(</span>
+                    <span class="n">diameter</span> <span class="o">/</span> <span class="mf">1e-6</span><span class="p">)</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z_val</span><span class="o">=</span><span class="n">z_value</span><span class="p">)</span><span class="o">.</span><span class="n">intensity</span>
+
+            <span class="k">if</span> <span class="n">single_particle</span><span class="p">:</span>
+                <span class="n">diameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameter</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">diameters</span> <span class="o">=</span> <span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameters</span><span class="p">()</span>
+
+            <span class="n">diameters_measured</span> <span class="o">+=</span> <span class="n">diameters</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_models</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">diameters_measured</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SamplingModel.simulate_distribution_from_scaling"><a class="viewcode-back" href="../psd.html#psd.SamplingModel.simulate_distribution_from_scaling">[docs]</a>    <span class="k">def</span> <span class="nf">simulate_distribution_from_scaling</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">n_particles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">single_particle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+            <span class="n">base_model</span><span class="p">:</span> <span class="n">ASTModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keep_models</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate the observation of similar particles.</span>
+
+<span class="sd">        Generates a sample of particles, produces new AST models by scaling</span>
+<span class="sd">        a base model, and then simulates the observation of the particles.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_particles (int): The number of particles to generate.</span>
+<span class="sd">            single_particle (bool, optional): Whether to consider only the</span>
+<span class="sd">                largest particle in each diffraction pattern. Defaults to False.</span>
+<span class="sd">            base_model (ASTModel, optional): The base model to scale. Should</span>
+<span class="sd">                have a high resolution relative to typical particle sizes. Defaults</span>
+<span class="sd">                to a 1000 nm diameter particle.</span>
+<span class="sd">            keep_models (bool, optional): Whether to keep the AST models after</span>
+<span class="sd">                simulation. Warning: this will use a lot of memory. Defaults to </span>
+<span class="sd">                False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The measured particle diameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">base_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_model</span> <span class="o">=</span> <span class="n">ASTModel</span><span class="o">.</span><span class="n">from_diameter</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+        <span class="n">base_diameter</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">base_model</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameter</span><span class="p">()</span>
+
+        <span class="n">particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">n_particles</span><span class="p">)</span>
+        <span class="n">diameters_measured</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">diameter</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">z_value</span> <span class="o">=</span> <span class="n">particles</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">diameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_model</span><span class="o">.</span><span class="n">rescale</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">diameter</span> <span class="o">/</span> <span class="mf">1e-6</span><span class="p">)</span><span class="o">/</span><span class="n">base_diameter</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span><span class="o">.</span><span class="n">regrid</span><span class="p">()</span>
+            <span class="n">intensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z_val</span><span class="o">=</span><span class="n">z_value</span><span class="p">)</span><span class="o">.</span><span class="n">intensity</span>
+
+            <span class="k">if</span> <span class="n">single_particle</span><span class="p">:</span>
+                <span class="n">diameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameter</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">diameters</span> <span class="o">=</span> <span class="n">intensity</span><span class="o">.</span><span class="n">measure_xy_diameters</span><span class="p">()</span>
+
+            <span class="n">diameters_measured</span><span class="p">[(</span><span class="n">diameter</span><span class="p">,</span> <span class="n">z_value</span><span class="p">)]</span> <span class="o">=</span> <span class="n">diameters</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_models</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast_models</span><span class="p">[</span><span class="n">diameter</span><span class="p">]</span>
+        <span class="c1"># summing with an empty list flattens the list of lists</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">diameters_measured</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="p">[]))</span> </div></div>
+    
+<span class="c1"># def fit_gamma_distribution(diameters, bins): # NOTE: Not really used anymore</span>
+<span class="c1">#     &quot;&quot;&quot;Fit a gamma distribution to a set of diameters.</span>
+
+<span class="c1">#     Args:</span>
+<span class="c1">#         diameters (np.ndarray): The diameters to fit.</span>
+<span class="c1">#         bins (np.ndarray): The bins to fit over.</span>
+
+<span class="c1">#     Returns:</span>
+<span class="c1">#         np.ndarray: The fitted gamma distribution.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     counts, _ = np.histogram(diameters, bins=bins)</span>
+<span class="c1">#     dN_dr = counts / (bins[1:] - bins[:-1]) # TODO: Need to divide by sample volume.</span>
+<span class="c1">#     bins = bins[:-1]</span>
+<span class="c1">#     bins = bins[counts &gt; 0]</span>
+<span class="c1">#     dN_dr = dN_dr[counts &gt; 0]</span>
+<span class="c1">#     popt, pcov = curve_fit(</span>
+<span class="c1">#         lambda d, intercept, slope: GammaPSD._dn_gamma_dd(d, intercept, slope, 2.5), </span>
+<span class="c1">#         bins, dN_dr,p0=[1e10, 1e4])</span>
+<span class="c1">#     return popt, pcov</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -3,7 +3,6 @@
 # Date: 29/06/2023
 
 from dataclasses import dataclass
-import pickle
 from enum import Enum
 import logging
 
@@ -11,8 +10,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from oap_model.intensity import plot_outline, AmplitudeField, IntensityField
-from oap_model.diameters import measure_diameters
+from .intensity import plot_outline, AmplitudeField, IntensityField
+from .diameters import measure_diameters
 
 @dataclass
 class Detector:

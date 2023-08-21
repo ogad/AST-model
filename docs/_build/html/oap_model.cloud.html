@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oap_model.cloud module &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="oap_model.detector module" href="oap_model.detector.html" />
+    <link rel="prev" title="oap_model.psd module" href="oap_model.psd.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">oap_model.cloud module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.cloud.CloudVolume"><code class="docutils literal notranslate"><span class="pre">CloudVolume</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.dimensions"><code class="docutils literal notranslate"><span class="pre">CloudVolume.dimensions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.generate_particles"><code class="docutils literal notranslate"><span class="pre">CloudVolume.generate_particles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.n_particles"><code class="docutils literal notranslate"><span class="pre">CloudVolume.n_particles</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.particles_in_illuminated_region"><code class="docutils literal notranslate"><span class="pre">CloudVolume.particles_in_illuminated_region()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.plot_from_run"><code class="docutils literal notranslate"><span class="pre">CloudVolume.plot_from_run()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.process_imaged_region"><code class="docutils literal notranslate"><span class="pre">CloudVolume.process_imaged_region()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.psd"><code class="docutils literal notranslate"><span class="pre">CloudVolume.psd</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.random_seed"><code class="docutils literal notranslate"><span class="pre">CloudVolume.random_seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.set_model"><code class="docutils literal notranslate"><span class="pre">CloudVolume.set_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.take_image"><code class="docutils literal notranslate"><span class="pre">CloudVolume.take_image()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.cloud.CloudVolume.volume"><code class="docutils literal notranslate"><span class="pre">CloudVolume.volume</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.cloud.process_image_no"><code class="docutils literal notranslate"><span class="pre">process_image_no()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.diameters.html">oap_model.diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">oap_model.cloud module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/oap_model.cloud.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-oap_model.cloud">
+<span id="oap-model-cloud-module"></span><h1>oap_model.cloud module<a class="headerlink" href="#module-oap_model.cloud" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.cloud.</span></span><span class="sig-name descname"><span class="pre">CloudVolume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.psd.html#oap_model.psd.GammaPSD" title="oap_model.psd.GammaPSD"><span class="pre">oap_model.psd.GammaPSD</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimensions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/cloud.html#CloudVolume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.CloudVolume" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.dimensions">
+<span class="sig-name descname"><span class="pre">dimensions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#oap_model.cloud.CloudVolume.dimensions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.generate_particles">
+<span class="sig-name descname"><span class="pre">generate_particles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/cloud.html#CloudVolume.generate_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.CloudVolume.generate_particles" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.n_particles">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_particles</span></span><a class="headerlink" href="#oap_model.cloud.CloudVolume.n_particles" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the number of particles in the volume based on the PSD.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.particles_in_illuminated_region">
+<span class="sig-name descname"><span class="pre">particles_in_illuminated_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.detector.html#oap_model.detector.Detector" title="oap_model.detector.Detector"><span class="pre">Detector</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0,</span> <span class="pre">0,</span> <span class="pre">0])</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/cloud.html#CloudVolume.particles_in_illuminated_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.CloudVolume.particles_in_illuminated_region" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.plot_from_run">
+<span class="sig-name descname"><span class="pre">plot_from_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.detector_run.html#oap_model.detector_run.DetectorRun" title="oap_model.detector_run.DetectorRun"><span class="pre">DetectorRun</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">near_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/cloud.html#CloudVolume.plot_from_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.CloudVolume.plot_from_run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.process_imaged_region">
+<span class="sig-name descname"><span class="pre">process_imaged_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/cloud.html#CloudVolume.process_imaged_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.CloudVolume.process_imaged_region" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.psd">
+<span class="sig-name descname"><span class="pre">psd</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="oap_model.psd.html#oap_model.psd.GammaPSD" title="oap_model.psd.GammaPSD"><span class="pre">GammaPSD</span></a></em><a class="headerlink" href="#oap_model.cloud.CloudVolume.psd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.random_seed">
+<span class="sig-name descname"><span class="pre">random_seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#oap_model.cloud.CloudVolume.random_seed" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.set_model">
+<span class="sig-name descname"><span class="pre">set_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.psd.html#oap_model.psd.CrystalModel" title="oap_model.psd.CrystalModel"><span class="pre">CrystalModel</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/cloud.html#CloudVolume.set_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.CloudVolume.set_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.take_image">
+<span class="sig-name descname"><span class="pre">take_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.detector.html#oap_model.detector.Detector" title="oap_model.detector.Detector"><span class="pre">Detector</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0,</span> <span class="pre">0,</span> <span class="pre">0])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_focus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_condition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="oap_model.detector_run.html#oap_model.detector_run.DetectorRun" title="oap_model.detector_run.DetectorRun"><span class="pre">oap_model.detector_run.DetectorRun</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="oap_model.detector.html#oap_model.detector.ImagedRegion" title="oap_model.detector.ImagedRegion"><span class="pre">oap_model.detector.ImagedRegion</span></a></span></span><a class="reference internal" href="_modules/oap_model/cloud.html#CloudVolume.take_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.CloudVolume.take_image" title="Permalink to this definition"></a></dt>
+<dd><p>Take an image using repeated detections along the y-axis.</p>
+<p>Detector is aligned with x-axis, and the y-axis is the direction of travel.
+The z-axis is the focal axis.
+The detector position is the position of the detector centre during the final detection.
+The model_generator is a callable taking the diameter of the particle in microns and returning an ASTModel.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.cloud.CloudVolume.volume">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">volume</span></span><a class="headerlink" href="#oap_model.cloud.CloudVolume.volume" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oap_model.cloud.process_image_no">
+<span class="sig-prename descclassname"><span class="pre">oap_model.cloud.</span></span><span class="sig-name descname"><span class="pre">process_image_no</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_no</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particles_to_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cloud</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_focus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary_output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/cloud.html#process_image_no"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.cloud.process_image_no" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="oap_model.psd.html" class="btn btn-neutral float-left" title="oap_model.psd module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="oap_model.detector.html" class="btn btn-neutral float-right" title="oap_model.detector module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

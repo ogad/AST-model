@@ -6,6 +6,7 @@ import logging
 from oap_model.intensity import AmplitudeField
 from oap_model.psd import CrystalModel
 from oap_model.intensity import AmplitudeField
+from oap_model.psd import PositionedParticle
 
 
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +24,6 @@ save_figures=False
 total_amplitude_focused = AmplitudeField(np.ones((128, 200), dtype=np.complex128))
 total_amplitude_unfocused = AmplitudeField(np.ones((128, 200), dtype=np.complex128))
 
-from oap_model.psd import PositionedParticle
 for i, crystal_model in enumerate([CrystalModel.SPHERE, CrystalModel.RECT_AR5, CrystalModel.ROS_6]):
     generator = crystal_model.get_generator()
     particle = PositionedParticle(200e-6, (0,0), crystal_model,np.array([250e-6*(-1)**(i%2),.5e-3+.5e-3*i,0]))

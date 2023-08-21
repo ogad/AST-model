@@ -11,11 +11,9 @@ import logging
 import numpy as np
 from numpy.random import randint
 from numpy.typing import ArrayLike
-from scipy.optimize import curve_fit, root_scalar
 
-
-from oap_model.ast import ASTModel
-from oap_model.diameters import measure_diameters
+from .ast_model import ASTModel
+from .diameters import measure_diameters
 
 
 Particle = namedtuple("Particle", ["diameter", "angle", "model"])

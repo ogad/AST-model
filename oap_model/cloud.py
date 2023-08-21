@@ -2,29 +2,20 @@
 # Author: Oliver Driver
 # Date: 13/06/2023
 
-import asyncio
 from copy import deepcopy
 from dataclasses import dataclass
-import datetime
-import multiprocessing
-from multiprocessing import process
-from pyexpat import model
 import random
-from tkinter import Image
 import pandas as pd
 import logging
 import numpy as np
 from tqdm.autonotebook import tqdm
-from enum import Enum
 
 import matplotlib.pyplot as plt
-from oap_model.ast import ASTModel
 
-from oap_model.psd import CrystalModel, GammaPSD
-from oap_model.intensity import AmplitudeField
-from oap_model.detector import Detector, ImagedRegion
-from oap_model.detector_run import DetectorRun
-from extras.profiler import profile
+from .psd import CrystalModel, GammaPSD
+from .intensity import AmplitudeField
+from .detector import Detector, ImagedRegion
+from .detector_run import DetectorRun
 
 
 def process_image_no(image_no, particles_to_model, detector_position, detector, cloud, use_focus, binary_output):

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ast_model &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ast.html">ast module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intensity.html">intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../psd.html">psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cloud.html">cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector.html">detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../detector_run.html">detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../retrieval.html">retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../diameters.html">diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ast_model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ast_model</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">affine</span> <span class="kn">import</span> <span class="n">Affine</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">rasterio.features</span> <span class="kn">import</span> <span class="n">rasterize</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="kn">from</span> <span class="nn">skimage.transform</span> <span class="kn">import</span> <span class="n">rescale</span>
+
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">from</span> <span class="nn">intensity</span> <span class="kn">import</span> <span class="n">AmplitudeField</span>
+
+<div class="viewcode-block" id="ASTModel"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ASTModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Angular Spectrum Theory model.</span>
+
+<span class="sd">    A model to contain the diffraction behaviour of a single opaque object,</span>
+<span class="sd">    exposed to a plane wave of light at a specific wavelength, and imaged</span>
+<span class="sd">    using a specific pixel size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        opaque_shape (np.ndarray): The shape of the opaque object in the z=0 plane.</span>
+<span class="sd">        wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.</span>
+<span class="sd">        pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">opaque_shape</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">wavenumber</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">658e-9</span>  <span class="c1"># in inverse metres</span>
+    <span class="n">pixel_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10e-6</span>  <span class="c1"># in metres</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># z: phase grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span>
+
+        <span class="c1"># trim opaque shape of zero-valued rows and columns</span>
+        <span class="n">nonzero_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">nonzero_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">nonzero_x</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">[</span>
+                <span class="n">nonzero_x</span><span class="o">.</span><span class="n">min</span><span class="p">():</span><span class="n">nonzero_x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">if</span> <span class="n">nonzero_y</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">[:,</span>
+                                                  <span class="n">nonzero_y</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+                                                  <span class="p">):</span><span class="n">nonzero_y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ASTModel.from_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.from_diameter">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_diameter</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a model for a circular opaque object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diameter (float): The diameter of the opaque object in micrometres.</span>
+<span class="sd">            wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.</span>
+<span class="sd">            pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ASTModel: The model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set defaults</span>
+        <span class="k">if</span> <span class="n">wavenumber</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wavenumber</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">wavenumber</span>
+        <span class="k">if</span> <span class="n">pixel_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pixel_size</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">pixel_size</span>
+
+        <span class="c1"># create the opaque shape</span>
+        <span class="n">radius_m</span> <span class="o">=</span> <span class="n">diameter</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">radius_px</span> <span class="o">=</span> <span class="n">radius_m</span> <span class="o">/</span> <span class="n">pixel_size</span>
+        <span class="c1"># x = np.arange(-radius_px, radius_px)</span>
+        <span class="c1"># y = np.arange(-radius_px, radius_px)</span>
+        <span class="c1"># x_val_grid, y_val_grid = np.meshgrid(x, y)</span>
+        <span class="c1"># opaque_shape = np.where(x_val_grid**2 + y_val_grid**2 &lt;= radius_px**2, 1, 0)</span>
+
+        <span class="n">particle_shapely</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">radius_m</span><span class="p">)</span>
+        <span class="n">output_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">radius_px</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">radius_m</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">opaque_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">opaque_shape</span> <span class="o">=</span> <span class="n">rasterize</span><span class="p">([</span><span class="n">particle_shapely</span><span class="p">],</span> <span class="n">out_shape</span><span class="o">=</span><span class="p">(</span><span class="n">output_len</span><span class="p">,</span><span class="n">output_len</span><span class="p">),</span> <span class="n">transform</span><span class="o">=</span><span class="n">Affine</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">pixel_size</span><span class="p">)</span> <span class="o">*</span> <span class="n">Affine</span><span class="o">.</span><span class="n">translation</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">output_len</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="p">(</span><span class="n">output_len</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span> <span class="c1">#place centre on a vertex not a pixel centre</span>
+
+
+        <span class="c1"># create the model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">opaque_shape</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">diameter</span> <span class="o">*</span> <span class="mf">1e-6</span>
+
+        <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="ASTModel.rectangle"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.rectangle">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">rectangle</span><span class="p">(</span><span class="n">px_height</span><span class="p">,</span> <span class="n">px_width</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span><span class="nb">float</span><span class="o">|</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a rectangular opaque object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            px_height (int): The height of the opaque object in pixels.</span>
+<span class="sd">            px_width (int): The width of the opaque object in pixels.</span>
+<span class="sd">            angle (float|tuple[float,float], optional): The angle of the opaque object in degrees. Defaults to 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The shape of the opaque object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if a tuple of angles are given, rotate in 3D.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">angle_in_plane</span> <span class="o">=</span> <span class="n">angle</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">angle_out_of_plane</span> <span class="o">=</span> <span class="n">angle</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">angle_in_plane</span> <span class="o">=</span> <span class="n">angle</span>
+            <span class="n">angle_out_of_plane</span> <span class="o">=</span> <span class="mf">0.</span>
+
+        <span class="c1"># rotation approximated by shortening the longer side</span>
+        <span class="k">if</span> <span class="n">angle_out_of_plane</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">px_height</span> <span class="o">&gt;</span> <span class="n">px_width</span><span class="p">:</span>
+                <span class="n">px_width</span> <span class="o">=</span> <span class="n">px_width</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_out_of_plane</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">px_height</span> <span class="o">=</span> <span class="n">px_height</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle_out_of_plane</span><span class="p">)</span>
+
+        <span class="c1"># create the opaque shape</span>
+        <span class="n">px_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">px_height</span><span class="p">))</span>
+        <span class="n">px_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">px_width</span><span class="p">))</span>
+
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">px_width</span><span class="p">,</span> <span class="n">px_height</span><span class="p">))</span>
+
+        <span class="c1"># rotate the shape</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">angle_in_plane</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">shape</span></div>
+
+<div class="viewcode-block" id="ASTModel.from_rectangle"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.from_rectangle">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_rectangle</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a model for a rectangular opaque object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            width (float): The width of the opaque object in micrometres.</span>
+<span class="sd">            height (float): The height of the opaque object in micrometres.</span>
+<span class="sd">            angle (float): The angle of the opaque object in degrees.</span>
+<span class="sd">            wavenumber (float, optional): The wavenumber of the light. Defaults to :math:`2\pi / \text{(658 nm)}`.</span>
+<span class="sd">            pixel_size (float, optional): The size of the pixels in the opaque_shape. Defaults to 10 µm.&quot;&quot;&quot;</span>
+
+        <span class="c1"># set defaults</span>
+        <span class="k">if</span> <span class="n">wavenumber</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wavenumber</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">wavenumber</span>
+        <span class="k">if</span> <span class="n">pixel_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pixel_size</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">pixel_size</span> <span class="c1">#TODO: this should inherit from a detector!</span>
+
+        <span class="c1"># create the opaque shape</span>
+        <span class="n">height_px</span> <span class="o">=</span> <span class="n">height</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">/</span> <span class="n">pixel_size</span>
+        <span class="n">width_px</span> <span class="o">=</span> <span class="n">width</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">/</span> <span class="n">pixel_size</span>
+
+        <span class="n">opaque_shape</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">height_px</span><span class="p">,</span> <span class="n">width_px</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">opaque_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">opaque_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># create the model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">opaque_shape</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">opaque_shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">pixel_size</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+
+        <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="ASTModel.from_diameter_rectangular"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.from_diameter_rectangular">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_diameter_rectangular</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a model for a rectangular opaque object with a given diameter xy mean diameter and aspect ratio.&quot;&quot;&quot;</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">diameter</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">area</span> <span class="o">/</span> <span class="n">aspect_ratio</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">width</span> <span class="o">*</span> <span class="n">aspect_ratio</span>
+        <span class="c1"># width = 2 * diameter / (1 + aspect_ratio)</span>
+        <span class="c1"># height = width * aspect_ratio</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_rectangle</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ASTModel.from_diameter_rosette"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.from_diameter_rosette">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_diameter_rosette</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">diameter</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">n_rectangles</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a model for a rosette opaque object made up of n_rectangles opaque objects.&quot;&quot;&quot;</span>
+        <span class="c1"># set defaults</span>
+        <span class="k">if</span> <span class="n">wavenumber</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wavenumber</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">wavenumber</span>
+        <span class="k">if</span> <span class="n">pixel_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pixel_size</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">pixel_size</span>
+
+
+        <span class="k">if</span> <span class="n">diameter</span> <span class="o">&lt;=</span> <span class="n">width</span><span class="p">:</span>
+            <span class="n">px_length</span> <span class="o">=</span> <span class="n">diameter</span><span class="o">*</span><span class="mf">1e-6</span> <span class="o">/</span> <span class="n">pixel_size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">approx_overlap_area</span> <span class="o">=</span> <span class="n">width</span> <span class="o">**</span><span class="mi">2</span>
+            <span class="n">target_area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">diameter</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">target_area</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_rectangles</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">approx_overlap_area</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_rectangles</span> <span class="o">*</span> <span class="n">width</span><span class="p">))</span>
+            <span class="n">px_length</span> <span class="o">=</span> <span class="n">length</span><span class="o">*</span><span class="mf">1e-6</span> <span class="o">/</span> <span class="n">pixel_size</span>
+
+        <span class="n">px_width</span> <span class="o">=</span> <span class="n">width</span><span class="o">*</span><span class="mf">1e-6</span> <span class="o">/</span> <span class="n">pixel_size</span>
+
+        <span class="c1"># create the opaque shape</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_rectangles</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">opaque_shapes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">px_length</span><span class="p">,</span> <span class="n">px_width</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span> <span class="k">for</span> <span class="n">angle</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">]</span>
+
+        <span class="c1"># work out the size of the opaque shape</span>
+        <span class="n">opaque_shape_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">shape</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">shape</span> <span class="ow">in</span> <span class="n">opaque_shapes</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># create the opaque shape</span>
+        <span class="n">opaque_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">opaque_shape_size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">shape</span> <span class="ow">in</span> <span class="n">opaque_shapes</span><span class="p">:</span>
+            <span class="n">x_offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">opaque_shape_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">y_offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">opaque_shape_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">opaque_shape</span><span class="p">[</span><span class="n">x_offset</span><span class="p">:</span><span class="n">x_offset</span><span class="o">+</span><span class="n">shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_offset</span><span class="p">:</span><span class="n">y_offset</span><span class="o">+</span><span class="n">shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+=</span> <span class="n">shape</span>
+
+        <span class="c1"># flatten opaque shape</span>
+        <span class="n">opaque_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">opaque_shape</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># create the model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">opaque_shape</span><span class="p">,</span> <span class="n">wavenumber</span><span class="p">,</span> <span class="n">pixel_size</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">diameter</span> <span class="o">*</span> <span class="mf">1e-6</span>
+
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="ASTModel.process"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">low_pass</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AmplitudeField</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model, calculating the amplitude given the opaque shape is at z.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            z_val (float): The distance of the the opaque_shape from the object plane.</span>
+<span class="sd">            low_pass (float, optional): The low pass filter to apply to the amplitude. Defaults to 1.0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            AmplitudeField: The amplitude (transmission function) of the image at z.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check if the amplitude has already been calculated</span>
+        <span class="k">if</span> <span class="n">z_val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">[</span><span class="n">z_val</span><span class="p">]</span>
+
+        <span class="n">diameter_overestimate</span> <span class="o">=</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+        <span class="n">estimated_airy_diameter_px</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.22</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="n">z_val</span><span class="o">/</span><span class="n">diameter_overestimate</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">estimated_airy_diameter_px</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="c1"># costly to calculate, so only do it if it&#39;s going to be used</span>
+            <span class="n">theoretical_dof</span> <span class="o">=</span> <span class="mi">8</span><span class="o">*</span><span class="n">diameter_overestimate</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z_val</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="o">*</span><span class="n">theoretical_dof</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">AmplitudeField</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">),</span> <span class="n">pixel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">object_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">object_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">,</span>
+                <span class="c1"># int(2*((max(self.opaque_shape.shape)*self.pixel_size)**2 / (4*self.wavelength)) // self.pixel_size),</span>
+                <span class="nb">max</span><span class="p">(</span>
+                    <span class="nb">abs</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">estimated_airy_diameter_px</span><span class="p">),</span>
+                    <span class="mi">10</span><span class="p">),</span>
+                <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+                <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="c1"># calculate the transmission function (1 outside the shape, 0 inside)</span>
+        <span class="n">transmission_function</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">object_plane</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># transform into fourier space</span>
+        <span class="n">transmission_function_fourier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">transmission_function</span><span class="p">)</span>
+
+        <span class="c1"># calculate the fourier space coordinates</span>
+        <span class="n">f_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">transmission_function</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+        <span class="n">f_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">transmission_function</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># low pass filter</span>
+        <span class="c1"># FIXME: I have no idea if this works/is the right vibe.</span>
+        <span class="c1"># f_xy = np.meshgrid(f_x, f_y)</span>
+        <span class="c1"># transmission_function_fourier = np.where(</span>
+        <span class="c1">#     f_xy[0]**2 + f_xy[1]**2</span>
+        <span class="c1">#     &lt;= (f_xy[0]**2 + f_xy[1]**2).max() * low_pass,</span>
+        <span class="c1">#     transmission_function_fourier,</span>
+        <span class="c1">#     0,</span>
+        <span class="c1"># )</span>
+
+        <span class="c1"># apply helmholtz phase factor</span>
+        <span class="n">helmholtz_phase_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
+                                         <span class="p">(</span><span class="n">f_x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">f_y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                                         <span class="p">)</span>
+        <span class="n">transmission_function_fourier_translated</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">transmission_function_fourier</span> <span class="o">*</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">z_val</span> <span class="o">*</span> <span class="n">helmholtz_phase_factor</span><span class="p">))</span>
+
+        <span class="c1"># transform back into real space</span>
+        <span class="n">transmission_function_translated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft2</span><span class="p">(</span>
+            <span class="n">transmission_function_fourier_translated</span><span class="p">)</span>
+
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="n">AmplitudeField</span><span class="p">(</span><span class="n">transmission_function_translated</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">[</span><span class="n">z_val</span><span class="p">]</span> <span class="o">=</span> <span class="n">amplitude</span>
+
+        <span class="k">return</span> <span class="n">amplitude</span></div>
+
+<div class="viewcode-block" id="ASTModel.process_range"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.process_range">[docs]</a>    <span class="k">def</span> <span class="nf">process_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_range</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the model for offsetting the object at range of z values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            z_range (np.ndarray): The range of z values to process.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The intensity of the image at z.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">z_range</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ASTModel.plot_intensity"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.plot_intensity">[docs]</a>    <span class="k">def</span> <span class="nf">plot_intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the intensity at a given z</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            z (float): The distance of the the opaque_shape from the object plane.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">amplitude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">z_val</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">amplitude</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ASTModel.xy_diameter"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.xy_diameter">[docs]</a>    <span class="k">def</span> <span class="nf">xy_diameter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the xy diameter of the opaque_shape.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;xy&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span>
+
+        <span class="n">nonzero_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">nonzero_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span>
+            <span class="n">nonzero_x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">nonzero_x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
+            <span class="n">nonzero_y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">nonzero_y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ASTModel.get_zd"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.get_zd">[docs]</a>    <span class="k">def</span> <span class="nf">get_zd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">diameter_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the dimensionless diffraction z distance.</span>
+
+<span class="sd">        The diffraction pattern for a particle (sized relative to the true diameter)</span>
+<span class="sd">        is a function of the dimensionless diffraction z distance, </span>
+
+<span class="sd">        .. math :: </span>
+
+<span class="sd">            z_\text{D} = \frac{4 \pi z}{D^2}.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            z_val (float): The distance of the the opaque_shape from the object plane.</span>
+<span class="sd">            diameter_type (str): The type of diameter to use.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The dimensionless diffraction z distance.&quot;&quot;&quot;</span>
+        <span class="n">wavelength</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavenumber</span>
+        <span class="k">return</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="n">z_val</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="n">diameter_type</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span></div>
+
+<div class="viewcode-block" id="ASTModel.rescale"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.rescale">[docs]</a>    <span class="k">def</span> <span class="nf">rescale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diameter_scale_factor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Produce a new AST model for similar object at a different scale.</span>
+
+<span class="sd">        Scales the object, and any already-measured diameters or processed amplitude </span>
+<span class="sd">        profiles by a given factor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            diameter_scale_factor (float): The factor by which to scale the object&#39;s diameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ASTModel: The new AST model object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a copy of the original object</span>
+        <span class="n">scaled_model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># scale the object by altering the pixel size</span>
+        <span class="n">scaled_model</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">*</span> <span class="n">diameter_scale_factor</span>
+
+        <span class="c1"># scale existing diameters </span>
+        <span class="k">for</span> <span class="n">diameter_type</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">scaled_model</span><span class="o">.</span><span class="n">diameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">scaled_model</span><span class="o">.</span><span class="n">diameters</span><span class="p">[</span><span class="n">diameter_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="n">diameter_scale_factor</span>
+        <span class="c1"># TODO: Store diameters as pixel units so that this is not required?</span>
+
+        <span class="c1"># scale the z value at which the diffraction patterns occur</span>
+        <span class="c1"># z is proportional to D^1/2</span>
+        <span class="n">scaled_model</span><span class="o">.</span><span class="n">amplitudes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">z_val</span><span class="p">,</span> <span class="n">amplitude_profile</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">scaled_z_val</span> <span class="o">=</span> <span class="n">z_val</span> <span class="o">*</span> <span class="n">diameter_scale_factor</span><span class="o">**</span><span class="mf">0.5</span>
+            <span class="c1"># TODO: make sure cached z values here have a specified precision, so they&#39;re actually reused.</span>
+            <span class="n">scaled_model</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">[</span><span class="n">scaled_z_val</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">amplitude_profile</span><span class="p">)</span>
+            <span class="n">scaled_model</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">[</span><span class="n">scaled_z_val</span><span class="p">]</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="n">scaled_model</span><span class="o">.</span><span class="n">pixel_size</span>
+
+        <span class="c1"># return the new ASTModel object</span>
+        <span class="k">return</span> <span class="n">scaled_model</span></div>
+
+<div class="viewcode-block" id="ASTModel.regrid"><a class="viewcode-back" href="../ast_model.html#ast_model.ASTModel.regrid">[docs]</a>    <span class="k">def</span> <span class="nf">regrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_size</span><span class="o">=</span> <span class="mf">10e-6</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Regrid the model to a new pixel size.</span>
+
+<span class="sd">        Resamples the opaque object and any already-measured amplitude profiles </span>
+<span class="sd">        to a new pixel size, such as one that matches the real detector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pixel_size (float): The pixel size to move to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">pixel_size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span> <span class="o">=</span> <span class="n">rescale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opaque_shape</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">scale_factor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_size</span> <span class="o">=</span> <span class="n">pixel_size</span>
+
+        <span class="k">for</span> <span class="n">z_val</span><span class="p">,</span> <span class="n">amplitude_profile</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">amplitudes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1">#FIXME: this doesn&#39;t work, because amplitudes are complex</span>
+            <span class="c1"># self.amplitudes[z_val] = AmplitudeField(rescale(amplitude_profile, 1/scale_factor), pixel_size=pixel_size)</span>
+            <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

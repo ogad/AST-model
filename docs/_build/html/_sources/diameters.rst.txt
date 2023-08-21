@@ -1,0 +1,7 @@
+diameters module
+================
+
+.. automodule:: diameters
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oap_model.detector_run module &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="oap_model.retrieval module" href="oap_model.retrieval.html" />
+    <link rel="prev" title="oap_model.detector module" href="oap_model.detector.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.psd.html">oap_model.psd module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">oap_model.detector_run module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.detector_run.DetectorRun"><code class="docutils literal notranslate"><span class="pre">DetectorRun</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.detector"><code class="docutils literal notranslate"><span class="pre">DetectorRun.detector</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.detector_position"><code class="docutils literal notranslate"><span class="pre">DetectorRun.detector_position</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.distance"><code class="docutils literal notranslate"><span class="pre">DetectorRun.distance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.get_frames_to_measure"><code class="docutils literal notranslate"><span class="pre">DetectorRun.get_frames_to_measure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.images"><code class="docutils literal notranslate"><span class="pre">DetectorRun.images</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.load"><code class="docutils literal notranslate"><span class="pre">DetectorRun.load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.measure_diameters"><code class="docutils literal notranslate"><span class="pre">DetectorRun.measure_diameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.plot"><code class="docutils literal notranslate"><span class="pre">DetectorRun.plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.save"><code class="docutils literal notranslate"><span class="pre">DetectorRun.save()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.set_particles"><code class="docutils literal notranslate"><span class="pre">DetectorRun.set_particles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.slice"><code class="docutils literal notranslate"><span class="pre">DetectorRun.slice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.trim_blank_space"><code class="docutils literal notranslate"><span class="pre">DetectorRun.trim_blank_space()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.volume"><code class="docutils literal notranslate"><span class="pre">DetectorRun.volume()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.detector_run.DetectorRun.xlims"><code class="docutils literal notranslate"><span class="pre">DetectorRun.xlims</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.diameters.html">oap_model.diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">oap_model.detector_run module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/oap_model.detector_run.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-oap_model.detector_run">
+<span id="oap-model-detector-run-module"></span><h1>oap_model.detector_run module<a class="headerlink" href="#module-oap_model.detector_run" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.detector_run.</span></span><span class="sig-name descname"><span class="pre">DetectorRun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.detector.html#oap_model.detector.Detector" title="oap_model.detector.Detector"><span class="pre">oap_model.detector.Detector</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="oap_model.detector.html#oap_model.detector.ImagedRegion" title="oap_model.detector.ImagedRegion"><span class="pre">oap_model.detector.ImagedRegion</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.detector">
+<span class="sig-name descname"><span class="pre">detector</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="oap_model.detector.html#oap_model.detector.Detector" title="oap_model.detector.Detector"><span class="pre">Detector</span></a></em><a class="headerlink" href="#oap_model.detector_run.DetectorRun.detector" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.detector_position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">detector_position</span></span><a class="headerlink" href="#oap_model.detector_run.DetectorRun.detector_position" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.distance">
+<span class="sig-name descname"><span class="pre">distance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#oap_model.detector_run.DetectorRun.distance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.get_frames_to_measure">
+<span class="sig-name descname"><span class="pre">get_frames_to_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="oap_model.intensity.html#oap_model.intensity.IntensityField" title="oap_model.intensity.IntensityField"><span class="pre">oap_model.intensity.IntensityField</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.get_frames_to_measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.get_frames_to_measure" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of frames to measure, with the y extent of the frame and the frame itself.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.images">
+<span class="sig-name descname"><span class="pre">images</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="oap_model.detector.html#oap_model.detector.ImagedRegion" title="oap_model.detector.ImagedRegion"><span class="pre">oap_model.detector.ImagedRegion</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#oap_model.detector_run.DetectorRun.images" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.load">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.load" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.measure_diameters">
+<span class="sig-name descname"><span class="pre">measure_diameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">DiameterSpec(diameter_method='circle_equivalent',</span> <span class="pre">edge_filter=True,</span> <span class="pre">framed=True,</span> <span class="pre">min_sep=None,</span> <span class="pre">bound=True,</span> <span class="pre">filled=False,</span> <span class="pre">z_confinement=False,</span> <span class="pre">c=8.0)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.measure_diameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.measure_diameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">n_images:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">image_filters:</span> <span class="pre">list[oap_model.detector.ImageFilter]</span> <span class="pre">=</span> <span class="pre">[&lt;ImageFilter.PRESENT_HALF_INTENSITY:</span> <span class="pre">1&gt;],</span> <span class="pre">**kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the images in the run.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.save" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.set_particles">
+<span class="sig-name descname"><span class="pre">set_particles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.set_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.set_particles" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_yval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.slice" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.trim_blank_space">
+<span class="sig-name descname"><span class="pre">trim_blank_space</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.trim_blank_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.trim_blank_space" title="Permalink to this definition"></a></dt>
+<dd><p>Trim the blank space from the start and end of each image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.volume">
+<span class="sig-name descname"><span class="pre">volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.detector.html#oap_model.detector.DiameterSpec" title="oap_model.detector.DiameterSpec"><span class="pre">DiameterSpec</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/detector_run.html#DetectorRun.volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.detector_run.DetectorRun.volume" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.detector_run.DetectorRun.xlims">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xlims</span></span><a class="headerlink" href="#oap_model.detector_run.DetectorRun.xlims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="oap_model.detector.html" class="btn btn-neutral float-left" title="oap_model.detector module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="oap_model.retrieval.html" class="btn btn-neutral float-right" title="oap_model.retrieval module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

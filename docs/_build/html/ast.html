@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ast module &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ast module</a><ul>
+<li><a class="reference internal" href="#ast">ast</a></li>
+<li><a class="reference internal" href="#ast.AST"><code class="docutils literal notranslate"><span class="pre">AST</span></code></a></li>
+<li><a class="reference internal" href="#ast.Add"><code class="docutils literal notranslate"><span class="pre">Add</span></code></a></li>
+<li><a class="reference internal" href="#ast.And"><code class="docutils literal notranslate"><span class="pre">And</span></code></a></li>
+<li><a class="reference internal" href="#ast.AnnAssign"><code class="docutils literal notranslate"><span class="pre">AnnAssign</span></code></a><ul>
+<li><a class="reference internal" href="#ast.AnnAssign.value"><code class="docutils literal notranslate"><span class="pre">AnnAssign.value</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Assert"><code class="docutils literal notranslate"><span class="pre">Assert</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Assert.msg"><code class="docutils literal notranslate"><span class="pre">Assert.msg</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Assign"><code class="docutils literal notranslate"><span class="pre">Assign</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Assign.type_comment"><code class="docutils literal notranslate"><span class="pre">Assign.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.AsyncFor"><code class="docutils literal notranslate"><span class="pre">AsyncFor</span></code></a><ul>
+<li><a class="reference internal" href="#ast.AsyncFor.type_comment"><code class="docutils literal notranslate"><span class="pre">AsyncFor.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.AsyncFunctionDef"><code class="docutils literal notranslate"><span class="pre">AsyncFunctionDef</span></code></a><ul>
+<li><a class="reference internal" href="#ast.AsyncFunctionDef.returns"><code class="docutils literal notranslate"><span class="pre">AsyncFunctionDef.returns</span></code></a></li>
+<li><a class="reference internal" href="#ast.AsyncFunctionDef.type_comment"><code class="docutils literal notranslate"><span class="pre">AsyncFunctionDef.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.AsyncWith"><code class="docutils literal notranslate"><span class="pre">AsyncWith</span></code></a><ul>
+<li><a class="reference internal" href="#ast.AsyncWith.type_comment"><code class="docutils literal notranslate"><span class="pre">AsyncWith.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Attribute"><code class="docutils literal notranslate"><span class="pre">Attribute</span></code></a></li>
+<li><a class="reference internal" href="#ast.AugAssign"><code class="docutils literal notranslate"><span class="pre">AugAssign</span></code></a></li>
+<li><a class="reference internal" href="#ast.AugLoad"><code class="docutils literal notranslate"><span class="pre">AugLoad</span></code></a></li>
+<li><a class="reference internal" href="#ast.AugStore"><code class="docutils literal notranslate"><span class="pre">AugStore</span></code></a></li>
+<li><a class="reference internal" href="#ast.Await"><code class="docutils literal notranslate"><span class="pre">Await</span></code></a></li>
+<li><a class="reference internal" href="#ast.BinOp"><code class="docutils literal notranslate"><span class="pre">BinOp</span></code></a></li>
+<li><a class="reference internal" href="#ast.BitAnd"><code class="docutils literal notranslate"><span class="pre">BitAnd</span></code></a></li>
+<li><a class="reference internal" href="#ast.BitOr"><code class="docutils literal notranslate"><span class="pre">BitOr</span></code></a></li>
+<li><a class="reference internal" href="#ast.BitXor"><code class="docutils literal notranslate"><span class="pre">BitXor</span></code></a></li>
+<li><a class="reference internal" href="#ast.BoolOp"><code class="docutils literal notranslate"><span class="pre">BoolOp</span></code></a></li>
+<li><a class="reference internal" href="#ast.Break"><code class="docutils literal notranslate"><span class="pre">Break</span></code></a></li>
+<li><a class="reference internal" href="#ast.Bytes"><code class="docutils literal notranslate"><span class="pre">Bytes</span></code></a></li>
+<li><a class="reference internal" href="#ast.Call"><code class="docutils literal notranslate"><span class="pre">Call</span></code></a></li>
+<li><a class="reference internal" href="#ast.ClassDef"><code class="docutils literal notranslate"><span class="pre">ClassDef</span></code></a></li>
+<li><a class="reference internal" href="#ast.Compare"><code class="docutils literal notranslate"><span class="pre">Compare</span></code></a></li>
+<li><a class="reference internal" href="#ast.Constant"><code class="docutils literal notranslate"><span class="pre">Constant</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Constant.kind"><code class="docutils literal notranslate"><span class="pre">Constant.kind</span></code></a></li>
+<li><a class="reference internal" href="#ast.Constant.n"><code class="docutils literal notranslate"><span class="pre">Constant.n</span></code></a></li>
+<li><a class="reference internal" href="#ast.Constant.s"><code class="docutils literal notranslate"><span class="pre">Constant.s</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Continue"><code class="docutils literal notranslate"><span class="pre">Continue</span></code></a></li>
+<li><a class="reference internal" href="#ast.Del"><code class="docutils literal notranslate"><span class="pre">Del</span></code></a></li>
+<li><a class="reference internal" href="#ast.Delete"><code class="docutils literal notranslate"><span class="pre">Delete</span></code></a></li>
+<li><a class="reference internal" href="#ast.Dict"><code class="docutils literal notranslate"><span class="pre">Dict</span></code></a></li>
+<li><a class="reference internal" href="#ast.DictComp"><code class="docutils literal notranslate"><span class="pre">DictComp</span></code></a></li>
+<li><a class="reference internal" href="#ast.Div"><code class="docutils literal notranslate"><span class="pre">Div</span></code></a></li>
+<li><a class="reference internal" href="#ast.Ellipsis"><code class="docutils literal notranslate"><span class="pre">Ellipsis</span></code></a></li>
+<li><a class="reference internal" href="#ast.Eq"><code class="docutils literal notranslate"><span class="pre">Eq</span></code></a></li>
+<li><a class="reference internal" href="#ast.ExceptHandler"><code class="docutils literal notranslate"><span class="pre">ExceptHandler</span></code></a><ul>
+<li><a class="reference internal" href="#ast.ExceptHandler.name"><code class="docutils literal notranslate"><span class="pre">ExceptHandler.name</span></code></a></li>
+<li><a class="reference internal" href="#ast.ExceptHandler.type"><code class="docutils literal notranslate"><span class="pre">ExceptHandler.type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Expr"><code class="docutils literal notranslate"><span class="pre">Expr</span></code></a></li>
+<li><a class="reference internal" href="#ast.Expression"><code class="docutils literal notranslate"><span class="pre">Expression</span></code></a></li>
+<li><a class="reference internal" href="#ast.ExtSlice"><code class="docutils literal notranslate"><span class="pre">ExtSlice</span></code></a></li>
+<li><a class="reference internal" href="#ast.FloorDiv"><code class="docutils literal notranslate"><span class="pre">FloorDiv</span></code></a></li>
+<li><a class="reference internal" href="#ast.For"><code class="docutils literal notranslate"><span class="pre">For</span></code></a><ul>
+<li><a class="reference internal" href="#ast.For.type_comment"><code class="docutils literal notranslate"><span class="pre">For.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.FormattedValue"><code class="docutils literal notranslate"><span class="pre">FormattedValue</span></code></a><ul>
+<li><a class="reference internal" href="#ast.FormattedValue.format_spec"><code class="docutils literal notranslate"><span class="pre">FormattedValue.format_spec</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.FunctionDef"><code class="docutils literal notranslate"><span class="pre">FunctionDef</span></code></a><ul>
+<li><a class="reference internal" href="#ast.FunctionDef.returns"><code class="docutils literal notranslate"><span class="pre">FunctionDef.returns</span></code></a></li>
+<li><a class="reference internal" href="#ast.FunctionDef.type_comment"><code class="docutils literal notranslate"><span class="pre">FunctionDef.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.FunctionType"><code class="docutils literal notranslate"><span class="pre">FunctionType</span></code></a></li>
+<li><a class="reference internal" href="#ast.GeneratorExp"><code class="docutils literal notranslate"><span class="pre">GeneratorExp</span></code></a></li>
+<li><a class="reference internal" href="#ast.Global"><code class="docutils literal notranslate"><span class="pre">Global</span></code></a></li>
+<li><a class="reference internal" href="#ast.Gt"><code class="docutils literal notranslate"><span class="pre">Gt</span></code></a></li>
+<li><a class="reference internal" href="#ast.GtE"><code class="docutils literal notranslate"><span class="pre">GtE</span></code></a></li>
+<li><a class="reference internal" href="#ast.If"><code class="docutils literal notranslate"><span class="pre">If</span></code></a></li>
+<li><a class="reference internal" href="#ast.IfExp"><code class="docutils literal notranslate"><span class="pre">IfExp</span></code></a></li>
+<li><a class="reference internal" href="#ast.Import"><code class="docutils literal notranslate"><span class="pre">Import</span></code></a></li>
+<li><a class="reference internal" href="#ast.ImportFrom"><code class="docutils literal notranslate"><span class="pre">ImportFrom</span></code></a><ul>
+<li><a class="reference internal" href="#ast.ImportFrom.level"><code class="docutils literal notranslate"><span class="pre">ImportFrom.level</span></code></a></li>
+<li><a class="reference internal" href="#ast.ImportFrom.module"><code class="docutils literal notranslate"><span class="pre">ImportFrom.module</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.In"><code class="docutils literal notranslate"><span class="pre">In</span></code></a></li>
+<li><a class="reference internal" href="#ast.Index"><code class="docutils literal notranslate"><span class="pre">Index</span></code></a></li>
+<li><a class="reference internal" href="#ast.Interactive"><code class="docutils literal notranslate"><span class="pre">Interactive</span></code></a></li>
+<li><a class="reference internal" href="#ast.Invert"><code class="docutils literal notranslate"><span class="pre">Invert</span></code></a></li>
+<li><a class="reference internal" href="#ast.Is"><code class="docutils literal notranslate"><span class="pre">Is</span></code></a></li>
+<li><a class="reference internal" href="#ast.IsNot"><code class="docutils literal notranslate"><span class="pre">IsNot</span></code></a></li>
+<li><a class="reference internal" href="#ast.JoinedStr"><code class="docutils literal notranslate"><span class="pre">JoinedStr</span></code></a></li>
+<li><a class="reference internal" href="#ast.LShift"><code class="docutils literal notranslate"><span class="pre">LShift</span></code></a></li>
+<li><a class="reference internal" href="#ast.Lambda"><code class="docutils literal notranslate"><span class="pre">Lambda</span></code></a></li>
+<li><a class="reference internal" href="#ast.List"><code class="docutils literal notranslate"><span class="pre">List</span></code></a></li>
+<li><a class="reference internal" href="#ast.ListComp"><code class="docutils literal notranslate"><span class="pre">ListComp</span></code></a></li>
+<li><a class="reference internal" href="#ast.Load"><code class="docutils literal notranslate"><span class="pre">Load</span></code></a></li>
+<li><a class="reference internal" href="#ast.Lt"><code class="docutils literal notranslate"><span class="pre">Lt</span></code></a></li>
+<li><a class="reference internal" href="#ast.LtE"><code class="docutils literal notranslate"><span class="pre">LtE</span></code></a></li>
+<li><a class="reference internal" href="#ast.MatMult"><code class="docutils literal notranslate"><span class="pre">MatMult</span></code></a></li>
+<li><a class="reference internal" href="#ast.Match"><code class="docutils literal notranslate"><span class="pre">Match</span></code></a></li>
+<li><a class="reference internal" href="#ast.MatchAs"><code class="docutils literal notranslate"><span class="pre">MatchAs</span></code></a><ul>
+<li><a class="reference internal" href="#ast.MatchAs.name"><code class="docutils literal notranslate"><span class="pre">MatchAs.name</span></code></a></li>
+<li><a class="reference internal" href="#ast.MatchAs.pattern"><code class="docutils literal notranslate"><span class="pre">MatchAs.pattern</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.MatchClass"><code class="docutils literal notranslate"><span class="pre">MatchClass</span></code></a></li>
+<li><a class="reference internal" href="#ast.MatchMapping"><code class="docutils literal notranslate"><span class="pre">MatchMapping</span></code></a><ul>
+<li><a class="reference internal" href="#ast.MatchMapping.rest"><code class="docutils literal notranslate"><span class="pre">MatchMapping.rest</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.MatchOr"><code class="docutils literal notranslate"><span class="pre">MatchOr</span></code></a></li>
+<li><a class="reference internal" href="#ast.MatchSequence"><code class="docutils literal notranslate"><span class="pre">MatchSequence</span></code></a></li>
+<li><a class="reference internal" href="#ast.MatchSingleton"><code class="docutils literal notranslate"><span class="pre">MatchSingleton</span></code></a></li>
+<li><a class="reference internal" href="#ast.MatchStar"><code class="docutils literal notranslate"><span class="pre">MatchStar</span></code></a><ul>
+<li><a class="reference internal" href="#ast.MatchStar.name"><code class="docutils literal notranslate"><span class="pre">MatchStar.name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.MatchValue"><code class="docutils literal notranslate"><span class="pre">MatchValue</span></code></a></li>
+<li><a class="reference internal" href="#ast.Mod"><code class="docutils literal notranslate"><span class="pre">Mod</span></code></a></li>
+<li><a class="reference internal" href="#ast.Module"><code class="docutils literal notranslate"><span class="pre">Module</span></code></a></li>
+<li><a class="reference internal" href="#ast.Mult"><code class="docutils literal notranslate"><span class="pre">Mult</span></code></a></li>
+<li><a class="reference internal" href="#ast.Name"><code class="docutils literal notranslate"><span class="pre">Name</span></code></a></li>
+<li><a class="reference internal" href="#ast.NameConstant"><code class="docutils literal notranslate"><span class="pre">NameConstant</span></code></a></li>
+<li><a class="reference internal" href="#ast.NamedExpr"><code class="docutils literal notranslate"><span class="pre">NamedExpr</span></code></a></li>
+<li><a class="reference internal" href="#ast.NodeTransformer"><code class="docutils literal notranslate"><span class="pre">NodeTransformer</span></code></a><ul>
+<li><a class="reference internal" href="#ast.NodeTransformer.generic_visit"><code class="docutils literal notranslate"><span class="pre">NodeTransformer.generic_visit()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.NodeVisitor"><code class="docutils literal notranslate"><span class="pre">NodeVisitor</span></code></a><ul>
+<li><a class="reference internal" href="#ast.NodeVisitor.generic_visit"><code class="docutils literal notranslate"><span class="pre">NodeVisitor.generic_visit()</span></code></a></li>
+<li><a class="reference internal" href="#ast.NodeVisitor.visit"><code class="docutils literal notranslate"><span class="pre">NodeVisitor.visit()</span></code></a></li>
+<li><a class="reference internal" href="#ast.NodeVisitor.visit_Constant"><code class="docutils literal notranslate"><span class="pre">NodeVisitor.visit_Constant()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Nonlocal"><code class="docutils literal notranslate"><span class="pre">Nonlocal</span></code></a></li>
+<li><a class="reference internal" href="#ast.Not"><code class="docutils literal notranslate"><span class="pre">Not</span></code></a></li>
+<li><a class="reference internal" href="#ast.NotEq"><code class="docutils literal notranslate"><span class="pre">NotEq</span></code></a></li>
+<li><a class="reference internal" href="#ast.NotIn"><code class="docutils literal notranslate"><span class="pre">NotIn</span></code></a></li>
+<li><a class="reference internal" href="#ast.Num"><code class="docutils literal notranslate"><span class="pre">Num</span></code></a></li>
+<li><a class="reference internal" href="#ast.Or"><code class="docutils literal notranslate"><span class="pre">Or</span></code></a></li>
+<li><a class="reference internal" href="#ast.Param"><code class="docutils literal notranslate"><span class="pre">Param</span></code></a></li>
+<li><a class="reference internal" href="#ast.Pass"><code class="docutils literal notranslate"><span class="pre">Pass</span></code></a></li>
+<li><a class="reference internal" href="#ast.Pow"><code class="docutils literal notranslate"><span class="pre">Pow</span></code></a></li>
+<li><a class="reference internal" href="#ast.RShift"><code class="docutils literal notranslate"><span class="pre">RShift</span></code></a></li>
+<li><a class="reference internal" href="#ast.Raise"><code class="docutils literal notranslate"><span class="pre">Raise</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Raise.cause"><code class="docutils literal notranslate"><span class="pre">Raise.cause</span></code></a></li>
+<li><a class="reference internal" href="#ast.Raise.exc"><code class="docutils literal notranslate"><span class="pre">Raise.exc</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Return"><code class="docutils literal notranslate"><span class="pre">Return</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Return.value"><code class="docutils literal notranslate"><span class="pre">Return.value</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Set"><code class="docutils literal notranslate"><span class="pre">Set</span></code></a></li>
+<li><a class="reference internal" href="#ast.SetComp"><code class="docutils literal notranslate"><span class="pre">SetComp</span></code></a></li>
+<li><a class="reference internal" href="#ast.Slice"><code class="docutils literal notranslate"><span class="pre">Slice</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Slice.lower"><code class="docutils literal notranslate"><span class="pre">Slice.lower</span></code></a></li>
+<li><a class="reference internal" href="#ast.Slice.step"><code class="docutils literal notranslate"><span class="pre">Slice.step</span></code></a></li>
+<li><a class="reference internal" href="#ast.Slice.upper"><code class="docutils literal notranslate"><span class="pre">Slice.upper</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Starred"><code class="docutils literal notranslate"><span class="pre">Starred</span></code></a></li>
+<li><a class="reference internal" href="#ast.Store"><code class="docutils literal notranslate"><span class="pre">Store</span></code></a></li>
+<li><a class="reference internal" href="#ast.Str"><code class="docutils literal notranslate"><span class="pre">Str</span></code></a></li>
+<li><a class="reference internal" href="#ast.Sub"><code class="docutils literal notranslate"><span class="pre">Sub</span></code></a></li>
+<li><a class="reference internal" href="#ast.Subscript"><code class="docutils literal notranslate"><span class="pre">Subscript</span></code></a></li>
+<li><a class="reference internal" href="#ast.Suite"><code class="docutils literal notranslate"><span class="pre">Suite</span></code></a></li>
+<li><a class="reference internal" href="#ast.Try"><code class="docutils literal notranslate"><span class="pre">Try</span></code></a></li>
+<li><a class="reference internal" href="#ast.TryStar"><code class="docutils literal notranslate"><span class="pre">TryStar</span></code></a></li>
+<li><a class="reference internal" href="#ast.Tuple"><code class="docutils literal notranslate"><span class="pre">Tuple</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Tuple.dims"><code class="docutils literal notranslate"><span class="pre">Tuple.dims</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.TypeIgnore"><code class="docutils literal notranslate"><span class="pre">TypeIgnore</span></code></a></li>
+<li><a class="reference internal" href="#ast.UAdd"><code class="docutils literal notranslate"><span class="pre">UAdd</span></code></a></li>
+<li><a class="reference internal" href="#ast.USub"><code class="docutils literal notranslate"><span class="pre">USub</span></code></a></li>
+<li><a class="reference internal" href="#ast.UnaryOp"><code class="docutils literal notranslate"><span class="pre">UnaryOp</span></code></a></li>
+<li><a class="reference internal" href="#ast.While"><code class="docutils literal notranslate"><span class="pre">While</span></code></a></li>
+<li><a class="reference internal" href="#ast.With"><code class="docutils literal notranslate"><span class="pre">With</span></code></a><ul>
+<li><a class="reference internal" href="#ast.With.type_comment"><code class="docutils literal notranslate"><span class="pre">With.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.Yield"><code class="docutils literal notranslate"><span class="pre">Yield</span></code></a><ul>
+<li><a class="reference internal" href="#ast.Yield.value"><code class="docutils literal notranslate"><span class="pre">Yield.value</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.YieldFrom"><code class="docutils literal notranslate"><span class="pre">YieldFrom</span></code></a></li>
+<li><a class="reference internal" href="#ast.alias"><code class="docutils literal notranslate"><span class="pre">alias</span></code></a><ul>
+<li><a class="reference internal" href="#ast.alias.asname"><code class="docutils literal notranslate"><span class="pre">alias.asname</span></code></a></li>
+<li><a class="reference internal" href="#ast.alias.end_col_offset"><code class="docutils literal notranslate"><span class="pre">alias.end_col_offset</span></code></a></li>
+<li><a class="reference internal" href="#ast.alias.end_lineno"><code class="docutils literal notranslate"><span class="pre">alias.end_lineno</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.arg"><code class="docutils literal notranslate"><span class="pre">arg</span></code></a><ul>
+<li><a class="reference internal" href="#ast.arg.annotation"><code class="docutils literal notranslate"><span class="pre">arg.annotation</span></code></a></li>
+<li><a class="reference internal" href="#ast.arg.end_col_offset"><code class="docutils literal notranslate"><span class="pre">arg.end_col_offset</span></code></a></li>
+<li><a class="reference internal" href="#ast.arg.end_lineno"><code class="docutils literal notranslate"><span class="pre">arg.end_lineno</span></code></a></li>
+<li><a class="reference internal" href="#ast.arg.type_comment"><code class="docutils literal notranslate"><span class="pre">arg.type_comment</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.arguments"><code class="docutils literal notranslate"><span class="pre">arguments</span></code></a><ul>
+<li><a class="reference internal" href="#ast.arguments.kwarg"><code class="docutils literal notranslate"><span class="pre">arguments.kwarg</span></code></a></li>
+<li><a class="reference internal" href="#ast.arguments.vararg"><code class="docutils literal notranslate"><span class="pre">arguments.vararg</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.boolop"><code class="docutils literal notranslate"><span class="pre">boolop</span></code></a></li>
+<li><a class="reference internal" href="#ast.cmpop"><code class="docutils literal notranslate"><span class="pre">cmpop</span></code></a></li>
+<li><a class="reference internal" href="#ast.comprehension"><code class="docutils literal notranslate"><span class="pre">comprehension</span></code></a></li>
+<li><a class="reference internal" href="#ast.copy_location"><code class="docutils literal notranslate"><span class="pre">copy_location()</span></code></a></li>
+<li><a class="reference internal" href="#ast.dump"><code class="docutils literal notranslate"><span class="pre">dump()</span></code></a></li>
+<li><a class="reference internal" href="#ast.excepthandler"><code class="docutils literal notranslate"><span class="pre">excepthandler</span></code></a><ul>
+<li><a class="reference internal" href="#ast.excepthandler.end_col_offset"><code class="docutils literal notranslate"><span class="pre">excepthandler.end_col_offset</span></code></a></li>
+<li><a class="reference internal" href="#ast.excepthandler.end_lineno"><code class="docutils literal notranslate"><span class="pre">excepthandler.end_lineno</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.expr"><code class="docutils literal notranslate"><span class="pre">expr</span></code></a><ul>
+<li><a class="reference internal" href="#ast.expr.end_col_offset"><code class="docutils literal notranslate"><span class="pre">expr.end_col_offset</span></code></a></li>
+<li><a class="reference internal" href="#ast.expr.end_lineno"><code class="docutils literal notranslate"><span class="pre">expr.end_lineno</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.expr_context"><code class="docutils literal notranslate"><span class="pre">expr_context</span></code></a></li>
+<li><a class="reference internal" href="#ast.fix_missing_locations"><code class="docutils literal notranslate"><span class="pre">fix_missing_locations()</span></code></a></li>
+<li><a class="reference internal" href="#ast.get_docstring"><code class="docutils literal notranslate"><span class="pre">get_docstring()</span></code></a></li>
+<li><a class="reference internal" href="#ast.get_source_segment"><code class="docutils literal notranslate"><span class="pre">get_source_segment()</span></code></a></li>
+<li><a class="reference internal" href="#ast.increment_lineno"><code class="docutils literal notranslate"><span class="pre">increment_lineno()</span></code></a></li>
+<li><a class="reference internal" href="#ast.iter_child_nodes"><code class="docutils literal notranslate"><span class="pre">iter_child_nodes()</span></code></a></li>
+<li><a class="reference internal" href="#ast.iter_fields"><code class="docutils literal notranslate"><span class="pre">iter_fields()</span></code></a></li>
+<li><a class="reference internal" href="#ast.keyword"><code class="docutils literal notranslate"><span class="pre">keyword</span></code></a><ul>
+<li><a class="reference internal" href="#ast.keyword.arg"><code class="docutils literal notranslate"><span class="pre">keyword.arg</span></code></a></li>
+<li><a class="reference internal" href="#ast.keyword.end_col_offset"><code class="docutils literal notranslate"><span class="pre">keyword.end_col_offset</span></code></a></li>
+<li><a class="reference internal" href="#ast.keyword.end_lineno"><code class="docutils literal notranslate"><span class="pre">keyword.end_lineno</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.literal_eval"><code class="docutils literal notranslate"><span class="pre">literal_eval()</span></code></a></li>
+<li><a class="reference internal" href="#ast.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li><a class="reference internal" href="#ast.match_case"><code class="docutils literal notranslate"><span class="pre">match_case</span></code></a><ul>
+<li><a class="reference internal" href="#ast.match_case.guard"><code class="docutils literal notranslate"><span class="pre">match_case.guard</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.mod"><code class="docutils literal notranslate"><span class="pre">mod</span></code></a></li>
+<li><a class="reference internal" href="#ast.operator"><code class="docutils literal notranslate"><span class="pre">operator</span></code></a></li>
+<li><a class="reference internal" href="#ast.parse"><code class="docutils literal notranslate"><span class="pre">parse()</span></code></a></li>
+<li><a class="reference internal" href="#ast.pattern"><code class="docutils literal notranslate"><span class="pre">pattern</span></code></a></li>
+<li><a class="reference internal" href="#ast.slice"><code class="docutils literal notranslate"><span class="pre">slice</span></code></a></li>
+<li><a class="reference internal" href="#ast.stmt"><code class="docutils literal notranslate"><span class="pre">stmt</span></code></a><ul>
+<li><a class="reference internal" href="#ast.stmt.end_col_offset"><code class="docutils literal notranslate"><span class="pre">stmt.end_col_offset</span></code></a></li>
+<li><a class="reference internal" href="#ast.stmt.end_lineno"><code class="docutils literal notranslate"><span class="pre">stmt.end_lineno</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ast.type_ignore"><code class="docutils literal notranslate"><span class="pre">type_ignore</span></code></a></li>
+<li><a class="reference internal" href="#ast.unaryop"><code class="docutils literal notranslate"><span class="pre">unaryop</span></code></a></li>
+<li><a class="reference internal" href="#ast.unparse"><code class="docutils literal notranslate"><span class="pre">unparse()</span></code></a></li>
+<li><a class="reference internal" href="#ast.walk"><code class="docutils literal notranslate"><span class="pre">walk()</span></code></a></li>
+<li><a class="reference internal" href="#ast.withitem"><code class="docutils literal notranslate"><span class="pre">withitem</span></code></a><ul>
+<li><a class="reference internal" href="#ast.withitem.optional_vars"><code class="docutils literal notranslate"><span class="pre">withitem.optional_vars</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ast module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ast.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ast">
+<span id="ast-module"></span><h1>ast module<a class="headerlink" href="#module-ast" title="Permalink to this heading"></a></h1>
+<section id="ast">
+<h2>ast<a class="headerlink" href="#ast" title="Permalink to this heading"></a></h2>
+<p>The <cite>ast</cite> module helps Python applications to process trees of the Python
+abstract syntax grammar.  The abstract syntax itself might change with
+each Python release; this module helps to find out programmatically what
+the current grammar looks like and allows modifications of it.</p>
+<p>An abstract syntax tree can be generated by passing <cite>ast.PyCF_ONLY_AST</cite> as
+a flag to the <cite>compile()</cite> builtin function or by using the <cite>parse()</cite>
+function from this module.  The result will be a tree of objects whose
+classes all inherit from <cite>ast.AST</cite>.</p>
+<p>A modified abstract syntax tree can be compiled into a Python code object
+using the built-in <cite>compile()</cite> function.</p>
+<p>Additionally various helper functions are provided that make working with
+the trees simpler.  The main intention of the helper functions and this
+module in general is to provide an easy to use interface for libraries
+that work tightly with the python syntax (template engines for example).</p>
+<dl class="field-list simple">
+<dt class="field-odd">copyright</dt>
+<dd class="field-odd"><p>Copyright 2008 by Armin Ronacher.</p>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p>Python License.</p>
+</dd>
+</dl>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AST">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AST</span></span><a class="headerlink" href="#ast.AST" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Add">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Add</span></span><a class="headerlink" href="#ast.Add" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.And">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">And</span></span><a class="headerlink" href="#ast.And" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.boolop" title="ast.boolop"><code class="xref py py-class docutils literal notranslate"><span class="pre">boolop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AnnAssign">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AnnAssign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">simple</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.AnnAssign" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.AnnAssign.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.AnnAssign.value" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Assert">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Assert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Assert" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Assert.msg">
+<span class="sig-name descname"><span class="pre">msg</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Assert.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Assign">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Assign" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Assign.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Assign.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AsyncFor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AsyncFor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">iter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">orelse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.AsyncFor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.AsyncFor.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.AsyncFor.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AsyncFunctionDef">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AsyncFunctionDef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span> <span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span> <span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">decorator_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.AsyncFunctionDef" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.AsyncFunctionDef.returns">
+<span class="sig-name descname"><span class="pre">returns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.AsyncFunctionDef.returns" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.AsyncFunctionDef.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.AsyncFunctionDef.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AsyncWith">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AsyncWith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">withitem*</span> <span class="pre">items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.AsyncWith" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.AsyncWith.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.AsyncWith.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Attribute">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier</span> <span class="pre">attr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr_context</span> <span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Attribute" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AugAssign">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AugAssign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operator</span> <span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.AugAssign" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AugLoad">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AugLoad</span></span><a class="reference internal" href="_modules/ast.html#AugLoad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.AugLoad" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr_context" title="ast.expr_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr_context</span></code></a></p>
+<p>Deprecated AST node class.  Unused in Python 3.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.AugStore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">AugStore</span></span><a class="reference internal" href="_modules/ast.html#AugStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.AugStore" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr_context" title="ast.expr_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr_context</span></code></a></p>
+<p>Deprecated AST node class.  Unused in Python 3.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Await">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Await</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Await" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.BinOp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">BinOp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">left</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operator</span> <span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">right</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.BinOp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.BitAnd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">BitAnd</span></span><a class="headerlink" href="#ast.BitAnd" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.BitOr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">BitOr</span></span><a class="headerlink" href="#ast.BitOr" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.BitXor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">BitXor</span></span><a class="headerlink" href="#ast.BitXor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.BoolOp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">BoolOp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boolop</span> <span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.BoolOp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Break">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Break</span></span><a class="headerlink" href="#ast.Break" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Bytes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#Bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.Bytes" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.Constant" title="ast.Constant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Constant</span></code></a></p>
+<p>Deprecated AST node class. Use ast.Constant instead</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Call">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyword*</span> <span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Call" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.ClassDef">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">ClassDef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span> <span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keyword*</span> <span class="pre">keywords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">decorator_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.ClassDef" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Compare">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">left</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmpop*</span> <span class="pre">ops</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">comparators</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Compare" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Constant">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constant</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">kind</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Constant" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Constant.kind">
+<span class="sig-name descname"><span class="pre">kind</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Constant.kind" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ast.Constant.n">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#ast.Constant.n" title="Permalink to this definition"></a></dt>
+<dd><p>Deprecated. Use value instead.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ast.Constant.s">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">s</span></span><a class="headerlink" href="#ast.Constant.s" title="Permalink to this definition"></a></dt>
+<dd><p>Deprecated. Use value instead.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Continue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Continue</span></span><a class="headerlink" href="#ast.Continue" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Del">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Del</span></span><a class="headerlink" href="#ast.Del" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr_context" title="ast.expr_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr_context</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Delete">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">targets</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Delete" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Dict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Dict" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.DictComp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">DictComp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comprehension*</span> <span class="pre">generators</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.DictComp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Div">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Div</span></span><a class="headerlink" href="#ast.Div" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Ellipsis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Ellipsis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#Ellipsis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.Ellipsis" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.Constant" title="ast.Constant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Constant</span></code></a></p>
+<p>Deprecated AST node class. Use ast.Constant instead</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Eq">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Eq</span></span><a class="headerlink" href="#ast.Eq" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.ExceptHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">ExceptHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier?</span> <span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.ExceptHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.excepthandler" title="ast.excepthandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">excepthandler</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.ExceptHandler.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.ExceptHandler.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.ExceptHandler.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.ExceptHandler.type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Expr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Expr" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Expression">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Expression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">body</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Expression" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.mod" title="ast.mod"><code class="xref py py-class docutils literal notranslate"><span class="pre">mod</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.ExtSlice">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">ExtSlice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#ExtSlice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.ExtSlice" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.slice" title="ast.slice"><code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code></a></p>
+<p>Deprecated AST node class. Use ast.Tuple instead.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.FloorDiv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">FloorDiv</span></span><a class="headerlink" href="#ast.FloorDiv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.For">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">For</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">iter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">orelse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.For" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.For.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.For.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.FormattedValue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">FormattedValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">conversion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">format_spec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.FormattedValue" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.FormattedValue.format_spec">
+<span class="sig-name descname"><span class="pre">format_spec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.FormattedValue.format_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.FunctionDef">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">FunctionDef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span> <span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span> <span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">decorator_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">returns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.FunctionDef" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.FunctionDef.returns">
+<span class="sig-name descname"><span class="pre">returns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.FunctionDef.returns" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.FunctionDef.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.FunctionDef.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.FunctionType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">FunctionType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">argtypes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">returns</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.FunctionType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.mod" title="ast.mod"><code class="xref py py-class docutils literal notranslate"><span class="pre">mod</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.GeneratorExp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">GeneratorExp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">elt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comprehension*</span> <span class="pre">generators</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.GeneratorExp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Global">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Global</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier*</span> <span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Global" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Gt">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Gt</span></span><a class="headerlink" href="#ast.Gt" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.GtE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">GtE</span></span><a class="headerlink" href="#ast.GtE" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.If">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">If</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">orelse</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.If" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.IfExp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">IfExp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">orelse</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.IfExp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Import">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Import</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias*</span> <span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Import" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.ImportFrom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">ImportFrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier?</span> <span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias*</span> <span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int?</span> <span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.ImportFrom" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.ImportFrom.level">
+<span class="sig-name descname"><span class="pre">level</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.ImportFrom.level" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.ImportFrom.module">
+<span class="sig-name descname"><span class="pre">module</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.ImportFrom.module" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.In">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">In</span></span><a class="headerlink" href="#ast.In" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Index">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#Index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.Index" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.slice" title="ast.slice"><code class="xref py py-class docutils literal notranslate"><span class="pre">slice</span></code></a></p>
+<p>Deprecated AST node class. Use the index value directly instead.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Interactive">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Interactive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Interactive" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.mod" title="ast.mod"><code class="xref py py-class docutils literal notranslate"><span class="pre">mod</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Invert">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Invert</span></span><a class="headerlink" href="#ast.Invert" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.unaryop" title="ast.unaryop"><code class="xref py py-class docutils literal notranslate"><span class="pre">unaryop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Is">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Is</span></span><a class="headerlink" href="#ast.Is" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.IsNot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">IsNot</span></span><a class="headerlink" href="#ast.IsNot" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.JoinedStr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">JoinedStr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.JoinedStr" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.LShift">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">LShift</span></span><a class="headerlink" href="#ast.LShift" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Lambda">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Lambda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arguments</span> <span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">body</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Lambda" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.List">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">List</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">elts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr_context</span> <span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.List" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.ListComp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">ListComp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">elt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comprehension*</span> <span class="pre">generators</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.ListComp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Load">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Load</span></span><a class="headerlink" href="#ast.Load" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr_context" title="ast.expr_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr_context</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Lt">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Lt</span></span><a class="headerlink" href="#ast.Lt" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.LtE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">LtE</span></span><a class="headerlink" href="#ast.LtE" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatMult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatMult</span></span><a class="headerlink" href="#ast.MatMult" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Match">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">subject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_case*</span> <span class="pre">cases</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Match" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchAs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchAs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern?</span> <span class="pre">pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier?</span> <span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchAs" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.MatchAs.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.MatchAs.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.MatchAs.pattern">
+<span class="sig-name descname"><span class="pre">pattern</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.MatchAs.pattern" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchClass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern*</span> <span class="pre">patterns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier*</span> <span class="pre">kwd_attrs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern*</span> <span class="pre">kwd_patterns</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchClass" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchMapping">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern*</span> <span class="pre">patterns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier?</span> <span class="pre">rest</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchMapping" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.MatchMapping.rest">
+<span class="sig-name descname"><span class="pre">rest</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.MatchMapping.rest" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchOr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchOr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern*</span> <span class="pre">patterns</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchOr" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchSequence">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern*</span> <span class="pre">patterns</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchSequence" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchSingleton">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchSingleton</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constant</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchSingleton" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchStar">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchStar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier?</span> <span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchStar" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.MatchStar.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.MatchStar.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.MatchValue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">MatchValue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.MatchValue" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.pattern" title="ast.pattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">pattern</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Mod">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Mod</span></span><a class="headerlink" href="#ast.Mod" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Module">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_ignore*</span> <span class="pre">type_ignores</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Module" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.mod" title="ast.mod"><code class="xref py py-class docutils literal notranslate"><span class="pre">mod</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Mult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Mult</span></span><a class="headerlink" href="#ast.Mult" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Name">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span> <span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr_context</span> <span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Name" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.NameConstant">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">NameConstant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#NameConstant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.NameConstant" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.Constant" title="ast.Constant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Constant</span></code></a></p>
+<p>Deprecated AST node class. Use ast.Constant instead</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.NamedExpr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">NamedExpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.NamedExpr" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.NodeTransformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">NodeTransformer</span></span><a class="reference internal" href="_modules/ast.html#NodeTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.NodeTransformer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.NodeVisitor" title="ast.NodeVisitor"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeVisitor</span></code></a></p>
+<p>A <a class="reference internal" href="#ast.NodeVisitor" title="ast.NodeVisitor"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeVisitor</span></code></a> subclass that walks the abstract syntax tree and
+allows modification of nodes.</p>
+<p>The <cite>NodeTransformer</cite> will walk the AST and use the return value of the
+visitor methods to replace or remove the old node.  If the return value of
+the visitor method is <code class="docutils literal notranslate"><span class="pre">None</span></code>, the node will be removed from its location,
+otherwise it is replaced with the return value.  The return value may be the
+original node in which case no replacement takes place.</p>
+<p>Here is an example transformer that rewrites all occurrences of name lookups
+(<code class="docutils literal notranslate"><span class="pre">foo</span></code>) to <code class="docutils literal notranslate"><span class="pre">data['foo']</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RewriteName</span><span class="p">(</span><span class="n">NodeTransformer</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">visit_Name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Subscript</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">Name</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">Load</span><span class="p">()),</span>
+            <span class="nb">slice</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">),</span>
+            <span class="n">ctx</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">ctx</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>Keep in mind that if the node you’re operating on has child nodes you must
+either transform the child nodes yourself or call the <a class="reference internal" href="#ast.NodeTransformer.generic_visit" title="ast.NodeTransformer.generic_visit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generic_visit()</span></code></a>
+method for the node first.</p>
+<p>For nodes that were part of a collection of statements (that applies to all
+statement nodes), the visitor may also return a list of nodes rather than
+just a single node.</p>
+<p>Usually you use the transformer like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">node</span> <span class="o">=</span> <span class="n">YourTransformer</span><span class="p">()</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="ast.NodeTransformer.generic_visit">
+<span class="sig-name descname"><span class="pre">generic_visit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#NodeTransformer.generic_visit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.NodeTransformer.generic_visit" title="Permalink to this definition"></a></dt>
+<dd><p>Called if no explicit visitor function exists for a node.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.NodeVisitor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">NodeVisitor</span></span><a class="reference internal" href="_modules/ast.html#NodeVisitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.NodeVisitor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A node visitor base class that walks the abstract syntax tree and calls a
+visitor function for every node found.  This function may return a value
+which is forwarded by the <cite>visit</cite> method.</p>
+<p>This class is meant to be subclassed, with the subclass adding visitor
+methods.</p>
+<p>Per default the visitor functions for the nodes are <code class="docutils literal notranslate"><span class="pre">'visit_'</span></code> +
+class name of the node.  So a <cite>TryFinally</cite> node visit function would
+be <cite>visit_TryFinally</cite>.  This behavior can be changed by overriding
+the <cite>visit</cite> method.  If no visitor function exists for a node
+(return value <cite>None</cite>) the <cite>generic_visit</cite> visitor is used instead.</p>
+<p>Don’t use the <cite>NodeVisitor</cite> if you want to apply changes to nodes during
+traversing.  For this a special visitor exists (<cite>NodeTransformer</cite>) that
+allows modifications.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ast.NodeVisitor.generic_visit">
+<span class="sig-name descname"><span class="pre">generic_visit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#NodeVisitor.generic_visit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.NodeVisitor.generic_visit" title="Permalink to this definition"></a></dt>
+<dd><p>Called if no explicit visitor function exists for a node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast.NodeVisitor.visit">
+<span class="sig-name descname"><span class="pre">visit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#NodeVisitor.visit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.NodeVisitor.visit" title="Permalink to this definition"></a></dt>
+<dd><p>Visit a node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ast.NodeVisitor.visit_Constant">
+<span class="sig-name descname"><span class="pre">visit_Constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#NodeVisitor.visit_Constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.NodeVisitor.visit_Constant" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Nonlocal">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Nonlocal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier*</span> <span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Nonlocal" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Not">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Not</span></span><a class="headerlink" href="#ast.Not" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.unaryop" title="ast.unaryop"><code class="xref py py-class docutils literal notranslate"><span class="pre">unaryop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.NotEq">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">NotEq</span></span><a class="headerlink" href="#ast.NotEq" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.NotIn">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">NotIn</span></span><a class="headerlink" href="#ast.NotIn" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.cmpop" title="ast.cmpop"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmpop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Num">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Num</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#Num"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.Num" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.Constant" title="ast.Constant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Constant</span></code></a></p>
+<p>Deprecated AST node class. Use ast.Constant instead</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Or">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Or</span></span><a class="headerlink" href="#ast.Or" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.boolop" title="ast.boolop"><code class="xref py py-class docutils literal notranslate"><span class="pre">boolop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Param">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Param</span></span><a class="reference internal" href="_modules/ast.html#Param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.Param" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr_context" title="ast.expr_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr_context</span></code></a></p>
+<p>Deprecated AST node class.  Unused in Python 3.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Pass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Pass</span></span><a class="headerlink" href="#ast.Pass" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Pow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Pow</span></span><a class="headerlink" href="#ast.Pow" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.RShift">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">RShift</span></span><a class="headerlink" href="#ast.RShift" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Raise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Raise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">exc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">cause</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Raise" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Raise.cause">
+<span class="sig-name descname"><span class="pre">cause</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Raise.cause" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Raise.exc">
+<span class="sig-name descname"><span class="pre">exc</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Raise.exc" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Return">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Return</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Return" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Return.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Return.value" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Set">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">elts</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Set" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.SetComp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">SetComp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">elt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comprehension*</span> <span class="pre">generators</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.SetComp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Slice">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">lower</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">upper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Slice" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Slice.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Slice.lower" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Slice.step">
+<span class="sig-name descname"><span class="pre">step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Slice.step" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Slice.upper">
+<span class="sig-name descname"><span class="pre">upper</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Slice.upper" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Starred">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Starred</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr_context</span> <span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Starred" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Store">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Store</span></span><a class="headerlink" href="#ast.Store" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr_context" title="ast.expr_context"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr_context</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Str">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#Str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.Str" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.Constant" title="ast.Constant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Constant</span></code></a></p>
+<p>Deprecated AST node class. Use ast.Constant instead</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Sub">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Sub</span></span><a class="headerlink" href="#ast.Sub" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.operator" title="ast.operator"><code class="xref py py-class docutils literal notranslate"><span class="pre">operator</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Subscript">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Subscript</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr_context</span> <span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Subscript" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Suite">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Suite</span></span><a class="reference internal" href="_modules/ast.html#Suite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.Suite" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.mod" title="ast.mod"><code class="xref py py-class docutils literal notranslate"><span class="pre">mod</span></code></a></p>
+<p>Deprecated AST node class.  Unused in Python 3.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Try">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Try</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excepthandler*</span> <span class="pre">handlers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">orelse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">finalbody</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Try" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.TryStar">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">TryStar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excepthandler*</span> <span class="pre">handlers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">orelse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">finalbody</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.TryStar" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Tuple">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Tuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">elts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr_context</span> <span class="pre">ctx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Tuple" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ast.Tuple.dims">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dims</span></span><a class="headerlink" href="#ast.Tuple.dims" title="Permalink to this definition"></a></dt>
+<dd><p>Deprecated. Use elts instead.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.TypeIgnore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">TypeIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">lineno</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span> <span class="pre">tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.TypeIgnore" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.type_ignore" title="ast.type_ignore"><code class="xref py py-class docutils literal notranslate"><span class="pre">type_ignore</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.UAdd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">UAdd</span></span><a class="headerlink" href="#ast.UAdd" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.unaryop" title="ast.unaryop"><code class="xref py py-class docutils literal notranslate"><span class="pre">unaryop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.USub">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">USub</span></span><a class="headerlink" href="#ast.USub" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.unaryop" title="ast.unaryop"><code class="xref py py-class docutils literal notranslate"><span class="pre">unaryop</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.UnaryOp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">UnaryOp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unaryop</span> <span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">operand</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.UnaryOp" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.While">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">While</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">orelse</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.While" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.With">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">With</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">withitem*</span> <span class="pre">items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.With" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.stmt" title="ast.stmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">stmt</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.With.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.With.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.Yield">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">Yield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.Yield" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.Yield.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.Yield.value" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.YieldFrom">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">YieldFrom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.YieldFrom" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.expr" title="ast.expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">expr</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.alias">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span> <span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">identifier?</span> <span class="pre">asname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.alias" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.alias.asname">
+<span class="sig-name descname"><span class="pre">asname</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.alias.asname" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.alias.end_col_offset">
+<span class="sig-name descname"><span class="pre">end_col_offset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.alias.end_col_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.alias.end_lineno">
+<span class="sig-name descname"><span class="pre">end_lineno</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.alias.end_lineno" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.arg">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">arg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span> <span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">annotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string?</span> <span class="pre">type_comment</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.arg" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.arg.annotation">
+<span class="sig-name descname"><span class="pre">annotation</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.arg.annotation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.arg.end_col_offset">
+<span class="sig-name descname"><span class="pre">end_col_offset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.arg.end_col_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.arg.end_lineno">
+<span class="sig-name descname"><span class="pre">end_lineno</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.arg.end_lineno" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.arg.type_comment">
+<span class="sig-name descname"><span class="pre">type_comment</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.arg.type_comment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.arguments">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg*</span> <span class="pre">posonlyargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg*</span> <span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg?</span> <span class="pre">vararg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg*</span> <span class="pre">kwonlyargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">kw_defaults</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg?</span> <span class="pre">kwarg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">defaults</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.arguments" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.arguments.kwarg">
+<span class="sig-name descname"><span class="pre">kwarg</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.arguments.kwarg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.arguments.vararg">
+<span class="sig-name descname"><span class="pre">vararg</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.arguments.vararg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.boolop">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">boolop</span></span><a class="headerlink" href="#ast.boolop" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>boolop = And | Or</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.cmpop">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">cmpop</span></span><a class="headerlink" href="#ast.cmpop" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | In | NotIn</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.comprehension">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">comprehension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">iter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr*</span> <span class="pre">ifs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">is_async</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.comprehension" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.copy_location">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">copy_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#copy_location"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.copy_location" title="Permalink to this definition"></a></dt>
+<dd><p>Copy source location (<cite>lineno</cite>, <cite>col_offset</cite>, <cite>end_lineno</cite>, and <cite>end_col_offset</cite>
+attributes) from <em>old_node</em> to <em>new_node</em> if possible, and return <em>new_node</em>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.dump">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotate_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.dump" title="Permalink to this definition"></a></dt>
+<dd><p>Return a formatted dump of the tree in node.  This is mainly useful for
+debugging purposes.  If annotate_fields is true (by default),
+the returned string will show the names and the values for fields.
+If annotate_fields is false, the result string will be more compact by
+omitting unambiguous field names.  Attributes such as line
+numbers and column offsets are not dumped by default.  If this is wanted,
+include_attributes can be set to true.  If indent is a non-negative
+integer or string, then the tree will be pretty-printed with that indent
+level. None (the default) selects the single line representation.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.excepthandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">excepthandler</span></span><a class="headerlink" href="#ast.excepthandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>excepthandler = ExceptHandler(expr? type, identifier? name, stmt* body)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.excepthandler.end_col_offset">
+<span class="sig-name descname"><span class="pre">end_col_offset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.excepthandler.end_col_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.excepthandler.end_lineno">
+<span class="sig-name descname"><span class="pre">end_lineno</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.excepthandler.end_lineno" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.expr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">expr</span></span><a class="headerlink" href="#ast.expr" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>expr = BoolOp(boolop op, expr* values)
+| NamedExpr(expr target, expr value)
+| BinOp(expr left, operator op, expr right)
+| UnaryOp(unaryop op, expr operand)
+| Lambda(arguments args, expr body)
+| IfExp(expr test, expr body, expr orelse)
+| Dict(expr* keys, expr* values)
+| Set(expr* elts)
+| ListComp(expr elt, comprehension* generators)
+| SetComp(expr elt, comprehension* generators)
+| DictComp(expr key, expr value, comprehension* generators)
+| GeneratorExp(expr elt, comprehension* generators)
+| Await(expr value)
+| Yield(expr? value)
+| YieldFrom(expr value)
+| Compare(expr left, cmpop* ops, expr* comparators)
+| Call(expr func, expr* args, keyword* keywords)
+| FormattedValue(expr value, int conversion, expr? format_spec)
+| JoinedStr(expr* values)
+| Constant(constant value, string? kind)
+| Attribute(expr value, identifier attr, expr_context ctx)
+| Subscript(expr value, expr slice, expr_context ctx)
+| Starred(expr value, expr_context ctx)
+| Name(identifier id, expr_context ctx)
+| List(expr* elts, expr_context ctx)
+| Tuple(expr* elts, expr_context ctx)
+| Slice(expr? lower, expr? upper, expr? step)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.expr.end_col_offset">
+<span class="sig-name descname"><span class="pre">end_col_offset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.expr.end_col_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.expr.end_lineno">
+<span class="sig-name descname"><span class="pre">end_lineno</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.expr.end_lineno" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.expr_context">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">expr_context</span></span><a class="headerlink" href="#ast.expr_context" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>expr_context = Load | Store | Del</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.fix_missing_locations">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">fix_missing_locations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#fix_missing_locations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.fix_missing_locations" title="Permalink to this definition"></a></dt>
+<dd><p>When you compile a node tree with compile(), the compiler expects lineno and
+col_offset attributes for every node that supports them.  This is rather
+tedious to fill in for generated nodes, so this helper adds these attributes
+recursively where not already set, by setting them to the values of the
+parent node.  It works recursively starting at <em>node</em>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.get_docstring">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">get_docstring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#get_docstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.get_docstring" title="Permalink to this definition"></a></dt>
+<dd><p>Return the docstring for the given node or None if no docstring can
+be found.  If the node provided does not have docstrings a TypeError
+will be raised.</p>
+<p>If <em>clean</em> is <cite>True</cite>, all tabs are expanded to spaces and any whitespace
+that can be uniformly removed from the second line onwards is removed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.get_source_segment">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">get_source_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#get_source_segment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.get_source_segment" title="Permalink to this definition"></a></dt>
+<dd><p>Get source code segment of the <em>source</em> that generated <em>node</em>.</p>
+<p>If some location information (<cite>lineno</cite>, <cite>end_lineno</cite>, <cite>col_offset</cite>,
+or <cite>end_col_offset</cite>) is missing, return None.</p>
+<p>If <em>padded</em> is <cite>True</cite>, the first line of a multi-line statement will
+be padded with spaces to match its original position.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.increment_lineno">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">increment_lineno</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#increment_lineno"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.increment_lineno" title="Permalink to this definition"></a></dt>
+<dd><p>Increment the line number and end line number of each node in the tree
+starting at <em>node</em> by <em>n</em>. This is useful to “move code” to a different
+location in a file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.iter_child_nodes">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">iter_child_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#iter_child_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.iter_child_nodes" title="Permalink to this definition"></a></dt>
+<dd><p>Yield all direct child nodes of <em>node</em>, that is, all fields that are nodes
+and all items of fields that are lists of nodes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.iter_fields">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">iter_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#iter_fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.iter_fields" title="Permalink to this definition"></a></dt>
+<dd><p>Yield a tuple of <code class="docutils literal notranslate"><span class="pre">(fieldname,</span> <span class="pre">value)</span></code> for each field in <code class="docutils literal notranslate"><span class="pre">node._fields</span></code>
+that is present on <em>node</em>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.keyword">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">keyword</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier?</span> <span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.keyword" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.keyword.arg">
+<span class="sig-name descname"><span class="pre">arg</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.keyword.arg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.keyword.end_col_offset">
+<span class="sig-name descname"><span class="pre">end_col_offset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.keyword.end_col_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.keyword.end_lineno">
+<span class="sig-name descname"><span class="pre">end_lineno</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.keyword.end_lineno" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.literal_eval">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">literal_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_or_string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#literal_eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.literal_eval" title="Permalink to this definition"></a></dt>
+<dd><p>Evaluate an expression node or a string containing only a Python
+expression.  The string or node provided may only consist of the following
+Python literal structures: strings, bytes, numbers, tuples, lists, dicts,
+sets, booleans, and None.</p>
+<p>Caution: A complex expression can overflow the C stack and cause a crash.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.main">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.main" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.match_case">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">match_case</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span> <span class="pre">pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">guard</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stmt*</span> <span class="pre">body</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.match_case" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.match_case.guard">
+<span class="sig-name descname"><span class="pre">guard</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.match_case.guard" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.mod">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">mod</span></span><a class="headerlink" href="#ast.mod" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>mod = Module(stmt* body, type_ignore* type_ignores)
+| Interactive(stmt* body)
+| Expression(expr body)
+| FunctionType(expr* argtypes, expr returns)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.operator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">operator</span></span><a class="headerlink" href="#ast.operator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>operator = Add | Sub | Mult | MatMult | Div | Mod | Pow | LShift | RShift | BitOr | BitXor | BitAnd | FloorDiv</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.parse">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&lt;unknown&gt;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'exec'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_comments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.parse" title="Permalink to this definition"></a></dt>
+<dd><p>Parse the source into an AST node.
+Equivalent to compile(source, filename, mode, PyCF_ONLY_AST).
+Pass type_comments=True to get back type comments where the syntax allows.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.pattern">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">pattern</span></span><a class="headerlink" href="#ast.pattern" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>pattern = MatchValue(expr value)
+| MatchSingleton(constant value)
+| MatchSequence(pattern* patterns)
+| MatchMapping(expr* keys, pattern* patterns, identifier? rest)
+| MatchClass(expr cls, pattern* patterns, identifier* kwd_attrs, pattern* kwd_patterns)
+| MatchStar(identifier? name)
+| MatchAs(pattern? pattern, identifier? name)
+| MatchOr(pattern* patterns)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.slice">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">slice</span></span><a class="reference internal" href="_modules/ast.html#slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.slice" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>Deprecated AST node class.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.stmt">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">stmt</span></span><a class="headerlink" href="#ast.stmt" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>stmt = FunctionDef(identifier name, arguments args, stmt* body, expr* decorator_list, expr? returns, string? type_comment)
+| AsyncFunctionDef(identifier name, arguments args, stmt* body, expr* decorator_list, expr? returns, string? type_comment)
+| ClassDef(identifier name, expr* bases, keyword* keywords, stmt* body, expr* decorator_list)
+| Return(expr? value)
+| Delete(expr* targets)
+| Assign(expr* targets, expr value, string? type_comment)
+| AugAssign(expr target, operator op, expr value)
+| AnnAssign(expr target, expr annotation, expr? value, int simple)
+| For(expr target, expr iter, stmt* body, stmt* orelse, string? type_comment)
+| AsyncFor(expr target, expr iter, stmt* body, stmt* orelse, string? type_comment)
+| While(expr test, stmt* body, stmt* orelse)
+| If(expr test, stmt* body, stmt* orelse)
+| With(withitem* items, stmt* body, string? type_comment)
+| AsyncWith(withitem* items, stmt* body, string? type_comment)
+| Match(expr subject, match_case* cases)
+| Raise(expr? exc, expr? cause)
+| Try(stmt* body, excepthandler* handlers, stmt* orelse, stmt* finalbody)
+| TryStar(stmt* body, excepthandler* handlers, stmt* orelse, stmt* finalbody)
+| Assert(expr test, expr? msg)
+| Import(alias* names)
+| ImportFrom(identifier? module, alias* names, int? level)
+| Global(identifier* names)
+| Nonlocal(identifier* names)
+| Expr(expr value)
+| Pass
+| Break
+| Continue</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.stmt.end_col_offset">
+<span class="sig-name descname"><span class="pre">end_col_offset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.stmt.end_col_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.stmt.end_lineno">
+<span class="sig-name descname"><span class="pre">end_lineno</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.stmt.end_lineno" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.type_ignore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">type_ignore</span></span><a class="headerlink" href="#ast.type_ignore" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>type_ignore = TypeIgnore(int lineno, string tag)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.unaryop">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">unaryop</span></span><a class="headerlink" href="#ast.unaryop" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<p>unaryop = Invert | Not | UAdd | USub</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.unparse">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">unparse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ast_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#unparse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.unparse" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ast.walk">
+<span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">walk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ast.html#walk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ast.walk" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively yield all descendant nodes in the tree starting at <em>node</em>
+(including <em>node</em> itself), in no specified order.  This is useful if you
+only want to modify nodes in place and don’t care about the context.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ast.withitem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ast.</span></span><span class="sig-name descname"><span class="pre">withitem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span> <span class="pre">context_expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr?</span> <span class="pre">optional_vars</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ast.withitem" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ast.AST" title="ast.AST"><code class="xref py py-class docutils literal notranslate"><span class="pre">AST</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ast.withitem.optional_vars">
+<span class="sig-name descname"><span class="pre">optional_vars</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ast.withitem.optional_vars" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,5 +1,3 @@
-from oap_model.intensity import AmplitudeField
-
 
 import numpy as np
 from affine import Affine
@@ -13,6 +11,7 @@ from skimage.transform import rescale
 from copy import deepcopy
 from dataclasses import dataclass
 
+from .intensity import AmplitudeField
 
 @dataclass
 class ASTModel:

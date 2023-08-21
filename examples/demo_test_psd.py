@@ -1,5 +1,5 @@
 # %%
-from oap_model.ast import ASTModel
+from oap_model.ast_model import ASTModel
 from oap_model.psd import *
 import matplotlib.pyplot as plt
 

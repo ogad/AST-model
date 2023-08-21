@@ -6,11 +6,11 @@ import pickle
 from tqdm.autonotebook import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
-from oap_model.ast import ASTModel
 
-from oap_model.intensity import plot_outline
-from oap_model.psd import GammaPSD, TwoMomentGammaPSD, CrystalModel
-from oap_model.cloud import CloudVolume, Detector
+from ..oap_model.ast_model import ASTModel
+from ..oap_model.intensity import plot_outline
+from ..oap_model.psd import GammaPSD, TwoMomentGammaPSD, CrystalModel
+from ..oap_model.cloud import CloudVolume, Detector
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oap_model.psd module &mdash; Optical Array Probe Model  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="oap_model.cloud module" href="oap_model.cloud.html" />
+    <link rel="prev" title="oap_model.intensity module" href="oap_model.intensity.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Optical Array Probe Model
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="oap_model.ast_model.html">oap_model.ast_model module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.intensity.html">oap_model.intensity module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">oap_model.psd module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.CompositePSD"><code class="docutils literal notranslate"><span class="pre">CompositePSD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CompositePSD.dn_dd"><code class="docutils literal notranslate"><span class="pre">CompositePSD.dn_dd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CompositePSD.generate_diameters"><code class="docutils literal notranslate"><span class="pre">CompositePSD.generate_diameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.CrystalModel"><code class="docutils literal notranslate"><span class="pre">CrystalModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CrystalModel.COL_AR5_ROT"><code class="docutils literal notranslate"><span class="pre">CrystalModel.COL_AR5_ROT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CrystalModel.RECT_AR5"><code class="docutils literal notranslate"><span class="pre">CrystalModel.RECT_AR5</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CrystalModel.RECT_AR5_ROT"><code class="docutils literal notranslate"><span class="pre">CrystalModel.RECT_AR5_ROT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CrystalModel.ROS_6"><code class="docutils literal notranslate"><span class="pre">CrystalModel.ROS_6</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CrystalModel.SPHERE"><code class="docutils literal notranslate"><span class="pre">CrystalModel.SPHERE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CrystalModel.get_generator"><code class="docutils literal notranslate"><span class="pre">CrystalModel.get_generator()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.CrystalModel.min_diameter"><code class="docutils literal notranslate"><span class="pre">CrystalModel.min_diameter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.GammaPSD"><code class="docutils literal notranslate"><span class="pre">GammaPSD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.dn_dd"><code class="docutils literal notranslate"><span class="pre">GammaPSD.dn_dd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.fit"><code class="docutils literal notranslate"><span class="pre">GammaPSD.fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.from_concentration"><code class="docutils literal notranslate"><span class="pre">GammaPSD.from_concentration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.from_litres_cm"><code class="docutils literal notranslate"><span class="pre">GammaPSD.from_litres_cm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.from_litres_microns"><code class="docutils literal notranslate"><span class="pre">GammaPSD.from_litres_microns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.from_mean_variance"><code class="docutils literal notranslate"><span class="pre">GammaPSD.from_mean_variance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.mean"><code class="docutils literal notranslate"><span class="pre">GammaPSD.mean</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.parameter_description"><code class="docutils literal notranslate"><span class="pre">GammaPSD.parameter_description()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.variance"><code class="docutils literal notranslate"><span class="pre">GammaPSD.variance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.GammaPSD.w19_parameterisation"><code class="docutils literal notranslate"><span class="pre">GammaPSD.w19_parameterisation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.OSheaGammaPSD"><code class="docutils literal notranslate"><span class="pre">OSheaGammaPSD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.OSheaGammaPSD.dn_dd"><code class="docutils literal notranslate"><span class="pre">OSheaGammaPSD.dn_dd()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.PSD"><code class="docutils literal notranslate"><span class="pre">PSD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.adjusted_bins"><code class="docutils literal notranslate"><span class="pre">PSD.adjusted_bins()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.binned_distribution"><code class="docutils literal notranslate"><span class="pre">PSD.binned_distribution</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.dn_dd"><code class="docutils literal notranslate"><span class="pre">PSD.dn_dd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.generate_diameters"><code class="docutils literal notranslate"><span class="pre">PSD.generate_diameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.max_dn_dd"><code class="docutils literal notranslate"><span class="pre">PSD.max_dn_dd</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.midpoints"><code class="docutils literal notranslate"><span class="pre">PSD.midpoints</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.moment"><code class="docutils literal notranslate"><span class="pre">PSD.moment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.plot"><code class="docutils literal notranslate"><span class="pre">PSD.plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PSD.total_number_density"><code class="docutils literal notranslate"><span class="pre">PSD.total_number_density</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.Particle"><code class="docutils literal notranslate"><span class="pre">Particle</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.Particle.angle"><code class="docutils literal notranslate"><span class="pre">Particle.angle</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.Particle.diameter"><code class="docutils literal notranslate"><span class="pre">Particle.diameter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.Particle.model"><code class="docutils literal notranslate"><span class="pre">Particle.model</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.PositionedParticle"><code class="docutils literal notranslate"><span class="pre">PositionedParticle</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PositionedParticle.angle"><code class="docutils literal notranslate"><span class="pre">PositionedParticle.angle</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PositionedParticle.diameter"><code class="docutils literal notranslate"><span class="pre">PositionedParticle.diameter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PositionedParticle.model"><code class="docutils literal notranslate"><span class="pre">PositionedParticle.model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.PositionedParticle.position"><code class="docutils literal notranslate"><span class="pre">PositionedParticle.position</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.SamplingModel"><code class="docutils literal notranslate"><span class="pre">SamplingModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.SamplingModel.generate"><code class="docutils literal notranslate"><span class="pre">SamplingModel.generate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.SamplingModel.simulate_distribution"><code class="docutils literal notranslate"><span class="pre">SamplingModel.simulate_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.SamplingModel.simulate_distribution_from_scaling"><code class="docutils literal notranslate"><span class="pre">SamplingModel.simulate_distribution_from_scaling()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.TwoMomentGammaPSD"><code class="docutils literal notranslate"><span class="pre">TwoMomentGammaPSD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.TwoMomentGammaPSD.characteristic_diameter"><code class="docutils literal notranslate"><span class="pre">TwoMomentGammaPSD.characteristic_diameter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.TwoMomentGammaPSD.dn_dd"><code class="docutils literal notranslate"><span class="pre">TwoMomentGammaPSD.dn_dd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#oap_model.psd.TwoMomentGammaPSD.from_m2_tc"><code class="docutils literal notranslate"><span class="pre">TwoMomentGammaPSD.from_m2_tc()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#oap_model.psd.rejection_sampler"><code class="docutils literal notranslate"><span class="pre">rejection_sampler()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.cloud.html">oap_model.cloud module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.detector.html">oap_model.detector module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.detector_run.html">oap_model.detector_run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.retrieval.html">oap_model.retrieval module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="oap_model.diameters.html">oap_model.diameters module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Optical Array Probe Model</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">oap_model.psd module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/oap_model.psd.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-oap_model.psd">
+<span id="oap-model-psd-module"></span><h1>oap_model.psd module<a class="headerlink" href="#module-oap_model.psd" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.CompositePSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">CompositePSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#oap_model.psd.PSD" title="oap_model.psd.PSD"><span class="pre">oap_model.psd.PSD</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#CompositePSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.CompositePSD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#oap_model.psd.PSD" title="oap_model.psd.PSD"><code class="xref py py-class docutils literal notranslate"><span class="pre">PSD</span></code></a></p>
+<p>A composite particle size distribution object.</p>
+<p>Contains the distribution parameters, and binning information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psds</strong> (<em>list</em><em>[</em><a class="reference internal" href="#oap_model.psd.PSD" title="oap_model.psd.PSD"><em>PSD</em></a><em>]</em>) – The list of PSDs to combine.</p></li>
+<li><p><strong>bins</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – The bin edges in metres. Defaults to 100 bins between <span class="math notranslate nohighlight">\(1     imes10^{-7}\)</span> and <span class="math notranslate nohighlight">\(1       imes10^{-7}\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.CompositePSD.dn_dd">
+<span class="sig-name descname"><span class="pre">dn_dd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#CompositePSD.dn_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.CompositePSD.dn_dd" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the particle size distribution value given diameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.CompositePSD.generate_diameters">
+<span class="sig-name descname"><span class="pre">generate_diameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_particles</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="oap_model.ast_model.html#oap_model.ast_model.ASTModel" title="oap_model.ast_model.ASTModel"><span class="pre">oap_model.ast_model.ASTModel</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#CompositePSD.generate_diameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.CompositePSD.generate_diameters" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a particle diameter from the PSD.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">CrystalModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#CrystalModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.CrystalModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enum for crystal types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel.COL_AR5_ROT">
+<span class="sig-name descname"><span class="pre">COL_AR5_ROT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#oap_model.psd.CrystalModel.COL_AR5_ROT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel.RECT_AR5">
+<span class="sig-name descname"><span class="pre">RECT_AR5</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#oap_model.psd.CrystalModel.RECT_AR5" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel.RECT_AR5_ROT">
+<span class="sig-name descname"><span class="pre">RECT_AR5_ROT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#oap_model.psd.CrystalModel.RECT_AR5_ROT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel.ROS_6">
+<span class="sig-name descname"><span class="pre">ROS_6</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#oap_model.psd.CrystalModel.ROS_6" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel.SPHERE">
+<span class="sig-name descname"><span class="pre">SPHERE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#oap_model.psd.CrystalModel.SPHERE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel.get_generator">
+<span class="sig-name descname"><span class="pre">get_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#CrystalModel.get_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.CrystalModel.get_generator" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.CrystalModel.min_diameter">
+<span class="sig-name descname"><span class="pre">min_diameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pixel_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#CrystalModel.min_diameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.CrystalModel.min_diameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">GammaPSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intercept</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oap_model.psd.CrystalModel" title="oap_model.psd.CrystalModel"><span class="pre">CrystalModel</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">CrystalModel.SPHERE</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#oap_model.psd.PSD" title="oap_model.psd.PSD"><code class="xref py py-class docutils literal notranslate"><span class="pre">PSD</span></code></a></p>
+<p>Gamma particle size distribution object.</p>
+<p>Contains the distribution parameters, and binning information.</p>
+<div class="math notranslate nohighlight">
+\[n_N(r) = N_0 \left(\frac{r}{\text{1 m}}\right)^\mu \mathrm{e}^{-\Lambda r}.\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>intercept</strong> (<em>float</em>) – <span class="math notranslate nohighlight">\(N_0\)</span> in <span class="math notranslate nohighlight">\(\mathrm{m^{-3}}\)</span>.</p></li>
+<li><p><strong>slope</strong> (<em>float</em>) – <span class="math notranslate nohighlight">\(\Lambda\)</span> in <span class="math notranslate nohighlight">\(\mathrm{m^{-1}}\)</span>.</p></li>
+<li><p><strong>shape</strong> (<em>float</em>) – <span class="math notranslate nohighlight">\(\mu\)</span>.</p></li>
+<li><p><strong>bins</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – The bin edges in metres. Defaults to 100 bins between <span class="math notranslate nohighlight">\(1\times10^{-7}\)</span> and <span class="math notranslate nohighlight">\(1\times10^{-7}\)</span>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.dn_dd">
+<span class="sig-name descname"><span class="pre">dn_dd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.dn_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.dn_dd" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the particle size distribution value given diameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.fit">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dn_dd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_considered_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.fit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.from_concentration">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_concentration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_concentration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.from_concentration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.from_concentration" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the number density per field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>number_concentration</strong> (<em>float</em>) – The number concentration in <span class="math notranslate nohighlight">\(\mathrm{m^{-3}}\)</span>.</p></li>
+<li><p><strong>slope</strong> (<em>float</em>) – <span class="math notranslate nohighlight">\(\Lambda\)</span> in <span class="math notranslate nohighlight">\(\mathrm{m^{-1}}\)</span>.</p></li>
+<li><p><strong>shape</strong> (<em>float</em>) – <span class="math notranslate nohighlight">\(\mu\)</span>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number density per field.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.from_litres_cm">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_litres_cm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intercept_per_litre_per_cm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_per_cm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.from_litres_cm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.from_litres_cm" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.from_litres_microns">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_litres_microns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intercept_per_litre_per_micron</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_per_micron</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.from_litres_microns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.from_litres_microns" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.from_mean_variance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_mean_variance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_concentration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.from_mean_variance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.from_mean_variance" title="Permalink to this definition"></a></dt>
+<dd><p>Create a GammaPSD object from the mean and variance of the particle diameter.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.mean">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mean</span></span><a class="headerlink" href="#oap_model.psd.GammaPSD.mean" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the mean particle diameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.parameter_description">
+<span class="sig-name descname"><span class="pre">parameter_description</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.parameter_description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.parameter_description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.variance">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variance</span></span><a class="headerlink" href="#oap_model.psd.GammaPSD.variance" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the variance of the particle diameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.GammaPSD.w19_parameterisation">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">w19_parameterisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_number_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insitu_origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">liquid_origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#GammaPSD.w19_parameterisation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.GammaPSD.w19_parameterisation" title="Permalink to this definition"></a></dt>
+<dd><p>Using Wolf et al. 2019 parameterisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number density per field.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.OSheaGammaPSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">OSheaGammaPSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intercept</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oap_model.psd.CrystalModel" title="oap_model.psd.CrystalModel"><span class="pre">CrystalModel</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">CrystalModel.SPHERE</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#OSheaGammaPSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.OSheaGammaPSD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#oap_model.psd.GammaPSD" title="oap_model.psd.GammaPSD"><code class="xref py py-class docutils literal notranslate"><span class="pre">GammaPSD</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.OSheaGammaPSD.dn_dd">
+<span class="sig-name descname"><span class="pre">dn_dd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#OSheaGammaPSD.dn_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.OSheaGammaPSD.dn_dd" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the particle size distribution value given diameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.PSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">PSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oap_model.psd.CrystalModel" title="oap_model.psd.CrystalModel"><span class="pre">CrystalModel</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">CrystalModel.SPHERE</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#PSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.PSD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for particle size distribution objects.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.adjusted_bins">
+<span class="sig-name descname"><span class="pre">adjusted_bins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retrieval</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#PSD.adjusted_bins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.PSD.adjusted_bins" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.binned_distribution">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">binned_distribution</span></span><a class="headerlink" href="#oap_model.psd.PSD.binned_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the binned particle size distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number of particles in each bin.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.dn_dd">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dn_dd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#PSD.dn_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.PSD.dn_dd" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the particle size distribution value given diameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.generate_diameters">
+<span class="sig-name descname"><span class="pre">generate_diameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_particles</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="oap_model.ast_model.html#oap_model.ast_model.ASTModel" title="oap_model.ast_model.ASTModel"><span class="pre">oap_model.ast_model.ASTModel</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#PSD.generate_diameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.PSD.generate_diameters" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a particle diameter from the PSD.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.max_dn_dd">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_dn_dd</span></span><a class="headerlink" href="#oap_model.psd.PSD.max_dn_dd" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the maximum value of the particle size distribution.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.midpoints">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">midpoints</span></span><a class="headerlink" href="#oap_model.psd.PSD.midpoints" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the binned particle size distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number of particles in each bin.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.moment">
+<span class="sig-name descname"><span class="pre">moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#PSD.moment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.PSD.moment" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the nth moment of the PSD.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retrieval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.retrieval.html#oap_model.retrieval.Retrieval" title="oap_model.retrieval.Retrieval"><span class="pre">Retrieval</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#PSD.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.PSD.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the PSD value against diameter.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.psd.PSD.total_number_density">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_number_density</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#oap_model.psd.PSD.total_number_density" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the total number density of particles.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.Particle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">Particle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oap_model.psd.Particle" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.Particle.angle">
+<span class="sig-name descname"><span class="pre">angle</span></span><a class="headerlink" href="#oap_model.psd.Particle.angle" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.Particle.diameter">
+<span class="sig-name descname"><span class="pre">diameter</span></span><a class="headerlink" href="#oap_model.psd.Particle.diameter" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.Particle.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#oap_model.psd.Particle.model" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.PositionedParticle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">PositionedParticle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oap_model.psd.PositionedParticle" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.PositionedParticle.angle">
+<span class="sig-name descname"><span class="pre">angle</span></span><a class="headerlink" href="#oap_model.psd.PositionedParticle.angle" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.PositionedParticle.diameter">
+<span class="sig-name descname"><span class="pre">diameter</span></span><a class="headerlink" href="#oap_model.psd.PositionedParticle.diameter" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.PositionedParticle.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#oap_model.psd.PositionedParticle.model" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="oap_model.psd.PositionedParticle.position">
+<span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#oap_model.psd.PositionedParticle.position" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.SamplingModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">SamplingModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oap_model.psd.GammaPSD" title="oap_model.psd.GammaPSD"><span class="pre">GammaPSD</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_dist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inlet_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.00735</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#SamplingModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.SamplingModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Particle size distribution model.</p>
+<p>A modelling class that contains a PSD object, and simulates particle
+measurement from it. Particles are assumed to be distributed uniformly
+across the inlet. Particle size is assumed to be independent of position
+along the inlet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psd</strong> (<a class="reference internal" href="#oap_model.psd.PSD" title="oap_model.psd.PSD"><em>PSD</em></a>) – The particle size distribution function, dN/dr in <span class="math notranslate nohighlight">\(\mathrm{m^{-3}}\)</span>.</p></li>
+<li><p><strong>z_dist</strong> (<em>callable</em><em>, </em><em>optional</em><em>, </em><em>unimplimented</em>) – The probability
+distribution of particles along the z-axis, normalised to 1 when
+integrated wrt z, in m^-1. Defaults to uniform across array.</p></li>
+<li><p><strong>inlet_length</strong> (<em>float</em><em>, </em><em>optional</em>) – The length of the inlet in metres.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.SamplingModel.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_particles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#SamplingModel.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.SamplingModel.generate" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a sample of particles from the PSD, at random z positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_particles</strong> (<em>int</em>) – The number of particles to generate.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The particles represented by tuples of (diameter, z).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.SamplingModel.simulate_distribution">
+<span class="sig-name descname"><span class="pre">simulate_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_particles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_particle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_models</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#SamplingModel.simulate_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.SamplingModel.simulate_distribution" title="Permalink to this definition"></a></dt>
+<dd><p>Simulate the observation of spherical particles.</p>
+<p>Generates a sample of spherical particles and then simulates the
+observation of the particles by producing new AST models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_particles</strong> (<em>int</em>) – The number of particles to generate.</p></li>
+<li><p><strong>single_particle</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to consider only the
+largest particle in each diffraction pattern. Defaults to False.</p></li>
+<li><p><strong>keep_models</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to keep the AST models after
+simulation. Warning: this will use a lot of memory. Defaults to
+False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The measured particle diameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.SamplingModel.simulate_distribution_from_scaling">
+<span class="sig-name descname"><span class="pre">simulate_distribution_from_scaling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_particles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_particle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="oap_model.ast_model.html#oap_model.ast_model.ASTModel" title="oap_model.ast_model.ASTModel"><span class="pre">ASTModel</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_models</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#SamplingModel.simulate_distribution_from_scaling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.SamplingModel.simulate_distribution_from_scaling" title="Permalink to this definition"></a></dt>
+<dd><p>Simulate the observation of similar particles.</p>
+<p>Generates a sample of particles, produces new AST models by scaling
+a base model, and then simulates the observation of the particles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_particles</strong> (<em>int</em>) – The number of particles to generate.</p></li>
+<li><p><strong>single_particle</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to consider only the
+largest particle in each diffraction pattern. Defaults to False.</p></li>
+<li><p><strong>base_model</strong> (<a class="reference internal" href="oap_model.ast_model.html#oap_model.ast_model.ASTModel" title="oap_model.ast_model.ASTModel"><em>ASTModel</em></a><em>, </em><em>optional</em>) – The base model to scale. Should
+have a high resolution relative to typical particle sizes. Defaults
+to a 1000 nm diameter particle.</p></li>
+<li><p><strong>keep_models</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to keep the AST models after
+simulation. Warning: this will use a lot of memory. Defaults to
+False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The measured particle diameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="oap_model.psd.TwoMomentGammaPSD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">TwoMomentGammaPSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#oap_model.psd.CrystalModel" title="oap_model.psd.CrystalModel"><span class="pre">CrystalModel</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">CrystalModel.SPHERE</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#TwoMomentGammaPSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.TwoMomentGammaPSD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#oap_model.psd.PSD" title="oap_model.psd.PSD"><code class="xref py py-class docutils literal notranslate"><span class="pre">PSD</span></code></a></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="oap_model.psd.TwoMomentGammaPSD.characteristic_diameter">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">characteristic_diameter</span></span><a class="headerlink" href="#oap_model.psd.TwoMomentGammaPSD.characteristic_diameter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.TwoMomentGammaPSD.dn_dd">
+<span class="sig-name descname"><span class="pre">dn_dd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">complex</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/oap_model/psd.html#TwoMomentGammaPSD.dn_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.TwoMomentGammaPSD.dn_dd" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the particle size distribution value given diameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oap_model.psd.TwoMomentGammaPSD.from_m2_tc">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_m2_tc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tc</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#TwoMomentGammaPSD.from_m2_tc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.TwoMomentGammaPSD.from_m2_tc" title="Permalink to this definition"></a></dt>
+<dd><p>Create a TwoMomentGammaPSD object from the second moment and in-cloud temperature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oap_model.psd.rejection_sampler">
+<span class="sig-prename descclassname"><span class="pre">oap_model.psd.</span></span><span class="sig-name descname"><span class="pre">rejection_sampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xbounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/oap_model/psd.html#rejection_sampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#oap_model.psd.rejection_sampler" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a value sampled from a bounded probability distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>callable</em>) – The probability distribution function.</p></li>
+<li><p><strong>xbounds</strong> (<em>list</em>) – The bounds of the distribution.</p></li>
+<li><p><strong>pmax</strong> (<em>float</em>) – The maximum value of the probability distribution.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="oap_model.intensity.html" class="btn btn-neutral float-left" title="oap_model.intensity module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="oap_model.cloud.html" class="btn btn-neutral float-right" title="oap_model.cloud module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Oliver Driver.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

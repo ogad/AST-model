@@ -1,0 +1,7 @@
+psd module
+==========
+
+.. automodule:: psd
+   :members:
+   :undoc-members:
+   :show-inheritance:

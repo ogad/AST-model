@@ -2,10 +2,7 @@
 # Author: Oliver Driver
 # Date: 29/06/2023
 
-import logging
-from charset_normalizer import detect
 from copy import deepcopy
-import os
 
 import numpy as np
 import pandas as pd
@@ -13,9 +10,9 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 import pickle
 
-from oap_model.intensity import plot_outline, AmplitudeField, IntensityField
-from oap_model.detector import Detector, ImageFilter, DiameterSpec, ImagedRegion
-from oap_model.diameters import measure_diameters
+from .intensity import IntensityField
+from .detector import Detector, ImageFilter, DiameterSpec, ImagedRegion
+from .diameters import measure_diameters
 
 
 

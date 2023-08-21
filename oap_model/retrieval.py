@@ -2,18 +2,14 @@
 # Author: Oliver Driver
 # Date: 10/07/2023
 
-import logging 
-
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-from oap_model.ast import ASTModel
-from oap_model.cloud import CloudVolume
 
 
-from oap_model.detector import  DiameterSpec
-from oap_model.detector_run import DetectorRun
-from oap_model.psd import GammaPSD
+from .cloud import CloudVolume
+from .detector import  DiameterSpec
+from .detector_run import DetectorRun
+from .psd import GammaPSD
 
 class Retrieval:
     def __init__(self, run: DetectorRun, spec: DiameterSpec, bins: np.array=None, slice_particles: dict=None):
