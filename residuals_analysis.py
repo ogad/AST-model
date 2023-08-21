@@ -4,16 +4,16 @@ import logging
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
-from detector_run import DetectorRun
-from psd_ast_model import CrystalModel, GammaPSD
+from oap_model.detector_run import DetectorRun
+from oap_model.psd import CrystalModel, GammaPSD
 from tqdm import tqdm
-from detector_model import DiameterSpec, Detector
+from oap_model.detector import DiameterSpec, Detector
 import pickle
 
 import logging
 logging.basicConfig(level=logging.INFO)
 
-from retrieval_model import Retrieval
+from oap_model.retrieval import Retrieval
 
 plt.rcParams["xtick.direction"] = "in"
 plt.rcParams["ytick.direction"] = "in"

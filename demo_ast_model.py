@@ -6,7 +6,7 @@ from matplotlib.colors import TwoSlopeNorm
 from imageio.v3 import imread
 
 # Local imports
-from ast_model import ASTModel
+from oap_model.ast import ASTModel
 
 if __name__ == "__main__":
     # define the object

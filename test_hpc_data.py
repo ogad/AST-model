@@ -1,9 +1,9 @@
 # %%
 import os
 
-from detector_model import DiameterSpec
-from detector_run import DetectorRun
-from retrieval_model import Retrieval
+from oap_model.detector import DiameterSpec
+from oap_model.detector_run import DetectorRun
+from oap_model.retrieval import Retrieval
 
 
 path = "../data_hpc/"

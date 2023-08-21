@@ -15,12 +15,12 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     import datetime
 
-    from ast_model import AmplitudeField
-    from psd_ast_model import GammaPSD, CrystalModel
-    from cloud_model import CloudVolume, Detector
-    from detector_model import Detector, DiameterSpec
-    from retrieval_model import Retrieval
-    from detector_run import DetectorRun
+    from oap_model.intensity import AmplitudeField
+    from oap_model.psd import GammaPSD, CrystalModel
+    from oap_model.cloud import CloudVolume, Detector
+    from oap_model.detector import Detector, DiameterSpec
+    from oap_model.retrieval import Retrieval
+    from oap_model.detector_run import DetectorRun
 
     from profiler import profile
 
@@ -430,11 +430,11 @@ if __name__ == "__main__":
 
 
     # %% Particle AST model examples
-    from ast_model import AmplitudeField
+    from oap_model.intensity import AmplitudeField
     total_amplitude_focused = AmplitudeField(np.ones((128, 300), dtype=np.complex128))
     total_amplitude_unfocused = AmplitudeField(np.ones((128, 300), dtype=np.complex128))
 
-    from psd_ast_model import PositionedParticle
+    from oap_model.psd import PositionedParticle
     for i, crystal_model in enumerate([CrystalModel.SPHERE, CrystalModel.RECT_AR5, CrystalModel.ROS_6]):
         generator = crystal_model.get_generator()
         particle = PositionedParticle(200e-6, (0,0), crystal_model,np.array([0,.5e-3+1e-3*i,0]))

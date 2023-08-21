@@ -7,15 +7,15 @@
 import random
 import logging
 
-from ast_model import plot_outline
+from oap_model.intensity import plot_outline
 logging.basicConfig(level=logging.INFO)
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from psd_ast_model import GammaPSD, CompositePSD, CrystalModel
-from cloud_model import CloudVolume, Detector
-from detector_model import Detector
+from oap_model.psd import GammaPSD, CompositePSD, CrystalModel
+from oap_model.cloud import CloudVolume, Detector
+from oap_model.detector import Detector
 
 from tqdm.autonotebook import tqdm
 

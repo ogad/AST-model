@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from ast_model import plot_outline, AmplitudeField, IntensityField
-from diameters import measure_diameters
+from oap_model.intensity import plot_outline, AmplitudeField, IntensityField
+from oap_model.diameters import measure_diameters
 
 @dataclass
 class Detector:

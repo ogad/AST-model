@@ -14,8 +14,8 @@ from numpy.typing import ArrayLike
 from scipy.optimize import curve_fit, root_scalar
 
 
-from ast_model import ASTModel
-from diameters import measure_diameters
+from oap_model.ast import ASTModel
+from oap_model.diameters import measure_diameters
 
 
 Particle = namedtuple("Particle", ["diameter", "angle", "model"])
@@ -147,12 +147,12 @@ class PSD(ABC):
         # return self.intercept * self.slope ** (-self.shape - 1) * np.math.gamma(self.shape + 1) 
         return self.binned_distribution.sum()
     
-    def plot(self, ax, retrieval:'Retrieval'=None, **kwargs):
+    def plot(self, ax, retrieval:"Retrieval"=None, **kwargs):
         """Plot the PSD value against diameter."""
-        if retrieval is None: # Don't adjust
+        if retrieval is None: 
             x_vals = self.bins
         else:
-            x_vals = self.adjusted_bins(retrieval)
+            x_vals = self.adjusted_bins(retrieval)# FIXME: this does not change the dn/dD values to account for the change in bin width...
         handle = ax.plot(x_vals, self.dn_dd(self.bins), **kwargs)
         # ax.set_xscale('log')
         # ax.set_yscale('log')

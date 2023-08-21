@@ -1,6 +1,6 @@
 # %%
 import pandas as pd
-from psd_ast_model import GammaPSD
+from oap_model.psd import GammaPSD
 from scipy.optimize import curve_fit
 import numpy as np
 

@@ -7,13 +7,13 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from ast_model import ASTModel
-from cloud_model import CloudVolume
+from oap_model.ast import ASTModel
+from oap_model.cloud import CloudVolume
 
 
-from detector_model import  DiameterSpec
-from detector_run import DetectorRun
-from psd_ast_model import GammaPSD
+from oap_model.detector import  DiameterSpec
+from oap_model.detector_run import DetectorRun
+from oap_model.psd import GammaPSD
 
 class Retrieval:
     def __init__(self, run: DetectorRun, spec: DiameterSpec, bins: np.array=None, slice_particles: dict=None):

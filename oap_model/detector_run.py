@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 import pickle
 
-from ast_model import plot_outline, AmplitudeField, IntensityField
-from detector_model import Detector, ImageFilter, DiameterSpec, ImagedRegion
-from diameters import measure_diameters
+from oap_model.intensity import plot_outline, AmplitudeField, IntensityField
+from oap_model.detector import Detector, ImageFilter, DiameterSpec, ImagedRegion
+from oap_model.diameters import measure_diameters
 
 
 

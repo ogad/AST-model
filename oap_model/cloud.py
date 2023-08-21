@@ -18,11 +18,12 @@ from tqdm.autonotebook import tqdm
 from enum import Enum
 
 import matplotlib.pyplot as plt
+from oap_model.ast import ASTModel
 
-from psd_ast_model import CrystalModel, GammaPSD
-from ast_model import ASTModel, AmplitudeField
-from detector_model import Detector, ImagedRegion
-from detector_run import DetectorRun
+from oap_model.psd import CrystalModel, GammaPSD
+from oap_model.intensity import AmplitudeField
+from oap_model.detector import Detector, ImagedRegion
+from oap_model.detector_run import DetectorRun
 from profiler import profile
 
 

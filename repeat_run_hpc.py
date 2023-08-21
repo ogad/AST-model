@@ -5,9 +5,9 @@ import numpy as np
 import logging
 import sys
 
-from psd_ast_model import CrystalModel, GammaPSD
-from cloud_model import CloudVolume
-from detector_model import Detector
+from oap_model.psd import CrystalModel, GammaPSD
+from oap_model.cloud import CloudVolume
+from oap_model.detector import Detector
 
 gammas = {
     ("in-situ", "cold"): GammaPSD.w19_parameterisation(-70, total_number_density=44, insitu_origin=True),

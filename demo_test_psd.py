@@ -1,5 +1,6 @@
 # %%
-from psd_ast_model import *
+from oap_model.ast import ASTModel
+from oap_model.psd import *
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -25,8 +26,9 @@ if __name__ == "__main__":
     ax.hist(arr * 1e-6, bins=hist_bins)  # , bins=np.logspace(-8, -5, 100))
     plt.xlim(0, 1e-3)
 
-    popt, pcov = fit_gamma_distribution(arr * 1e-6, hist_bins)
-    n_fit = GammaPSD._dn_gamma_dd(hist_bins, *popt, 2.5)
+    fit_psd = GammaPSD.fit(arr * 1e-6, hist_bins)
+    n_fit = fit_psd.binned_distribution
+    # n_fit = GammaPSD._dn_gamma_dd(hist_bins, *popt, 2.5)
 
     secax = ax.twinx()
     secax.plot(hist_bins, n_fit, label="Fit", c="red")

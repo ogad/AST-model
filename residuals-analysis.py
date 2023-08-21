@@ -3,15 +3,15 @@ import itertools
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import numpy as np
-from detector_run import DetectorRun
-from psd_ast_model import CrystalModel
+from oap_model.detector_run import DetectorRun
+from oap_model.psd import CrystalModel
 from tqdm import tqdm
-from detector_model import DiameterSpec, Detector
+from oap_model.detector import DiameterSpec, Detector
 
 
 from repeat_run_hpc import gammas
 
-from retrieval_model import Retrieval
+from oap_model.retrieval import Retrieval
 
 detector_kwargs = {
     "2d128": {"n_pixels": 128, "arm_separation": 0.06, "pixel_size": 10e-6},

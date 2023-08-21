@@ -5,10 +5,10 @@ from matplotlib import pyplot as plt
 from tqdm import tqdm
 import numpy as np
 
-from detector_run import DetectorRun
-from psd_ast_model import CrystalModel
-from detector_model import DiameterSpec, Detector
-from retrieval_model import Retrieval
+from oap_model.detector_run import DetectorRun
+from oap_model.psd import CrystalModel
+from oap_model.detector import DiameterSpec, Detector
+from oap_model.retrieval import Retrieval
 
 from repeat_run_hpc import gammas
 from residuals_analysis import detector_kwargs, diameter_spec_kwargs
